@@ -1,0 +1,4 @@
+target/
+*.lock
+C:UsersAdministrator/
+assets/Inter-Regular.ttf

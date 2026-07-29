@@ -1,0 +1,82 @@
+[workspace]
+
+[package]
+name = "digital-product-factory"
+version = "1.1.0"
+edition = "2021"
+authors = ["SwiftSoftware143"]
+description = "Digital Product Factory - Native Rust desktop app for automated digital product creation"
+
+[dependencies]
+# Core UI - egui for native speed
+egui = "0.24"
+egui_extras = { version = "0.24", features = ["image", "datepicker"] }
+eframe = { version = "0.24", features = ["default", "persistence"] }
+
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+
+# Database
+rusqlite = { version = "0.30", features = ["bundled", "chrono"] }
+
+# Web scraping
+scraper = "0.18"
+urlencoding = "2.1"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Date/time
+chrono = { version = "0.4", features = ["serde", "clock"] }
+
+# Random for license keys, delays
+rand = "0.8"
+
+# Regex for parsing
+regex = "1.10"
+
+# File operations
+walkdir = "2.4"
+zip = "0.6"
+
+# Image handling for product previews
+image = { version = "0.24", default-features = false, features = ["png", "jpeg"] }
+
+# Logo & Vector Generator
+resvg = "0.35"
+usvg = { version = "0.35", features = ["text"] }
+usvg-parser = "0.35"
+ico = "0.3"
+
+# Notifications
+notify-rust = { version = "4.10", optional = true }
+
+# Tray icon
+tray-icon = { version = "0.11", optional = true }
+
+# ── NEW: Publishing & Analytics ───────────────────────────────────────
+keyring = "2.3"
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
+uuid = { version = "1", features = ["v4"] }
+async-trait = "0.1"
+tracing = "0.1"
+
+# For file dialogs (optional, graceful fallback)
+rfd = "0.14"
+winapi = { version = "0.3.9", features = ["winuser"] }
+
+[features]
+default = ["notifications"]
+notifications = ["notify-rust"]
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true
+codegen-units = 1
+panic = "abort"
+
+[[bin]]
+name = "dpf"
+path = "src/main.rs"
