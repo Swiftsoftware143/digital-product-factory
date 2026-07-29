@@ -15,10 +15,12 @@ impl Database {
         let conn = Connection::open("dpf_data.db")?;
         
         // Enable WAL mode for better concurrency
-        conn.execute("PRAGMA journal_mode=WAL;", [])?;
-        conn.execute("PRAGMA synchronous=NORMAL;", [])?;
-        conn.execute("PRAGMA cache_size=10000;", [])?;
-        conn.execute("PRAGMA temp_store=memory;", [])?;
+        conn.execute_batch(
+            "PRAGMA journal_mode=WAL;
+             PRAGMA synchronous=NORMAL;
+             PRAGMA cache_size=10000;
+             PRAGMA temp_store=memory;",
+        )?;
         
         let db = Self {
             conn: Arc::new(Mutex::new(conn)),
