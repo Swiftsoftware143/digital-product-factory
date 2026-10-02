@@ -103,6 +103,106 @@ pub struct Advert {
     pub status: AdvertStatus,
 }
 
+/// Words that reliably earn attention in a headline.
+const POWER_WORDS: [&str; 24] = [
+    "free", "new", "proven", "instant", "easy", "ultimate", "secret", "guaranteed", "boost",
+    "master", "stop", "discover", "effortless", "powerful", "complete", "essential", "fast",
+    "simple", "save", "double", "unlock", "transform", "finally", "now",
+];
+
+/// Verbs that make a call to action an instruction rather than a label.
+const CTA_VERBS: [&str; 16] = [
+    "get", "start", "claim", "download", "buy", "join", "try", "grab", "order", "book", "reserve",
+    "unlock", "discover", "learn", "see", "shop",
+];
+
+impl Advert {
+    /// Score the advert copy from its actual text.
+    ///
+    /// This replaced a "🔄 Re-score" button that did `rng.gen_range(55..98)` — a RANDOM number
+    /// presented as a conversion score, colour-coded green/amber in the preview, and written into
+    /// exported files as though it were analysis. A fabricated metric is worse than no metric,
+    /// because the user trusts it and may ship copy on the strength of it.
+    ///
+    /// Each check below is a deterministic, explainable heuristic with published support
+    /// (numbers and emotional words in headlines, an imperative call to action, substantive body
+    /// copy). The caller shows the breakdown, so the number is never a black box.
+    ///
+    /// This is a copy checklist, not a prediction of performance. The UI must say so.
+    pub fn score_copy(&self) -> (u8, Vec<(String, bool)>) {
+        score_copy_parts(
+            &self.headline,
+            &self.subheadline,
+            &self.body_copy,
+            &self.call_to_action,
+            &self.visual_description,
+        )
+    }
+}
+
+/// The scoring rules, kept independent of the `Advert` type so they can be tested directly.
+pub fn score_copy_parts(
+    headline: &str,
+    subheadline: &str,
+    body_copy: &str,
+    call_to_action: &str,
+    visual_description: &str,
+) -> (u8, Vec<(String, bool)>) {
+    let headline = headline.trim();
+    let headline_len = headline.chars().count();
+
+    let checks: Vec<(String, bool)> = vec![
+        (
+            "Headline length is in the readable range (20–70 characters)".to_string(),
+            (20..=70).contains(&headline_len),
+        ),
+        (
+            "Headline contains a number".to_string(),
+            headline.chars().any(|c| c.is_ascii_digit()),
+        ),
+        (
+            "Headline uses an emotional or power word".to_string(),
+            headline.split_whitespace().any(is_power_word),
+        ),
+        (
+            "Subheadline adds a supporting benefit (20+ characters)".to_string(),
+            subheadline.trim().chars().count() >= 20,
+        ),
+        (
+            "Body copy is substantive (120+ characters)".to_string(),
+            body_copy.trim().chars().count() >= 120,
+        ),
+        (
+            "Call to action is present".to_string(),
+            !call_to_action.trim().is_empty(),
+        ),
+        (
+            "Call to action is an instruction, not a label".to_string(),
+            is_imperative_cta(call_to_action),
+        ),
+        (
+            "Visual direction is described (15+ characters)".to_string(),
+            visual_description.trim().chars().count() >= 15,
+        ),
+    ];
+
+    let passed = checks.iter().filter(|(_, ok)| *ok).count();
+    let score = ((passed as f64 / checks.len() as f64) * 100.0).round() as u8;
+    (score, checks)
+}
+
+fn is_power_word(word: &str) -> bool {
+    let cleaned = word
+        .trim_matches(|c: char| !c.is_alphanumeric())
+        .to_ascii_lowercase();
+    POWER_WORDS.contains(&cleaned.as_str())
+}
+
+fn is_imperative_cta(cta: &str) -> bool {
+    let cleaned = cta.trim().to_ascii_lowercase();
+    CTA_VERBS.iter().any(|verb| cleaned.starts_with(verb))
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AdvertStatus {
     Draft,
@@ -401,4 +501,65 @@ pub enum ExportFormat {
     Png,
     Jpeg,
     Svg,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The headline property that matters most: the score must be a FUNCTION OF THE COPY.
+    /// The button this replaced did `rng.gen_range(55..98)`, so identical copy could score 56 on
+    /// one click and 97 on the next, and the number was written into exported files as analysis.
+    #[test]
+    fn the_score_is_deterministic_for_the_same_copy() {
+        let first = score_copy_parts("Get 21 Free Notion Templates Today", "", "", "", "").0;
+        for _ in 0..50 {
+            let again = score_copy_parts("Get 21 Free Notion Templates Today", "", "", "", "").0;
+            assert_eq!(first, again, "the same copy must always score the same");
+        }
+    }
+
+    /// A stronger set of copy must outscore a weaker set. A random number cannot do this.
+    #[test]
+    fn better_copy_scores_higher_than_weaker_copy() {
+        let strong = score_copy_parts(
+            "Save 10 Hours Every Week With 21 Free Templates",
+            "A complete system for busy freelancers and small studios.",
+            "This pack gives you every template you need to run client work end to end, \
+             from the first call to the final invoice, without building anything from scratch.",
+            "Download the bundle now",
+            "Warm gradient background with a laptop mockup and bold sans-serif type.",
+        )
+        .0;
+
+        let weak = score_copy_parts("stuff", "hi", "buy it", "Click Here", "a picture").0;
+
+        assert!(
+            strong > weak,
+            "strong copy scored {strong}, weak copy scored {weak}"
+        );
+        assert_eq!(strong, 100, "the example copy satisfies every rule");
+    }
+
+    /// Every rule must report WHY, so the number is never a black box.
+    #[test]
+    fn the_breakdown_explains_every_point() {
+        let (score, checks) = score_copy_parts("stuff", "", "", "", "");
+        assert_eq!(checks.len(), 8, "eight documented rules");
+        assert!(checks.iter().all(|(label, _)| !label.is_empty()));
+
+        let passed = checks.iter().filter(|(_, ok)| *ok).count();
+        assert_eq!(score as usize, (passed * 100) / checks.len());
+    }
+
+    #[test]
+    fn power_words_and_imperative_calls_to_action_are_recognised() {
+        assert!(is_power_word("Free,"));
+        assert!(is_power_word("INSTANT"));
+        assert!(!is_power_word("newsletter")); // must not match on a substring
+
+        assert!(is_imperative_cta("Get instant access"));
+        assert!(is_imperative_cta("  download now"));
+        assert!(!is_imperative_cta("Click Here")); // a label, not an instruction
+    }
 }

@@ -198,8 +198,57 @@ fn show_list(app: &mut DpfApp, ui: &mut Ui) {
 }
 
 fn show_calendar(app: &mut DpfApp, ui: &mut Ui) {
-    ui.label("Calendar view - scheduled drops and deadlines");
-    // TODO: Implement calendar view
+    ui.label("Calendar view — scheduled drops and deadlines");
+    ui.separator();
+
+    // Built from real dated data rather than the TODO that used to sit here: scheduled tasks
+    // (by their next run) and products that have reached Review or Listed.
+    let mut entries: Vec<(chrono::DateTime<chrono::Utc>, String, String)> = Vec::new();
+
+    for task in app.scheduler.tasks() {
+        if let Some(next_run) = task.next_run {
+            entries.push((
+                next_run,
+                if task.enabled { "scheduled" } else { "paused" }.to_string(),
+                task.name.clone(),
+            ));
+        }
+    }
+
+    for idea in &app.pipeline.ideas {
+        if matches!(
+            idea.stage,
+            crate::pipeline::PipelineStage::Review | crate::pipeline::PipelineStage::Listed
+        ) {
+            entries.push((
+                idea.updated_at,
+                format!("{:?}", idea.stage).to_lowercase(),
+                idea.title.clone(),
+            ));
+        }
+    }
+
+    if entries.is_empty() {
+        ui.label(
+            "Nothing on the calendar yet. Add a task in the Scheduler tab, or move a product \
+             into Review.",
+        );
+        return;
+    }
+
+    entries.sort_by_key(|(when, _, _)| *when);
+
+    let mut current_day: Option<String> = None;
+    for (when, kind, what) in entries {
+        let day = when.format("%A %d %B %Y").to_string();
+        if current_day.as_deref() != Some(day.as_str()) {
+            ui.add_space(6.0);
+            ui.label(RichText::new(&day).strong());
+            current_day = Some(day);
+        }
+        ui.label(format!("    {} — {}", when.format("%H:%M"), what));
+        ui.label(RichText::new(format!("        {}", kind)).size(11.0).weak());
+    }
 }
 
 fn show_new_idea_dialog(app: &mut DpfApp, ctx: &Context) {

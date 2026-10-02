@@ -230,16 +230,31 @@ fn show_advert_editor(ui: &mut Ui, advert: &mut Advert) {
         // ── Status & Score ──────────────────────────────────────────
         ui.separator();
         ui.horizontal(|ui| {
-            ui.label(format!("Conversion Score: {}/100", advert.conversion_score));
-            if ui.button("🔄 Re-score").clicked() {
-                // Placeholder — real scoring would use AI
-                use rand::Rng;
-                let mut rng = rand::thread_rng();
-                advert.conversion_score = rng.gen_range(55..98) as u8;
+            ui.label(format!("Copy checklist score: {}/100", advert.conversion_score));
+            if ui.button("🔄 Re-score from content").clicked() {
+                let (score, _) = advert.score_copy();
+                advert.conversion_score = score;
             }
             if ui.button("✅ Mark Approved").clicked() {
                 advert.status = AdvertStatus::Approved;
             }
         });
+
+        // Show WHY the score is what it is. The previous button invented a random number with no
+        // explanation at all, so the user had no way to tell it meant nothing.
+        let (_, checks) = advert.score_copy();
+        ui.label(
+            RichText::new("Scored from the copy above — a checklist, not a prediction of performance.")
+                .size(11.0)
+                .weak(),
+        );
+        for (label, passed) in &checks {
+            let (mark, colour) = if *passed {
+                ("✔", Color32::from_rgb(120, 210, 140))
+            } else {
+                ("✖", Color32::from_rgb(230, 150, 90))
+            };
+            ui.colored_label(colour, format!("{} {}", mark, label));
+        }
     });
 }
