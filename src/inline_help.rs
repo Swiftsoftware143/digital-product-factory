@@ -33,7 +33,7 @@ pub fn all_topics() -> Vec<HelpTopic> {
         HelpTopic {
             id: "create",
             title: "Create Products",
-            body: "Select from 20+ product templates. Each has editable parameters and optimized AI prompts. Configure, generate, review, export or save to pipeline.",
+            body: "Select from 12 ready-made product templates. Each has its own editable parameters and an optimised AI prompt. Pick one, fill in the parameters, preview the prompt, then generate.",
             tier: "personal",
         },
         HelpTopic {
@@ -63,8 +63,8 @@ pub fn all_topics() -> Vec<HelpTopic> {
         HelpTopic {
             id: "presets",
             title: "Industry Presets",
-            body: "9 pre-configured workflows for different business models. Each includes stages, actions, and tips. (Team+ feature)",
-            tier: "team",
+            body: "9 pre-configured workflows for different business models. Each includes stages, actions, and tips. Loading a preset fills your pipeline with the right starting ideas.",
+            tier: "personal",
         },
         HelpTopic {
             id: "contracts",
@@ -117,25 +117,25 @@ pub fn all_topics() -> Vec<HelpTopic> {
         HelpTopic {
             id: "export",
             title: "Export",
-            body: "Export in 7 formats: Markdown, HTML, PDF, DOCX, XLSX, JSON, ZIP. Single, batch, or bundle export.",
+            body: "Exports to Markdown, HTML, JSON and ZIP (real files). PDF, DOCX and XLSX are not wired up yet: PDF currently writes a print-ready HTML file, DOCX writes a Markdown file, and XLSX writes a CSV. Open those and print or re-save if you need the real format.",
             tier: "personal",
         },
         HelpTopic {
             id: "license",
-            title: "License & Upgrades",
-            body: "Click license status in bottom bar. Tiers: Personal (1 device), Team (5), Agency (20), Enterprise (unlimited). Enter key to activate.",
+            title: "Licence & Tiers",
+            body: "Click the 🔑 Licence button at the bottom of the sidebar. Your current tier is shown under the app name. Tiers: Personal (free, 1 seat), Team ($29/mo, 5 seats), Agency ($99/mo, 20 seats), Enterprise ($299/mo, unlimited). Anything your tier does not include shows a 🔒 and cannot be opened.",
             tier: "personal",
         },
         HelpTopic {
-            id: "license_upgrade",
-            title: "Upgrade Your License",
-            body: "An Upgrade button appears if a higher tier is available. Purchase, receive new key, enter it to unlock features immediately.",
+            id: "license_activate",
+            title: "Activating a Licence",
+            body: "Click 🔑 Licence, paste your key in the form DPF-TIER-XXXXXXXX-CCCC (for example DPF-TEAM-DEMO1234-2P7A) and press Activate. Activation is saved, so it survives restarting the app. If a key is rejected the reason is shown under the box — a mistyped character is the usual cause.",
             tier: "personal",
         },
         HelpTopic {
             id: "settings",
             title: "Settings",
-            body: "Configure API keys (OpenAI, Anthropic, Google), toggle auto-save and dark mode, set safety limits.",
+            body: "Enter your own AI provider keys here — all five providers are configured in Settings: OpenAI, Anthropic (Claude), Google (Gemini), DeepSeek and Moonshot. Fields are masked on screen. You also set safety limits here.",
             tier: "personal",
         },
         HelpTopic {
@@ -155,6 +155,78 @@ pub fn all_topics() -> Vec<HelpTopic> {
             title: "Version History",
             body: "Each variant tracks versions. Click the clipboard icon to view history. You can view old versions in read-only mode or restore them as the current version.",
             tier: "personal",
+        },
+        HelpTopic {
+            id: "byok",
+            title: "Bring Your Own Key (BYOK)",
+            body: "This app does not sell or bundle AI credits. You bring your OWN API key from a provider you already pay, and generation is billed by that provider directly at their rate. Open ⚙ Settings at the bottom of the sidebar and paste your key. Five providers are supported: OpenAI, Anthropic (Claude), Google (Gemini), DeepSeek and Moonshot. You only need one to start. Your keys are stored locally on your own machine and are masked on screen. Nothing is routed through us.",
+            tier: "personal",
+        },
+        HelpTopic {
+            id: "byok_which",
+            title: "Which AI Provider Should I Use?",
+            body: "Any of the five works. DeepSeek and Moonshot are usually the cheapest for bulk content; OpenAI and Anthropic tend to be strongest on long-form writing; Google is a good all-rounder. You can paste several keys and the app picks a sensible model per task. Check your provider's current pricing before generating large batches.",
+            tier: "personal",
+        },
+        HelpTopic {
+            id: "templates",
+            title: "Templates Catalogue",
+            body: "Browse every template the app ships: name, description, category, tags, trending score and output format. Filter by category to narrow the list, then jump to Create to generate from the one you picked.",
+            tier: "personal",
+        },
+        HelpTopic {
+            id: "logo_generator",
+            title: "Logo Generator",
+            body: "Give a brand name, optional tagline, a hex colour palette and an icon description, then pick one of 7 styles (Minimal, Modern, Vintage, Playful, Corporate, Tech, HandDrawn). The AI returns three SVGs per logo: the icon, the typography, and the two combined. Preview updates live and saving persists the logo in your library. Tick Favicon Package to also export 16/32/48/192/512 PNGs, an .ico, an apple-touch-icon and a site.webmanifest into a folder you choose. (Team+ feature)",
+            tier: "team",
+        },
+        HelpTopic {
+            id: "vector_generator",
+            title: "Vector Generator",
+            body: "Describe the asset you want and pick a category: Icon, Illustration, Badge, Pattern, Decorative, Infographic or UI Element. Optionally add a style and a hex palette. The AI returns an SVG plus its palette and viewBox, previewed live. Saved vectors persist in your library, and you can export either SVG or a 512x512 PNG. (Team+ feature)",
+            tier: "team",
+        },
+        HelpTopic {
+            id: "adverts",
+            title: "Adverts & Campaigns",
+            body: "Build ad campaigns against your pipeline products. Write copy with a framework (PAS, AIDA or BAB), render the advert at several aspect ratios (including square 1080x1080, story 1080x1920 and landscape 1200x628), and score the result for conversion. Export a single advert or the whole campaign as JSON. (Team+ feature)",
+            tier: "team",
+        },
+        HelpTopic {
+            id: "mockup",
+            title: "Mockup Compositor",
+            body: "Drop a product onto a mockup and export the composite as PNG or JPG. Useful for marketplace thumbnails and listing images. (Team+ feature)",
+            tier: "team",
+        },
+        HelpTopic {
+            id: "assets",
+            title: "Asset Library",
+            body: "One place for every file your products have generated. Search by name, tag or format, and each asset keeps a version history so you can roll back to an earlier version. (Team+ feature)",
+            tier: "team",
+        },
+        HelpTopic {
+            id: "webhooks",
+            title: "Webhooks — not yet available",
+            body: "The Webhooks tab is a placeholder: the interface reports a running listener, but no web server is actually started in this build, so nothing can connect to it. Do not rely on it. This is a known gap, not a configuration problem on your side.",
+            tier: "team",
+        },
+        HelpTopic {
+            id: "qc",
+            title: "QC Checklist",
+            body: "Run the pre-publish quality checklist on a product: duplicate detection, required-field checks and marketplace format validation (for example Etsy's tag count and title length). Catch rejections before you list. (Team+ feature)",
+            tier: "team",
+        },
+        HelpTopic {
+            id: "compliance",
+            title: "Compliance Scanner",
+            body: "Scan generated copy for AI-disclosure requirements and protected terms. The protected-term list ships with sensible defaults and can be edited. (Agency+ feature)",
+            tier: "agency",
+        },
+        HelpTopic {
+            id: "admin",
+            title: "Admin Panel",
+            body: "Edit the tier/feature map, pricing, marketplace format rules and the key revocation list, and inspect the licence state. This is where you change what each plan unlocks without rebuilding the app. (Enterprise feature)",
+            tier: "enterprise",
         },
     ]
 }

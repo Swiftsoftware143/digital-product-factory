@@ -2,18 +2,21 @@
 
 ## Table of Contents
 1. [Getting Started](#getting-started)
-2. [Industry Presets](#industry-presets)
-3. [The Pipeline](#the-pipeline)
-4. [Creating Products](#creating-products)
-5. [Market Research](#market-research)
-6. [Contract Generator](#contract-generator)
-7. [Bundles](#bundles)
-8. [Scheduler](#scheduler)
-9. [Exporting](#exporting)
-10. [Settings](#settings)
-11. [Adverts & Campaign Suite](#adverts--campaign-suite)
-12. [License Management](#license-management)
-13. [Workflow Examples](#workflow-examples)
+2. [Bring Your Own Key (BYOK)](#bring-your-own-key-byok)
+3. [Industry Presets](#industry-presets)
+4. [The Pipeline](#the-pipeline)
+5. [Creating Products](#creating-products)
+6. [Market Research](#market-research)
+7. [Contract Generator](#contract-generator)
+8. [Bundles](#bundles)
+9. [Scheduler](#scheduler)
+10. [Exporting](#exporting)
+11. [Settings](#settings)
+12. [Logo Generator](#logo-generator)
+13. [Vector Generator](#vector-generator)
+14. [Adverts & Campaign Suite](#adverts--campaign-suite)
+15. [Licence & Activation](#licence--activation)
+16. [Workflow Examples](#workflow-examples)
 
 ---
 
@@ -37,13 +40,45 @@ On first launch, you'll see:
 
 ### Initial Setup
 
-1. Click **Settings** (⚙️ icon in top right)
-2. Add your API keys:
+1. Click **⚙ Settings** — the button at the **bottom of the left sidebar** (there is no top-right settings icon).
+2. Add your own API keys. The app ships with **no AI credits**; you bring your own keys (see [Bring Your Own Key (BYOK)](#bring-your-own-key-byok)):
    - OpenAI API key (for GPT-4o, GPT-3.5)
    - Anthropic API key (for Claude)
    - Google API key (for Gemini)
+   - DeepSeek API key (for DeepSeek Chat)
+   - Moonshot API key (for Moonshot v1)
+   All five fields are **masked** on screen and stored locally in the app's own config on your machine.
 3. Configure preferences (auto-save, dark mode)
 4. Click **Save**
+
+---
+
+## Bring Your Own Key (BYOK)
+
+Digital Product Factory does **not** include AI credits, and there is no shared key pool. You bring your own API keys — your generation runs on your own provider account, billed by that provider at their rates.
+
+### Where to Enter Keys
+
+All five providers are entered in **⚙ Settings** (the button at the bottom of the left sidebar). Settings is the **complete** surface for all five:
+
+- **OpenAI**
+- **Anthropic** (Claude)
+- **Google** (Gemini)
+- **DeepSeek**
+- **Moonshot**
+
+Every key field is **masked** on screen. Keys are stored locally on your own machine in the app's config.
+
+### How It Works
+
+- There are **no shared keys**, **no proxy**, and **no markup** on your usage.
+- Nothing is sent anywhere except **directly to the provider you chose** for a given task.
+- The app picks a sensible model per task from whichever providers you've configured (see [AI Models](#ai-models)).
+- Check your provider's pricing before generating at volume — cost and rate limits are entirely between you and your provider.
+
+### Minimum to Get Started
+
+You need **at least one** API key configured to use Create / AI generation. Add keys in **⚙ Settings**, then go to the Create tab (see [Creating Products](#creating-products)).
 
 ---
 
@@ -119,7 +154,7 @@ Industry Presets are pre-configured workflows designed for specific business mod
 - **Content Creation**: Generate scripts, workbooks, and assessments
 - **Legal Protection**: Terms of service, enrollment agreements, refund policies
 - **Drip Scheduling**: Release content on schedule to reduce overwhelm
-- **Student Materials**: Export PDF workbooks, guides, and resources
+- **Student Materials**: Export workbooks, guides, and resources (open the HTML export and print to PDF for a PDF copy)
 
 **How to Use:**
 1. Load the E-Learning preset
@@ -197,7 +232,7 @@ Industry Presets are pre-configured workflows designed for specific business mod
 **Benefits:**
 - **Trend Research**: Identify hot topics and validate demand
 - **Rapid Creation**: AI-generated content and designs
-- **Multi-Format Export**: PDF, DOCX, XLSX, ZIP for various platforms
+- **Multi-Format Export**: Markdown, HTML, JSON, ZIP (see [Exporting](#exporting) for exactly which formats are real today)
 - **License Protection**: Terms of use and usage rights
 - **Bundle Strategy**: Package related products for higher order value
 
@@ -363,18 +398,15 @@ The Dashboard shows:
 
 ### Selecting a Template
 
-1. Go to **Create** tab
-2. Browse templates by category:
-   - **Planners**: Daily, weekly, monthly planners
-   - **Journals**: Gratitude, fitness, travel journals
-   - **Spreadsheets**: Budget trackers, calculators
-   - **Guides**: How-to guides, workbooks
-   - **Legal**: Contracts, agreements
-3. Click **Select** on desired template
+1. Go to the **Create** tab.
+2. Pick a category filter, or just scroll the template catalogue.
+3. Click **Select** on the template you want.
 
 ### Built-in Templates
 
-#### Classic Templates
+The catalogue ships **12 ready templates**. The template *categories* shown in the filter are broader than the number of populated templates, so some categories may be sparse or empty.
+
+#### Core Templates
 
 | Template | Best For | Output |
 |----------|----------|--------|
@@ -396,6 +428,8 @@ The Dashboard shows:
 | **Printables & Planners** | Printables | Printable planners, trackers, and organizers |
 | **Print-on-Demand Designs** | POD Designs | AI designs for mugs, shirts, hoodies, and POD products |
 
+> The **Output** column is the format a template's content is written for. See [Exporting](#exporting) for which formats the exporter can produce for real today.
+
 ### Template Categories
 
 Templates are organized by category:
@@ -412,6 +446,10 @@ Templates are organized by category:
 - **Notion Templates**: Productivity systems
 - **Printables**: Planners and trackers
 - **POD Designs**: Print-on-demand graphics
+
+### The Templates Tab
+
+The **Templates** tab in the sidebar is a real browsable catalogue. It lists every template with its name, description, category, tags, and trending score (🔥), sorted by trending. You can filter the list and choose an output format to export from there as well.
 
 ### Configuring Parameters
 
@@ -431,16 +469,21 @@ Each template has customizable parameters:
 
 ### Generating
 
-1. Fill all required fields (marked with red *)
-2. Click **Preview Prompt** to see the AI prompt
-3. Click **⚡ Generate Product**
-4. Wait for generation (typically 5-30 seconds)
-5. Review the output
-6. Export or save to pipeline
+Generation uses your own provider keys — you need **at least one API key** configured in **⚙ Settings** first (see [Bring Your Own Key (BYOK)](#bring-your-own-key-byok)).
+
+1. Pick a category filter or scroll the catalogue, and click **Select** on a template.
+2. Fill in the parameter form. Only the fields that template actually needs are shown.
+3. Optionally click **Preview Prompt** to see the exact prompt that will be sent to the model.
+4. Click **⚡ Generate Product**.
+5. Wait for the result (typically 5-30 seconds).
+6. The result shows the **model used** and the generated content. A status line reports any errors.
+7. Export the result, or save it to your pipeline.
+
+If a required parameter is blank, the app tells you before spending a request. If no API key is configured, the Create tab prompts you to add one in Settings.
 
 ### AI Models
 
-The system automatically selects the best AI model:
+The model list is whatever **your own provider account exposes** — the app doesn't ship or proxy models. For each task it picks a sensible model from the keys you've configured. A representative mapping:
 
 | Task | Model | Provider |
 |------|-------|----------|
@@ -451,7 +494,7 @@ The system automatically selects the best AI model:
 | Chinese content | Moonshot v1 | Moonshot |
 | Quick tasks | GPT-3.5 | OpenAI |
 
-**API keys required:** OpenAI, Anthropic, Google, DeepSeek, Moonshot — configure all in Settings (⚙️).
+**API keys required:** OpenAI, Anthropic, Google, DeepSeek, Moonshot — all five are configured in **⚙ Settings** (see [Bring Your Own Key (BYOK)](#bring-your-own-key-byok)). The exact model names available depend on your provider account.
 
 ### AI Prompt Templates
 
@@ -461,7 +504,7 @@ Each template includes optimized AI prompts with:
 - **Output specifications**: Format, resolution, use case
 - **Time estimates**: Most products take ~1 day/month to maintain
 
-Example prompts are shown in the template details and can be copied for use with your preferred AI image generator.
+Click **Preview Prompt** in the Create tab to see the exact prompt a template will send, and copy it if you want to reuse it in another tool.
 
 ---
 
@@ -588,6 +631,8 @@ Always have a lawyer review before signing.
 
 ### Auto-Bundle Strategies
 
+The three auto-strategies below run for real, alongside the manual builder and bundle statistics. Bundles require a **Team** or higher licence.
+
 **By Category:**
 Groups products by type (all planners, all journals, etc.)
 - Best for: Themed collections
@@ -688,15 +733,19 @@ For each bundle:
 
 ### Export Formats
 
-| Format | Best For | Extension |
-|--------|----------|-----------|
-| **Markdown** | Raw content, editing | .md |
-| **HTML** | Web publishing, preview | .html |
-| **PDF** | Final distribution | .pdf |
-| **DOCX** | Microsoft Word users | .docx |
-| **XLSX** | Spreadsheets, trackers | .xlsx |
-| **JSON** | Data interchange | .json |
-| **ZIP** | Multiple products | .zip |
+The exporter offers **seven** formats, but only **four** produce real files today. The other three are placeholders — here's exactly what you get:
+
+| Format | Status | What you actually get |
+|--------|--------|------------------------|
+| **Markdown** | ✅ Real | A `.md` file |
+| **HTML** | ✅ Real | A `.html` file |
+| **JSON** | ✅ Real | A `.json` file |
+| **ZIP** | ✅ Real | A `.zip` archive (multiple products) |
+| **PDF** | ⚠️ Placeholder | A print-ready **HTML** file you can open and print to PDF |
+| **DOCX** | ⚠️ Placeholder | A **Markdown** file named `….docx.md` |
+| **XLSX** | ⚠️ Placeholder | A **CSV** file |
+
+**If you need PDF, DOCX, or XLSX today:** open the HTML file and print to PDF, or open the CSV/Markdown and re-save from Word or Excel. Proper PDF, DOCX, and XLSX export is planned.
 
 ### Exporting Single Product
 
@@ -727,6 +776,8 @@ Select multiple products in pipeline:
 ## Settings
 
 ### API Configuration
+
+**This is the complete place to enter all five provider keys.** Every field is **masked** on screen, and keys are stored locally in the app's own config on your machine — there are no shared keys and no proxy (see [Bring Your Own Key (BYOK)](#bring-your-own-key-byok)).
 
 **OpenAI:**
 - Get key: https://platform.openai.com/api-keys
@@ -764,6 +815,66 @@ These prevent API overuse and platform bans.
 - **Max concurrent tasks**: Limit parallel operations
 - **Cache size**: Database cache in MB
 
+
+---
+
+## Logo Generator
+
+Create production-ready logos as SVG. Requires a **Team** or higher licence.
+
+### What It Produces
+
+For each logo it generates **3 SVGs** — an icon, a typography lockup, and a combined mark — across **7 styles**:
+
+- Minimal
+- Modern
+- Vintage
+- Playful
+- Corporate
+- Tech
+- HandDrawn
+
+### Generating a Logo
+
+1. Go to the **🎨 Logo Generator** tab in the sidebar (under Library).
+2. Enter the **brand name** and an optional **tagline**.
+3. Set a **hex colour palette** and an **icon description**.
+4. Preview updates live as you adjust the inputs.
+5. Generate — the logo **saves to your library** and persists across restarts.
+
+### Favicon Package
+
+You can also produce a **Favicon Package** into a folder you choose. It contains:
+
+- PNG icons at **16, 32, 48, 192, and 512** px
+- `favicon.ico`
+- `apple-touch-icon.png`
+- `site.webmanifest`
+
+---
+
+## Vector Generator
+
+Generate reusable SVG vector assets. Requires a **Team** or higher licence.
+
+### What It Produces
+
+SVG assets across **7 categories**:
+
+- Icon
+- Illustration
+- Badge
+- Pattern
+- Decorative
+- Infographic
+- UI Element
+
+### Generating and Exporting
+
+1. Go to the **📐 Vector Generator** tab in the sidebar (under Library).
+2. Pick a category and describe the asset.
+3. Generate — the asset **saves to your library** and persists across restarts.
+4. Export as **SVG** or **PNG (512×512)**.
 
 ---
 
@@ -893,33 +1004,38 @@ The **Preview** view renders a canvas representation of each ad:
 - **Brand Identity consistency** — Use the same brand colors/voice across all adverts in a campaign
 - **Export first, then use external tools** — JSON export feeds into Canva, Figma, or Photoshop for final pixel-perfect rendering
 
-## License Management
+## Licence & Activation
+
+The app is free to use on the **Personal** tier. Paid tiers unlock more seats and modules.
 
 ### Tiers
 
-| Tier | Devices | Features | Price |
-|------|---------|----------|-------|
-| **Personal** | 1 | Basic generation | $49-99 |
-| **Team** | 5 | +Scheduler, Pinterest | $149-299 |
-| **Agency** | 20 | +White-label, Client mgmt | $499-999 |
-| **Enterprise** | Unlimited | +API, Custom dev | $1999+ |
+| Tier | Seats | Unlocks | Price |
+|------|-------|---------|-------|
+| **Personal (Free)** | 1 | Pipeline, Create / AI generation, Templates, Market Research, Contract Generator, Export, Presets, Variants | Free |
+| **Team** | 5 | Everything in Personal, plus Analytics, Publishing, Bundles, Scheduler, Adverts, QC Checklist, Asset Library, Webhooks, Mockup compositor, Logo Generator, Vector Generator | $29/mo |
+| **Agency** | 20 | Everything in Team, plus Compliance Scanner, Whitelabel, Client Management, Custom Integrations | $99/mo |
+| **Enterprise** | Unlimited | Everything in Agency, plus Admin Panel and API access | $299/mo |
 
-### Activation
+Your current tier is shown in the sidebar underneath the app name.
 
-1. Purchase license from your store
-2. Receive license key (format: XXXX-XXXX-XXXX-XXXX)
-3. Click status bar ("⚠ Unlicensed")
-4. Enter license key
-5. Click **Activate**
+### Activating a Licence
 
-### Device Management
+1. Click **🔑 Licence** — the button at the **bottom of the left sidebar**. This opens the Licence dialog.
+2. Paste your key and press **Activate**.
+3. The key is validated **offline** (this product has no licence server) and saved, so activation survives restarting the app.
 
-View activated devices:
-- Device name
-- Activation date
-- Last used
+The key format is `DPF-TIER-XXXXXXXX-CCCC` — for example `DPF-TEAM-DEMO1234-2P7A`.
 
-Deactivate old devices to free up slots.
+### Locked Modules
+
+Modules your tier doesn't include appear in the sidebar with a **🔒** and cannot be opened. Clicking a locked module tells you which plan unlocks it and opens the Licence dialog. You can also **deactivate** a licence from the Licence dialog to drop back to the free Personal tier.
+
+<!-- TODO (owner): add the real purchase / store URL here before publishing. The guide does not currently contain a live store link. -->
+
+### Device Seats
+
+Each paid tier includes a set number of seats (Personal 1, Team 5, Agency 20, Enterprise unlimited). Deactivate a licence to release its seat before activating it elsewhere.
 
 ---
 
@@ -939,7 +1055,7 @@ Deactivate old devices to free up slots.
    - Review and refine
 
 3. **Export** (5 min):
-   - Export as PDF
+   - Export as HTML, then print to PDF if you need a PDF (see [Exporting](#exporting))
    - Create listing images (Canva/Figma)
 
 4. **Publish** (15 min):
@@ -1176,51 +1292,35 @@ Asset Library requires a **Team** or higher license.
 
 ---
 
-## Webhooks
+## Webhooks — not yet available
 
-Automate workflows by connecting external tools via HTTP webhooks.
+> **This feature is not built yet.** The Webhooks tab exists and, when you press its start button,
+> the interface reports a running server on a port — but **no web server is actually started** in
+> this build. Nothing can connect to it. Do not build any automation against it, and do not treat
+> the "running" indicator as real. This is a known gap in the app, not a setting you have got wrong.
 
-### How It Works
+### What is planned
 
-The app runs a lightweight HTTP server on a local port (default: 9823). External tools can send POST requests to trigger actions.
-
-### Available Endpoints
+When it is implemented, the intent is a small local HTTP endpoint so external tools can trigger a
+generation run without opening the app, roughly:
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/generate` | POST | Trigger product generation with JSON payload |
-| `/status` | GET | Check if webhook server is running |
-| `/schema` | GET | Get JSON schema for the generate endpoint |
+| `/generate` | POST | Trigger product generation with a JSON payload |
+| `/status` | GET | Report whether the server is running |
+| `/schema` | GET | Return the JSON schema for the generate endpoint |
 
-### Generate Request Format
+The server would bind to **localhost only**, so it is never exposed to your network.
 
-```json
-{
-  "template_id": "daily-planner",
-  "name": "My Product",
-  "params": {
-    "color_scheme": "pastel",
-    "page_count": 30
-  },
-  "model": "gpt-4o"
-}
-```
+### What to do instead, today
 
-### Starting the Server
+Use the app's own automation that *is* implemented: the **Scheduler** tab can run generation,
+publishing and research on a recurring basis, and **Publishing** pushes to your connected
+marketplaces directly. If you need to drive the app from outside, do it through the user interface
+until this section is replaced with real instructions.
 
-1. Go to **Webhooks** tab in the sidebar
-2. Set the port (default 9823)
-3. Click **Start Webhook**
-4. The server starts and shows **running** status
-5. Send POST requests from your automation tools
-
-### Security
-
-The webhook server binds to **localhost only** — not exposed to your network. Keep the port closed in your firewall.
-
-### Team+ Feature
-
-Webhooks require a **Team** or higher license.
+Webhooks are intended to be a **Team** or higher feature. Until they ship, nothing is charged for
+them.
 
 ---
 
@@ -1340,11 +1440,11 @@ Click **Export CSV** to export the full sales ledger as a CSV file. Opens in Exc
 
 ### Team+ Feature
 
-Analytics requires a **Team** or higher license. See License Management for upgrade options.
+Analytics requires a **Team** or higher license. See [Licence & Activation](#licence--activation) for upgrade options.
 
 ---
 
-## Pre-Publish QC Checklist
+## Marketplace Publishing
 
 Publish digital products directly to marketplaces from within the app.
 

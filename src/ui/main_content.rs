@@ -832,35 +832,37 @@ fn show_webhooks(app: &mut DpfApp, ctx: &Context) {
 
         ui.group(|ui| {
             ui.heading("Local HTTP Listener");
-            ui.horizontal(|ui| {
-                ui.label("Port:");
-                ui.text_edit_singleline(&mut app.webhook_port);
-                ui.label("Default: 9823");
+            ui.label(
+                RichText::new("⚠ Not implemented in this build")
+                    .strong()
+                    .color(Color32::from_rgb(240, 180, 80)),
+            );
+            ui.label(
+                "These controls do not start a real server — no socket is bound, so nothing can \
+                 connect and the status below is not reporting a live listener. They are kept here \
+                 as the shape of the planned feature. For automation today use Scheduler and \
+                 Publishing, which are implemented.",
+            );
+            ui.add_space(4.0);
+
+            // Deliberately disabled: previously these buttons reported "listening on localhost"
+            // while binding nothing, which was a false capability claim.
+            ui.add_enabled_ui(false, |ui| {
+                ui.horizontal(|ui| {
+                    ui.label("Port:");
+                    ui.text_edit_singleline(&mut app.webhook_port);
+                    ui.label("Default: 9823");
+                });
+                ui.horizontal(|ui| {
+                    let _ = ui.button("Start Webhook");
+                    let _ = ui.button("Stop");
+                });
             });
 
-            ui.horizontal(|ui| {
-                let is_running = app.webhook_state.is_running();
-                let status = if is_running { "🟢 Running" } else { "🔴 Stopped" };
-                ui.label(format!("Status: {}", status));
-            });
-
-            ui.horizontal(|ui| {
-                if ui.button("Start Webhook").clicked() {
-                    let port: u16 = app.webhook_port.parse().unwrap_or(9823);
-                    app.webhook_state = crate::webhook::WebhookState::new(true, port);
-                    app.webhook_state.running.store(true, std::sync::atomic::Ordering::Relaxed);
-                    app.webhook_status_message = format!("Webhook listening on localhost:{}", port);
-                }
-                if ui.button("Stop").clicked() {
-                    app.webhook_state.running.store(false, std::sync::atomic::Ordering::Relaxed);
-                    app.webhook_state.enabled = false;
-                    app.webhook_status_message = "Webhook stopped.".into();
-                }
-            });
-
-            if !app.webhook_status_message.is_empty() {
-                ui.colored_label(Color32::YELLOW, &app.webhook_status_message);
-            }
+            ui.label(
+                RichText::new("Status: 🔴 Not running")
+                    .color(Color32::from_rgb(220, 120, 120)),
+            );
         });
 
         ui.separator();
