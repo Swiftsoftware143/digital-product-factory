@@ -146,6 +146,8 @@ pub struct DpfApp {
     pub client_editing: Option<usize>,
     pub client_search: String,
     pub client_status_message: Option<(bool, String)>,
+    /// Throttles the scheduler check; the UI loop runs far faster than once a second.
+    pub last_scheduler_tick: std::time::Instant,
     pub denylist_scanner: DenylistScanner,
     pub disclosure_rules: Vec<AiDisclosureRule>,
     // -- UI State ----------------------------------------------------
@@ -305,6 +307,7 @@ impl DpfApp {
             client_editing: None,
             client_search: String::new(),
             client_status_message: None,
+            last_scheduler_tick: std::time::Instant::now(),
             publish_target: String::new(),
             publish_price: 9.99,
             pending_publish: None,
@@ -345,6 +348,105 @@ impl DpfApp {
             && self.config.deepseek_key.trim().is_empty()
             && self.config.moonshot_key.trim().is_empty()
     }
+
+    /// Drive the scheduler from the UI loop.
+    ///
+    /// This runs here rather than on a background thread because carrying out a task needs the
+    /// real modules — generator, pipeline, database — which live on the app. The thread this
+    /// replaced was handed only the database and its body did nothing at all, so no scheduled
+    /// task ever ran while every one of them reported success.
+    fn tick_scheduler(&mut self, ctx: &egui::Context) {
+        if !self.scheduler.is_running() {
+            return;
+        }
+
+        // Once a second is plenty; the UI loop runs far faster than that.
+        let now = std::time::Instant::now();
+        if now.duration_since(self.last_scheduler_tick).as_secs() < 1 {
+            return;
+        }
+        self.last_scheduler_tick = now;
+
+        for task in self.scheduler.due_tasks() {
+            let outcome = self.execute_scheduled_task(&task);
+            self.scheduler.record_run(task.id, outcome);
+            ctx.request_repaint();
+        }
+    }
+
+    /// Carry out one scheduled task for real.
+    ///
+    /// Anything not implemented returns Err **on purpose**: a task that shows FAILED with a
+    /// reason is honest, whereas the previous code printed a line and reported COMPLETED while
+    /// doing nothing whatsoever.
+    fn execute_scheduled_task(
+        &mut self,
+        task: &crate::scheduler::ScheduledTask,
+    ) -> Result<(), String> {
+        use crate::scheduler::TaskType;
+
+        match &task.task_type {
+            TaskType::GenerateProduct { template_id, params } => {
+                let product = self.generator.generate_blocking(template_id, params.clone())?;
+
+                let idea = ProductIdea {
+                    id: 0,
+                    title: product.name.clone(),
+                    description: format!("Generated on schedule from template '{}'.", template_id),
+                    stage: PipelineStage::Review,
+                    product_type: template_id.clone(),
+                    created_at: chrono::Utc::now(),
+                    updated_at: chrono::Utc::now(),
+                    priority: crate::pipeline::Priority::Medium,
+                    tags: vec!["scheduled".to_string()],
+                    estimated_value: 0.0,
+                    actual_value: Some(0.0),
+                    notes: format!(
+                        "Scheduled run · {} · {} tokens · {} ms",
+                        product.metadata.model_used,
+                        product.metadata.tokens_used,
+                        product.metadata.generation_time_ms
+                    ),
+                    platform: Vec::new(),
+                };
+                self.pipeline.add_idea(&self.db, idea);
+                Ok(())
+            }
+
+            TaskType::BackupData => {
+                let src = std::path::Path::new("dpf_data.db");
+                if !src.exists() {
+                    return Err("There is no database file to back up yet.".to_string());
+                }
+                let dir = std::path::Path::new("backups");
+                std::fs::create_dir_all(dir)
+                    .map_err(|e| format!("Could not create the backups folder: {e}"))?;
+                let stamp = chrono::Utc::now().format("%Y%m%d-%H%M%S");
+                let dest = dir.join(format!("dpf_data-{stamp}.db"));
+                std::fs::copy(src, &dest).map_err(|e| format!("Backup failed: {e}"))?;
+                Ok(())
+            }
+
+            other => Err(format!(
+                "{} is not implemented yet, so this task cannot run. It will keep reporting \
+                 failure until it is built — it is NOT silently doing nothing.",
+                task_kind_name(other)
+            )),
+        }
+    }
+}
+
+/// Human-readable name for a task type, used in failure messages.
+fn task_kind_name(t: &crate::scheduler::TaskType) -> &'static str {
+    use crate::scheduler::TaskType;
+    match t {
+        TaskType::GenerateProduct { .. } => "Scheduled product generation",
+        TaskType::PublishProduct { .. } => "Scheduled publishing",
+        TaskType::ResearchMarket { .. } => "Scheduled market research",
+        TaskType::CreateBundle { .. } => "Scheduled bundle creation",
+        TaskType::PinterestPin { .. } => "Scheduled Pinterest pinning",
+        TaskType::BackupData => "Scheduled backup",
+    }
 }
 
 impl eframe::App for DpfApp {
@@ -368,6 +470,11 @@ impl eframe::App for DpfApp {
         });
 
         ctx.request_repaint_after(std::time::Duration::from_millis(16));
+
+        // Scheduler: fire any task whose time has come. Doing this from the UI loop (rather than
+        // the do-nothing background thread this replaced) means tasks run against the real
+        // modules and their status reflects what actually happened.
+        self.tick_scheduler(ctx);
 
         if let Some((product_name, platform, price)) = self.pending_publish.take() {
             let product_id = self.pipeline.ideas.iter()

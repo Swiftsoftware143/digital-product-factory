@@ -17,11 +17,16 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
         ui.heading("Create Product");
         ui.separator();
 
-        // Check if API keys are configured
-        if app.config.openai_key.is_empty() && app.config.anthropic_key.is_empty() {
+        // Must match EVERY provider we support. This previously tested only the OpenAI and
+        // Anthropic keys, so a user whose only key was Google, DeepSeek or Moonshot was told
+        // "API Keys Required" and blocked from generating — with no way to understand why.
+        if app.has_no_api_key() {
             ui.group(|ui| {
-                ui.label(RichText::new("⚠️ API Keys Required").color(Color32::YELLOW));
-                ui.label("Please configure your API keys in Settings to generate products.");
+                ui.label(RichText::new("⚠️ API Key Required").color(Color32::YELLOW));
+                ui.label(
+                    "Open ⚙ Settings and paste a key from any one provider — OpenAI, Anthropic, \
+                     Google, DeepSeek or Moonshot — to start generating products.",
+                );
                 if ui.button("Open Settings").clicked() {
                     app.show_settings = true;
                 }

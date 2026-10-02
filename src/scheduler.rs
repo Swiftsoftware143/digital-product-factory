@@ -96,26 +96,60 @@ impl Scheduler {
         &self.tasks
     }
     
+    /// Turn scheduled execution on.
+    ///
+    /// The real work is driven by `DpfApp::tick_scheduler` from the UI loop, NOT by a
+    /// background thread — execution needs the generator, publisher and pipeline, which live on
+    /// the app, not here.
+    ///
+    /// This method used to spawn a thread that slept 60 seconds in a loop and did nothing: its
+    /// body literally read "In production, this would check and execute due tasks. For now, this
+    /// is a placeholder for the scheduling loop." Combined with `run_due_tasks()` having zero
+    /// call sites and `execute_task()` printing a line and returning Ok, every scheduled task
+    /// reported success while nothing whatsoever happened.
     pub fn start(&mut self) {
         self.running = true;
-        
-        // Spawn background thread for scheduling
-        let db = self.db.clone();
-        let runtime = self.runtime.clone();
-        
-        thread::spawn(move || {
-            loop {
-                // Check for due tasks every minute
-                thread::sleep(StdDuration::from_secs(60));
-                
-                // In production, this would check and execute due tasks
-                // For now, this is a placeholder for the scheduling loop
-            }
-        });
     }
-    
+
     pub fn stop(&mut self) {
         self.running = false;
+    }
+
+    pub fn is_running(&self) -> bool {
+        self.running
+    }
+
+    /// Tasks that are enabled and whose time has arrived.
+    ///
+    /// Read-only: it hands the caller a copy and lets the caller decide what to do, because this
+    /// module has no access to the modules that actually do the work.
+    pub fn due_tasks(&self) -> Vec<ScheduledTask> {
+        let now = Utc::now();
+        self.tasks
+            .iter()
+            .filter(|t| {
+                t.enabled
+                    && !matches!(t.status, TaskStatus::Paused | TaskStatus::Running)
+                    && t.next_run.map(|nr| nr <= now).unwrap_or(false)
+            })
+            .cloned()
+            .collect()
+    }
+
+    /// Record the outcome of a run: status, last_run, next occurrence, then persist.
+    pub fn record_run(&mut self, id: usize, result: Result<(), String>) {
+        let now = Utc::now();
+        if let Some(index) = self.tasks.iter().position(|t| t.id == id) {
+            let mut task = self.tasks[index].clone();
+            task.last_run = Some(now);
+            task.status = match result {
+                Ok(()) => TaskStatus::Completed,
+                Err(e) => TaskStatus::Failed(e),
+            };
+            task = self.calculate_next_run(task);
+            self.tasks[index] = task;
+            self.save_tasks();
+        }
     }
     
     fn calculate_next_run(&self, mut task: ScheduledTask) -> ScheduledTask {
@@ -182,73 +216,6 @@ impl Scheduler {
         // Save to database
         for task in &self.tasks {
             self.db.save_scheduled_task(task).ok();
-        }
-    }
-    
-    pub fn run_due_tasks(&mut self) {
-        let now = Utc::now();
-        let due_tasks: Vec<_> = self.tasks.iter_mut()
-            .filter(|t| {
-                t.enabled &&
-                matches!(t.status, TaskStatus::Pending | TaskStatus::Completed | TaskStatus::Failed(_)) &&
-                t.next_run.map(|nr| nr <= now).unwrap_or(false)
-            })
-            .map(|t| t.clone())
-            .collect();
-        
-        for mut task in due_tasks {
-            task.status = TaskStatus::Running;
-            task.last_run = Some(now);
-            
-            // Execute task
-            match self.execute_task(&task) {
-                Ok(_) => {
-                    task.status = TaskStatus::Completed;
-                },
-                Err(e) => {
-                    task.status = TaskStatus::Failed(e);
-                },
-            }
-            
-            // Reschedule if recurring
-            task = self.calculate_next_run(task);
-            
-            // Update in list
-            if let Some(idx) = self.tasks.iter().position(|t| t.id == task.id) {
-                self.tasks[idx] = task;
-            }
-        }
-        
-        self.save_tasks();
-    }
-    
-    fn execute_task(&self, task: &ScheduledTask) -> Result<(), String> {
-        match &task.task_type {
-            TaskType::GenerateProduct { template_id, params } => {
-                println!("Generating product from template: {}", template_id);
-                // Call product generator
-                Ok(())
-            },
-            TaskType::PublishProduct { product_id, platforms } => {
-                println!("Publishing product {} to {:?}", product_id, platforms);
-                Ok(())
-            },
-            TaskType::ResearchMarket { query } => {
-                println!("Researching market for: {}", query);
-                Ok(())
-            },
-            TaskType::CreateBundle { product_ids, name } => {
-                println!("Creating bundle '{}' with {} products", name, product_ids.len());
-                Ok(())
-            },
-            TaskType::PinterestPin { product_id, board } => {
-                println!("Pinning product {} to board {}", product_id, board);
-                Ok(())
-            },
-            TaskType::BackupData => {
-                println!("Backing up data");
-                Ok(())
-            },
         }
     }
 }
