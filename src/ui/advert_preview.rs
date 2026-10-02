@@ -85,7 +85,7 @@ fn render_preview(ui: &mut Ui, advert: &Advert) {
 
             // Aspect ratio guide border
             let border_color = Color32::from_rgb(100, 100, 100);
-            painter.rect_stroke(rect, 0.0, Stroke::new(1.0, border_color));
+            painter.rect_stroke(rect, 0.0, Stroke::new(1.0_f32, border_color));
 
             // Brand name — top area
             if !advert.brand_identity.brand_name.is_empty() {

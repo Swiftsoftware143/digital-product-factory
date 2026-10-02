@@ -156,7 +156,7 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
 fn show_variant_card(app: &mut DpfApp, ui: &mut Ui, variant: &Variant, product_id: usize) {
     Frame::group(ui.style())
         .fill(Color32::from_gray(35))
-        .stroke(Stroke::new(1.0, Color32::from_gray(60)))
+        .stroke(Stroke::new(1.0_f32, Color32::from_gray(60)))
         .show(ui, |ui| {
             ui.set_min_width(ui.available_width());
             ui.horizontal(|ui| {

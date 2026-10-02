@@ -12,7 +12,7 @@ pub fn icon_button(ui: &mut Ui, icon: &str, label: &str) -> Response {
 pub fn card<R>(ui: &mut Ui, content: impl FnOnce(&mut Ui) -> R) -> InnerResponse<R> {
     Frame::group(ui.style())
         .fill(Color32::from_gray(40))
-        .stroke(Stroke::new(1.0, Color32::from_gray(60)))
+        .stroke(Stroke::new(1.0_f32, Color32::from_gray(60)))
         .show(ui, content)
 }
 

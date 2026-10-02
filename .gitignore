@@ -1,3 +1,8 @@
 target/
 C:UsersAdministrator/
 assets/Inter-Regular.ttf
+
+# Runtime state (created on first launch)
+dpf_data.db
+dpf_data.db-shm
+dpf_data.db-wal

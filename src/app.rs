@@ -77,6 +77,41 @@ impl Default for VectorState {
     }
 }
 
+/// State for the Create Product module (template selection + parameter form +
+/// prompt preview + generation result)
+#[derive(Clone)]
+pub struct CreateState {
+    /// id of the template the user has selected (None = nothing selected yet)
+    pub selected_template: Option<String>,
+    /// active category filter, stored as the category's display name
+    /// (None = show all)
+    pub category_filter: Option<String>,
+    /// current value per template parameter name, edited by the parameter form
+    pub param_values: std::collections::HashMap<String, String>,
+    /// result of the last `preview_template` call
+    pub prompt_preview: Option<String>,
+    /// status / error line shown to the user
+    pub status: Option<String>,
+    /// true while a synchronous generation call is in flight
+    pub is_generating: bool,
+    /// most recent successfully generated product
+    pub last_product: Option<crate::product_generator::GeneratedProduct>,
+}
+
+impl Default for CreateState {
+    fn default() -> Self {
+        Self {
+            selected_template: None,
+            category_filter: None,
+            param_values: std::collections::HashMap::new(),
+            prompt_preview: None,
+            status: None,
+            is_generating: false,
+            last_product: None,
+        }
+    }
+}
+
 pub struct DpfApp {
     pub db: Arc<Database>,
     pub runtime: Arc<Runtime>,
@@ -94,6 +129,7 @@ pub struct DpfApp {
     pub analytics: Analytics,
     pub adverts_manager: AdvertsManager,
     pub vector_state: VectorState,
+    pub create_state: CreateState,
     pub publish_manager: PublishManager,
     pub mockup_compositor: MockupCompositor,
     pub variant_manager: VariantManager,
@@ -153,7 +189,7 @@ pub enum Tab {
 
 impl DpfApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        let mut fonts = egui::FontDefinitions::default();
+        let fonts = egui::FontDefinitions::default();
         // REMOVED 2026-10-02 (build-blocker): this was a dead `if false` block that called
         //   egui::FontData::from_static(include_bytes!("../assets/Inter-Regular.ttf"))
         // `include_bytes!` is a COMPILE-TIME macro — the `if false` guard did NOT stop the file
@@ -234,6 +270,7 @@ impl DpfApp {
             asset_library,
             adverts_manager: AdvertsManager::new(),
             vector_state: VectorState::default(),
+            create_state: CreateState::default(),
             denylist_scanner: DenylistScanner::new(),
             disclosure_rules,
             // -- UI State -------------------------------------------
