@@ -117,7 +117,7 @@ pub fn all_topics() -> Vec<HelpTopic> {
         HelpTopic {
             id: "export",
             title: "Export",
-            body: "Exports to Markdown, HTML, JSON and ZIP (real files). PDF, DOCX and XLSX are not wired up yet: PDF currently writes a print-ready HTML file, DOCX writes a Markdown file, and XLSX writes a CSV. Open those and print or re-save if you need the real format.",
+            body: "Seven formats, all real files: Markdown, HTML, PDF, Word (DOCX), Excel (XLSX), JSON and ZIP. PDF is a genuine PDF document you can open in any reader and print directly. DOCX opens in Word with headings, paragraphs and bullet lists preserved. XLSX is a real spreadsheet — any markdown table in the content becomes spreadsheet rows and columns. You can export one product, a batch, or a bundle.",
             tier: "personal",
         },
         HelpTopic {

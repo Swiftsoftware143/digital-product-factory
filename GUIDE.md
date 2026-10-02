@@ -733,19 +733,21 @@ For each bundle:
 
 ### Export Formats
 
-The exporter offers **seven** formats, but only **four** produce real files today. The other three are placeholders — here's exactly what you get:
+The exporter offers **seven** formats and **all seven now produce genuine files**:
 
-| Format | Status | What you actually get |
-|--------|--------|------------------------|
-| **Markdown** | ✅ Real | A `.md` file |
-| **HTML** | ✅ Real | A `.html` file |
-| **JSON** | ✅ Real | A `.json` file |
-| **ZIP** | ✅ Real | A `.zip` archive (multiple products) |
-| **PDF** | ⚠️ Placeholder | A print-ready **HTML** file you can open and print to PDF |
-| **DOCX** | ⚠️ Placeholder | A **Markdown** file named `….docx.md` |
-| **XLSX** | ⚠️ Placeholder | A **CSV** file |
+| Format | What you get |
+|--------|--------------|
+| **Markdown** | A `.md` file |
+| **HTML** | A styled `.html` page |
+| **PDF** | A real PDF document — opens in any reader, prints directly, paginates automatically |
+| **DOCX** | A real Word document — headings, paragraphs and bullet lists preserved |
+| **XLSX** | A real Excel workbook — markdown tables become spreadsheet rows and columns |
+| **JSON** | A `.json` file with the content and metadata |
+| **ZIP** | A `.zip` archive (multiple products) |
 
-**If you need PDF, DOCX, or XLSX today:** open the HTML file and print to PDF, or open the CSV/Markdown and re-save from Word or Excel. Proper PDF, DOCX, and XLSX export is planned.
+**Note on PDF:** it uses a standard built-in font (Helvetica), so accented characters outside that
+character set are substituted. The layout is plain text — headings, paragraphs and lists — rather
+than a designed brochure. For a fully typeset PDF, export to DOCX and print from Word.
 
 ### Exporting Single Product
 

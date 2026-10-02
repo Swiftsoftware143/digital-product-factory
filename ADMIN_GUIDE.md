@@ -319,14 +319,19 @@ The Admin panel is a sidebar tab gated on the `admin_panel` feature, which is
 There is **no database viewer** and no separate “view all generated keys” list — the
 admin panel edits the four JSON config files and the revocation list only.
 
-### Caveat: the Admin panel key generator is not the real minting path
+### The Admin panel key generator is a valid minting path
 
-The Admin panel's **License Keys** section calls `AdminState::generate_key()`, which
-emits a **legacy 5-segment key** of the form
-`DPF-{P|T|A|E}-{RAND4}-{RAND4}-{SUM}` (a hex byte-sum check, not FNV-1a). The current
-activation path requires a **4-segment** `DPF-<TIER>-<BLOCK>-<CCCC>` key and an FNV-1a
-check code, so keys produced by this panel **will not activate**. Mint production keys
-with `/opt/swift/scripts/dpf-mint-license.py` (or `mint_key`) instead.
+The Admin panel's **License Keys** section calls `AdminState::generate_key()`, which delegates to
+`license_manager::mint_key` — the *same* function the activation path validates against. A key
+minted in the panel **will activate**, and carries the same FNV-1a check code as keys from
+`/opt/swift/scripts/dpf-mint-license.py`. All three surfaces (app, Admin panel, minting script)
+share one algorithm; the unit test `admin_panel_key_passes_the_activation_check` mints a key per
+tier through the real admin code path and asserts each one would activate.
+
+> **This was previously broken.** The panel emitted a legacy 5-segment key
+> (`DPF-{P|T|A|E}-{R4}-{R4}-{SUM}`) with a byte-sum check, while activation required a 4-segment
+> `DPF-<TIER>-<BLOCK>-<CCCC>` key with an FNV-1a check code — so **every key the panel produced was
+> dead on arrival**, and it reported success while displaying it. Fixed; the test above is the guard.
 
 ### Provider API keys — the complete surface
 
