@@ -1,4 +1,4 @@
-//! Admin Control Panel View â€” manage licenses, feature flags, pricing, platform formats
+//! Admin Control Panel View — manage licenses, feature flags, pricing, platform formats
 
 use egui::*;
 use crate::app::DpfApp;
@@ -8,8 +8,8 @@ use crate::admin::AdminSection;
 pub fn show(app: &mut DpfApp, ctx: &Context) {
     CentralPanel::default().show(ctx, |ui| {
         ui.horizontal(|ui| {
-            ui.heading("ðŸ›¡ï¸ Admin Control Panel");
-            if ui.button("âŽ Exit Admin Mode").clicked() {
+            ui.heading("🛡️ Admin Control Panel");
+            if ui.button("⏎ Exit Admin Mode").clicked() {
                 app.admin.admin_mode = false;
                 app.current_tab = crate::app::Tab::Dashboard;
             }
@@ -19,11 +19,11 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
         // Section tabs
         ui.horizontal(|ui| {
             let sections = [
-                (AdminSection::Features, "ðŸ“‹ Feature Tiers"),
-                (AdminSection::Pricing, "ðŸ’° Pricing"),
-                (AdminSection::Formats, "ðŸ“ Platform Formats"),
-                (AdminSection::Keys, "ðŸ”‘ License Keys"),
-                (AdminSection::Revocations, "â›” Revocations"),
+                (AdminSection::Features, "📋 Feature Tiers"),
+                (AdminSection::Pricing, "💰 Pricing"),
+                (AdminSection::Formats, "📐 Platform Formats"),
+                (AdminSection::Keys, "🔑 License Keys"),
+                (AdminSection::Revocations, "⛔ Revocations"),
             ];
             for (section, label) in &sections {
                 let selected = app.admin.active_section == *section;
@@ -50,12 +50,12 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
     });
 }
 
-/// Feature Tiers â€” JSON editor
+/// Feature Tiers — JSON editor
 fn show_feature_tiers(app: &mut DpfApp, ui: &mut Ui) {
     ui.horizontal(|ui| {
         ui.strong("Feature Tiers Configuration");
         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-            if ui.button("ðŸ’¾ Save").clicked() {
+            if ui.button("💾 Save").clicked() {
                 app.admin.save_config("features");
             }
         });
@@ -76,12 +76,12 @@ fn show_feature_tiers(app: &mut DpfApp, ui: &mut Ui) {
     }
 }
 
-/// Pricing â€” JSON editor
+/// Pricing — JSON editor
 fn show_pricing(app: &mut DpfApp, ui: &mut Ui) {
     ui.horizontal(|ui| {
         ui.strong("Pricing Configuration");
         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-            if ui.button("ðŸ’¾ Save").clicked() {
+            if ui.button("💾 Save").clicked() {
                 app.admin.save_config("pricing");
             }
         });
@@ -102,12 +102,12 @@ fn show_pricing(app: &mut DpfApp, ui: &mut Ui) {
     }
 }
 
-/// Platform Formats â€” JSON editor
+/// Platform Formats — JSON editor
 fn show_platform_formats(app: &mut DpfApp, ui: &mut Ui) {
     ui.horizontal(|ui| {
         ui.strong("Platform Formats Configuration");
         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-            if ui.button("ðŸ’¾ Save").clicked() {
+            if ui.button("💾 Save").clicked() {
                 app.admin.save_config("formats");
             }
         });
@@ -128,7 +128,7 @@ fn show_platform_formats(app: &mut DpfApp, ui: &mut Ui) {
     }
 }
 
-/// License Keys â€” generate new keys
+/// License Keys — generate new keys
 fn show_license_keys(app: &mut DpfApp, ui: &mut Ui) {
     ui.strong("Generate License Keys");
     ui.label("Select a tier, enter device count, and generate a new license key.");
@@ -155,7 +155,7 @@ fn show_license_keys(app: &mut DpfApp, ui: &mut Ui) {
         ui.add(Slider::new(&mut device_count, 1..=100));
     });
 
-    if ui.button("ðŸ”‘ Generate Key").clicked() {
+    if ui.button("🔑 Generate Key").clicked() {
         let tier_input = app.admin.generate_key_input.clone();
         let tier = if tier_input.is_empty() {
             "personal".to_string()
@@ -170,14 +170,14 @@ fn show_license_keys(app: &mut DpfApp, ui: &mut Ui) {
         ui.horizontal(|ui| {
             ui.strong("Generated Key:");
             ui.label(RichText::new(&key).color(Color32::GREEN).size(16.0));
-            if ui.button("ðŸ“‹ Copy").clicked() {
+            if ui.button("📋 Copy").clicked() {
                 ui.output_mut(|o| o.copied_text = key.clone());
             }
         });
     }
 }
 
-/// Revocations â€” view and manage revoked keys
+/// Revocations — view and manage revoked keys
 fn show_revocations(app: &mut DpfApp, ui: &mut Ui) {
     ui.strong("Revoked License Keys");
     ui.label("Enter a license key and click Revoke to invalidate it.");
@@ -187,7 +187,7 @@ fn show_revocations(app: &mut DpfApp, ui: &mut Ui) {
     ui.horizontal(|ui| {
         ui.label("Key:");
         ui.text_edit_singleline(&mut revoke_input);
-        if ui.button("â›” Revoke").clicked() {
+        if ui.button("⛔ Revoke").clicked() {
             app.admin.revoke_key(&revoke_input);
         }
     });
@@ -203,7 +203,7 @@ fn show_revocations(app: &mut DpfApp, ui: &mut Ui) {
             .show(ui, |ui| {
                 for key in &revoked_keys {
                     ui.horizontal(|ui| {
-                        ui.label("  ðŸ”´");
+                        ui.label("  🔴");
                         ui.label(key);
                     });
                 }

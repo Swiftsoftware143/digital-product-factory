@@ -1,4 +1,4 @@
-//! Mockup Compositor â€” DropMock-style image mockup creation
+//! Mockup Compositor — DropMock-style image mockup creation
 //!
 //! Features:
 //! - Load product images (PNG/JPG)
@@ -202,7 +202,7 @@ impl MockupCompositor {
     /// Get list of built-in scene names
     pub fn scene_names(&self) -> Vec<String> {
         if self.templates.is_empty() {
-            vec!["No templates found â€” place PNG files in ./mockups/".into()]
+            vec!["No templates found — place PNG files in ./mockups/".into()]
         } else {
             self.templates.iter().map(|t| t.name.clone()).collect()
         }

@@ -1,4 +1,4 @@
-//! Mockup View â€” DropMock-style mockup compositor UI
+//! Mockup View — DropMock-style mockup compositor UI
 //!
 //! Provides the egui interface for:
 //! - Scene template selection
@@ -17,7 +17,7 @@ use crate::inline_help;
 pub fn show(app: &mut DpfApp, ctx: &Context) {
     CentralPanel::default().show(ctx, |ui| {
         ui.horizontal(|ui| {
-            ui.heading("ðŸŽ¨ Mockup Compositor");
+            ui.heading("🎨 Mockup Compositor");
             inline_help::help_button(ui, "mockup_compositor", &mut app.active_help_topic);
         });
         ui.separator();
@@ -25,7 +25,7 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
         if !app.mockup_compositor.can_use_compositor() {
             ui.vertical_centered(|ui| {
                 ui.add_space(40.0);
-                ui.label(RichText::new("ðŸ”’ Agency+ Feature").size(24.0).strong().color(Color32::GOLD));
+                ui.label(RichText::new("🔒 Agency+ Feature").size(24.0).strong().color(Color32::GOLD));
                 ui.add_space(8.0);
                 ui.label("Upgrade your license to unlock the Mockup Compositor.");
                 ui.label("Create professional product mockups with scene templates,");
@@ -44,7 +44,7 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
                     ui.set_min_width(280.0);
 
                     ui.group(|ui| {
-                        ui.label(RichText::new("ðŸ“¦ Product Image").strong());
+                        ui.label(RichText::new("📦 Product Image").strong());
                         if ui.button("Load Product Image").clicked() {
                             if let Some(path) = rfd::FileDialog::new()
                                 .add_filter("Images", &["png", "jpg", "jpeg"])
@@ -71,7 +71,7 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
                     ui.add_space(8.0);
 
                     ui.group(|ui| {
-                        ui.label(RichText::new("ðŸ–¼ï¸ Scene Template").strong());
+                        ui.label(RichText::new("🖼️ Scene Template").strong());
                         let names = app.mockup_compositor.scene_names();
                         if names.len() == 1 && names[0].starts_with("No templates") {
                             ui.label(RichText::new(&names[0]).weak());
@@ -98,7 +98,7 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
                     ui.add_space(8.0);
 
                     ui.group(|ui| {
-                        ui.label(RichText::new("ðŸ“ Guide Region").strong());
+                        ui.label(RichText::new("📍 Guide Region").strong());
                         if let Some(t_idx) = app.mockup_compositor.current_template {
                             if let Some(template) = app.mockup_compositor.templates.get(t_idx) {
                                 if template.guides.is_empty() {
@@ -134,7 +134,7 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
                     ui.add_space(8.0);
 
                     ui.group(|ui| {
-                        ui.label(RichText::new("ðŸŽ¯ Placement").strong());
+                        ui.label(RichText::new("🎯 Placement").strong());
                         ui.horizontal(|ui| {
                             ui.label("Scale:");
                             ui.add(Slider::new(&mut app.mockup_compositor.scale, 0.1..=3.0)
@@ -159,10 +159,10 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
                         let can_compose = app.mockup_compositor.product.is_some()
                             && app.mockup_compositor.current_template.is_some()
                             && app.mockup_compositor.selected_guide.is_some();
-                        if ui.add_enabled(can_compose, Button::new("ðŸ’¾ Export PNG")).clicked() {
+                        if ui.add_enabled(can_compose, Button::new("💾 Export PNG")).clicked() {
                             export_composite(app, "png");
                         }
-                        if ui.add_enabled(can_compose, Button::new("ðŸ’¾ Export JPG")).clicked() {
+                        if ui.add_enabled(can_compose, Button::new("💾 Export JPG")).clicked() {
                             export_composite(app, "jpg");
                         }
                     });
@@ -170,7 +170,7 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
             });
 
             columns[1].vertical(|ui| {
-                ui.label(RichText::new("ðŸ‘ï¸ Preview").strong());
+                ui.label(RichText::new("👁️ Preview").strong());
                 ui.separator();
                 ui.add_space(4.0);
 

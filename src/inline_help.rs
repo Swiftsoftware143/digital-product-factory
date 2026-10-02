@@ -139,6 +139,12 @@ pub fn all_topics() -> Vec<HelpTopic> {
             tier: "personal",
         },
         HelpTopic {
+            id: "theme",
+            title: "Daylight & Night Theme",
+            body: "Two themes. Click the 🌙 Night / ☀️ Daylight button on the status bar to switch instantly, or pick one in Settings under Appearance. The button always shows the theme you are currently in. Your choice is remembered next time you open the app.",
+            tier: "personal",
+        },
+        HelpTopic {
             id: "variants",
             title: "Product Variants",
             body: "Manage multiple variants per product (different formats, prices, versions). Each variant tracks version history so you can roll back to any previous version. Available on all tiers.",

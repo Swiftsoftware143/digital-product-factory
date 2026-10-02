@@ -326,6 +326,16 @@ impl eframe::App for DpfApp {
         let dt = now.duration_since(self.last_frame_time).as_secs_f32();
         self.fps = 1.0 / dt;
         self.last_frame_time = now;
+
+        // Apply the chosen theme. `config.dark_mode` already existed and was persisted by the
+        // Settings checkbox, but nothing ever called `set_visuals`, so the setting had no effect
+        // whatsoever. Applying it every frame keeps the status-bar toggle instant.
+        ctx.set_visuals(if self.config.dark_mode {
+            egui::Visuals::dark()
+        } else {
+            egui::Visuals::light()
+        });
+
         ctx.request_repaint_after(std::time::Duration::from_millis(16));
 
         if let Some((product_name, platform, price)) = self.pending_publish.take() {

@@ -10,13 +10,13 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
         .show(ctx, |ui| {
             ui.horizontal(|ui| {
                 // Left side - help and admin buttons
-                if ui.button("â“ Help").clicked() {
+                if ui.button("❓ Help").clicked() {
                     app.active_help_topic = Some("__index__".to_string());
                 }
 
                 // Admin toggle button
                 let admin_active = app.admin.admin_mode;
-                let admin_label = if admin_active { "ðŸ›¡ï¸ Admin" } else { "ðŸ›¡ï¸" };
+                let admin_label = if admin_active { "🛡️ Admin" } else { "🛡️" };
                 let admin_btn = if admin_active {
                     ui.selectable_label(true, admin_label)
                 } else {
@@ -29,6 +29,21 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
                     } else if app.current_tab == crate::app::Tab::Admin {
                         app.current_tab = crate::app::Tab::Dashboard;
                     }
+                }
+
+                // Theme toggle — one click between the night and daylight themes.
+                // The label shows the CURRENT theme; clicking switches to the other one.
+                let theme_label = if app.config.dark_mode {
+                    "🌙 Night"
+                } else {
+                    "☀️ Daylight"
+                };
+                if ui
+                    .selectable_label(app.config.dark_mode, theme_label)
+                    .on_hover_text("Switch between the daylight and night themes")
+                    .clicked()
+                {
+                    app.config.dark_mode = !app.config.dark_mode;
                 }
 
                 ui.separator();
@@ -47,9 +62,9 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
 
                     // License status
                     let license_status = if app.license_manager.is_licensed() {
-                        "âœ“ Licensed"
+                        "✓ Licensed"
                     } else {
-                        "âš  Unlicensed"
+                        "⚠ Unlicensed"
                     };
                     if ui.selectable_label(false, license_status).clicked() {
                         app.show_license_dialog = true;

@@ -73,10 +73,36 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
                 });
 
                 ui.group(|ui| {
-                    ui.heading("Performance");
+                    ui.heading("Appearance");
+
+                    ui.horizontal(|ui| {
+                        ui.label("Theme:");
+                        if ui
+                            .selectable_label(app.config.dark_mode, "🌙 Night")
+                            .on_hover_text("Dark background — easier at night")
+                            .clicked()
+                        {
+                            app.config.dark_mode = true;
+                        }
+                        if ui
+                            .selectable_label(!app.config.dark_mode, "☀️ Daylight")
+                            .on_hover_text("Light background — easier in a bright room")
+                            .clicked()
+                        {
+                            app.config.dark_mode = false;
+                        }
+                        ui.label(
+                            RichText::new("(also on the status bar)")
+                                .size(11.0)
+                                .color(Color32::GRAY),
+                        );
+                    });
 
                     ui.checkbox(&mut app.config.auto_save, "Auto-save");
-                    ui.checkbox(&mut app.config.dark_mode, "Dark mode");
+                });
+
+                ui.group(|ui| {
+                    ui.heading("Performance");
 
                     ui.horizontal(|ui| {
                         ui.label("Max concurrent tasks:");

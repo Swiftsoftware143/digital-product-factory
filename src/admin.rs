@@ -1,4 +1,4 @@
-//! Admin control panel â€” license management, feature flags, pricing, platform formats
+//! Admin control panel — license management, feature flags, pricing, platform formats
 
 use rand::Rng;
 use serde_json::{json, Value};
@@ -13,7 +13,7 @@ pub enum AdminSection {
     Revocations,
 }
 
-/// Admin state â€” loaded configs and key generation tools
+/// Admin state — loaded configs and key generation tools
 pub struct AdminState {
     pub admin_mode: bool,
     pub feature_tiers: Value,
@@ -234,7 +234,7 @@ impl AdminState {
         key
     }
 
-    /// Revoke a license key â€” adds to revoked list and saves
+    /// Revoke a license key — adds to revoked list and saves
     pub fn revoke_key(&mut self, key: &str) {
         let trimmed = key.trim().to_string();
         if trimmed.is_empty() {
