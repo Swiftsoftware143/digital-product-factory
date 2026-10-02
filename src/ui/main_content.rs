@@ -167,18 +167,20 @@ fn show_templates(app: &mut DpfApp, ctx: &Context) {
                 Zip => "ZIP",
             }
         }
-        /// Whether `Exporter` genuinely produces this format (vs a placeholder).
+        /// Whether `Exporter` genuinely produces this format.
+        ///
+        /// All seven do now. This used to exclude PDF, DOCX and XLSX, which wrote a different
+        /// file type inside — a printable .html, a .docx.md and a .csv respectively. Those were
+        /// implemented for real, so leaving them flagged here would have told users a working
+        /// export was still broken.
         fn is_real(self) -> bool {
-            use ExportChoice::*;
-            matches!(self, Markdown | Html | Json | Zip)
+            true
         }
-        /// Honest note for the placeholder formats wired through `Exporter`.
+        /// Caveats worth surfacing. Nothing here is a placeholder any more.
         fn note(self) -> &'static str {
             use ExportChoice::*;
             match self {
-                Pdf => "PDF is a placeholder — Exporter writes a printable .html file, not a PDF.",
-                Docx => "DOCX is a placeholder — Exporter writes Markdown to a .docx.md file.",
-                Xlsx => "XLSX is a placeholder — Exporter writes CSV (.csv), not a real .xlsx.",
+                Pdf => "PDF uses the built-in Helvetica font, so characters outside that set are substituted.",
                 _ => "",
             }
         }
