@@ -333,6 +333,20 @@ impl DpfApp {
     }
 }
 
+impl DpfApp {
+    /// True when the user has not entered a single AI provider key.
+    ///
+    /// The product cannot generate anything until they do, so the UI must say so up front
+    /// rather than only failing with "API keys not configured" on their first Generate.
+    pub fn has_no_api_key(&self) -> bool {
+        self.config.openai_key.trim().is_empty()
+            && self.config.anthropic_key.trim().is_empty()
+            && self.config.google_key.trim().is_empty()
+            && self.config.deepseek_key.trim().is_empty()
+            && self.config.moonshot_key.trim().is_empty()
+    }
+}
+
 impl eframe::App for DpfApp {
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
         eframe::set_value(storage, eframe::APP_KEY, &self.config);

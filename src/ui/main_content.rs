@@ -52,12 +52,45 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
 }
 
 fn show_dashboard(app: &mut DpfApp, ctx: &Context) {
+    // First-run guidance. Without a provider key nothing can generate, and a new user would
+    // otherwise only discover that when their first Generate fails with a terse error.
+    let needs_key = app.has_no_api_key();
+    let mut open_settings = false;
+
     CentralPanel::default().show(ctx, |ui| {
         ui.horizontal(|ui| {
             ui.heading("Dashboard");
             inline_help::help_button(ui, "dashboard", &mut app.active_help_topic);
         });
         ui.separator();
+
+        if needs_key {
+            Frame::group(ui.style())
+                .fill(Color32::from_rgb(64, 52, 22))
+                .stroke(Stroke::new(1.0_f32, Color32::from_rgb(160, 130, 50)))
+                .show(ui, |ui| {
+                    ui.horizontal(|ui| {
+                        ui.label(
+                            RichText::new("⚠ No AI provider key yet")
+                                .strong()
+                                .color(Color32::from_rgb(250, 210, 120)),
+                        );
+                        ui.label("— the app needs one before it can generate anything.");
+                        if ui.button("⚙ Open Settings").clicked() {
+                            open_settings = true;
+                        }
+                    });
+                    ui.label(
+                        RichText::new(
+                            "Bring your own key: paste a key from OpenAI, Anthropic, Google, \
+                             DeepSeek or Moonshot in Settings — only one is needed to start. \
+                             See ❓ Help → \"Bring Your Own Key\".",
+                        )
+                        .size(11.0),
+                    );
+                });
+            ui.add_space(6.0);
+        }
 
         ui.horizontal(|ui| {
             stat_card(ui, "Total Ideas", &app.pipeline.ideas.len().to_string());
@@ -79,6 +112,10 @@ fn show_dashboard(app: &mut DpfApp, ctx: &Context) {
             }
         }
     });
+
+    if open_settings {
+        app.show_settings = true;
+    }
 }
 
 fn stat_card(ui: &mut Ui, label: &str, value: &str) {

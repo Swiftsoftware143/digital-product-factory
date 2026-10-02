@@ -106,7 +106,10 @@ impl Bundler {
                 sorted.sort_by(|a, b| {
                     let a_val = a.metadata.parameters.get("price").and_then(|v| v.as_f64()).unwrap_or(0.0);
                     let b_val = b.metadata.parameters.get("price").and_then(|v| v.as_f64()).unwrap_or(0.0);
-                    b_val.partial_cmp(&a_val).unwrap()
+                    // total_cmp defines a total order over ALL f64 values including NaN, so a bad
+                    // price can never make the comparator return None. `partial_cmp().unwrap()`
+                    // panics the sort — and therefore the app — on a NaN.
+                    b_val.total_cmp(&a_val)
                 });
                 
                 // Create premium bundle (top 5)

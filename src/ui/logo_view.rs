@@ -117,19 +117,23 @@ pub fn show(app: &mut DpfApp, ctx: &egui::Context) {
                 if state.current_logo.is_some()
                     && ui.button("🎁 Export Favicon Package").clicked() {
                     if let Some(dir) = rfd::FileDialog::new().pick_folder() {
-                        let logo = state.current_logo.clone().unwrap();
-                        match crate::vector_export::export_favicon_package(&logo, &dir) {
-                            Ok(pkg) => {
-                                let count = pkg.sizes.len();
-                                if let Some(cur) = state.current_logo.as_mut() {
-                                    cur.favicon_enabled = true;
-                                    cur.favicon_package = Some(pkg);
+                        // `is_some()` is checked above, but the native file dialog BLOCKS the UI
+                        // thread for an unbounded time — never `.unwrap()` state across that gap.
+                        // Re-check and degrade gracefully instead of panicking the whole app.
+                        if let Some(logo) = state.current_logo.clone() {
+                            match crate::vector_export::export_favicon_package(&logo, &dir) {
+                                Ok(pkg) => {
+                                    let count = pkg.sizes.len();
+                                    if let Some(cur) = state.current_logo.as_mut() {
+                                        cur.favicon_enabled = true;
+                                        cur.favicon_package = Some(pkg);
+                                    }
+                                    notice = Some((false, format!(
+                                        "Favicon package written to {} ({} PNGs + favicon.ico + apple-touch-icon.png + site.webmanifest)",
+                                        dir.display(), count)));
                                 }
-                                notice = Some((false, format!(
-                                    "Favicon package written to {} ({} PNGs + favicon.ico + apple-touch-icon.png + site.webmanifest)",
-                                    dir.display(), count)));
+                                Err(e) => notice = Some((true, format!("Favicon export failed: {}", e))),
                             }
-                            Err(e) => notice = Some((true, format!("Favicon export failed: {}", e))),
                         }
                     }
                 }
