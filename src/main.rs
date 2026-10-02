@@ -45,6 +45,18 @@ fn main() -> eframe::Result<()> {
             .with_inner_size([1400.0, 900.0])
             .with_min_inner_size([800.0, 600.0])
             .with_title("Digital Product Factory"),
+        // Intel UHD (and other integrated GPU) drivers on Windows frequently
+        // render a black window with egui_glow's default multisampling/vsync
+        // settings. Disabling both avoids the bad first-frame/driver path.
+        multisampling: 0,
+        vsync: false,
+        hardware_acceleration: eframe::HardwareAcceleration::Preferred,
+        // Switched from Glow (OpenGL) to wgpu, which uses DirectX12 on
+        // Windows. Some Intel UHD Graphics driver builds render a black
+        // window under OpenGL/glow no matter what GL settings are used;
+        // their DirectX drivers are far more reliable, so wgpu avoids the
+        // problem entirely instead of working around it.
+        renderer: eframe::Renderer::Wgpu,
         ..Default::default()
     };
 

@@ -14,8 +14,16 @@ impl Database {
     pub fn new() -> SqlResult<Self> {
         let conn = Connection::open("dpf_data.db")?;
         
-        // Enable WAL mode for better concurrency
-        conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA cache_size=10000; PRAGMA temp_store=memory;")?;
+        // Enable WAL mode for better concurrency.
+        // NOTE: "PRAGMA journal_mode=..." always returns the resulting mode
+        // as a row, even though it's a "set" statement — rusqlite's
+        // `.execute()` rejects any statement that returns rows, so this one
+        // must go through `query_row` instead (unlike the other PRAGMAs
+        // below, which don't return anything).
+        conn.query_row("PRAGMA journal_mode=WAL;", [], |row| row.get::<_, String>(0))?;
+        conn.execute("PRAGMA synchronous=NORMAL;", [])?;
+        conn.execute("PRAGMA cache_size=10000;", [])?;
+        conn.execute("PRAGMA temp_store=memory;", [])?;
         
         let db = Self {
             conn: Arc::new(Mutex::new(conn)),

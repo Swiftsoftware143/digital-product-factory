@@ -154,7 +154,14 @@ pub enum Tab {
 impl DpfApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         let mut fonts = egui::FontDefinitions::default();
-        // Using default egui fonts (custom font embedding disabled)
+        // REMOVED 2026-10-02 (build-blocker): this was a dead `if false` block that called
+        //   egui::FontData::from_static(include_bytes!("../assets/Inter-Regular.ttf"))
+        // `include_bytes!` is a COMPILE-TIME macro — the `if false` guard did NOT stop the file
+        // from being read at build time, and `assets/Inter-Regular.ttf` is in .gitignore, so the
+        // repository did NOT compile from a clean clone (error: couldn't read
+        // `src/../assets/Inter-Regular.ttf`). The block was already disabled, so removing it
+        // changes nothing at runtime. If the custom font is wanted later, commit the .ttf and
+        // re-add this properly under a real `#[cfg(feature = "embed-font")]`.
         cc.egui_ctx.set_fonts(fonts);
 
         let config = if let Some(storage) = cc.storage {

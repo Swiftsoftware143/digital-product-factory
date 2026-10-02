@@ -1,16 +1,15 @@
 [package]
 name = "digital-product-factory"
-version = "1.1.0"
+version = "1.4.2"
 edition = "2021"
 authors = ["SwiftSoftware143"]
 description = "Digital Product Factory - Native Rust desktop app for automated digital product creation"
 
 [dependencies]
-winapi = { version = "0.3.9", features = ["winuser"] }
 # Core UI - egui for native speed
 egui = "0.27"
 egui_extras = { version = "0.27", features = ["image", "datepicker"] }
-eframe = { version = "0.27", default-features = false, features = ["glow", "persistence"] }
+eframe = { version = "0.27", features = ["default", "persistence", "wgpu"] }
 
 # Async runtime
 tokio = { version = "1.35", features = ["full"] }
