@@ -200,33 +200,37 @@ impl AdminState {
         }
     }
 
-    /// Generate a license key in format: DPF-{TIER_CODE}-{RAND4}-{RAND4}-{SUM}
+    /// Generate a licence key using the SAME scheme as activation
+    /// (`license_manager::mint_key`), so a key minted here always activates.
+    ///
+    /// ⚠️ The previous implementation emitted a legacy **5-segment** key
+    /// (`DPF-{P|T|A|E}-{R4}-{R4}-{SUM}`) with a single-letter tier and its own
+    /// byte-sum checksum. `LicenseManager::activate` requires **4 segments**
+    /// (`DPF-<TIER_TOKEN>-<BLOCK>-<CCCC>`) and a check code computed over
+    /// `"<TIER_TOKEN>-<BLOCK>"`, so **every key this panel produced was rejected on
+    /// activation**. Do not reintroduce a local scheme here: always call `mint_key`,
+    /// so the app, this admin panel and `scripts/dpf-mint-license.py` can never disagree.
+    /// (`admin_panel_key_passes_the_activation_check` in the tests guards this.)
     pub fn generate_key(&mut self, tier: &str, devices: u32) -> String {
-        let tier_code = match tier.to_lowercase().as_str() {
-            "personal" | "p" => "P",
-            "team" | "t" => "T",
-            "agency" | "a" => "A",
-            "enterprise" | "e" => "E",
-            _ => "X",
-        };
+        use crate::license_manager::{mint_key, LicenseTier};
 
+        let t = LicenseTier::from_slug(tier).unwrap_or(LicenseTier::Personal);
+
+        // Unambiguous alphabet (no I/O/0/1) — the same alphabet the check code uses.
+        const ALPHABET: &[u8] = b"ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
         let mut rng = rand::thread_rng();
-        let rand4_1: String = (0..4).map(|_| {
-            let idx = rng.gen_range(0..36);
-            std::char::from_digit(idx, 36).unwrap().to_ascii_uppercase()
-        }).collect();
-        let rand4_2: String = (0..4).map(|_| {
-            let idx = rng.gen_range(0..36);
-            std::char::from_digit(idx, 36).unwrap().to_ascii_uppercase()
-        }).collect();
+        let block: String = (0..8)
+            .map(|_| ALPHABET[rng.gen_range(0..ALPHABET.len())] as char)
+            .collect();
 
-        let base = format!("DPF-{}-{}-{}", tier_code, rand4_1, rand4_2);
-        let checksum: u32 = base.bytes().map(|b| b as u32).sum();
-        let sum_str = format!("{:02X}", checksum % 256);
-        let key = format!("{}-{}", base, sum_str);
-
+        let key = mint_key(&t, &block);
         self.generated_key = Some(key.clone());
-        self.status_message = format!("Generated key for tier '{}' ({} devices)", tier, devices);
+        self.status_message = format!(
+            "Generated {} key — {} seat(s) per activation. Give the key to the customer; \
+             they activate it from the 🔑 Licence button.",
+            t.display_name(),
+            if devices == 0 { t.max_devices() } else { devices as i64 }
+        );
         key
     }
 
@@ -261,5 +265,44 @@ impl AdminState {
             .as_object()
             .map(|o| o.len())
             .unwrap_or(0)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::license_manager::{check_code, LicenseTier};
+
+    /// Regression guard. The Admin panel used to mint legacy **5-segment** keys
+    /// (`DPF-{P|T|A|E}-{R4}-{R4}-{SUM}`) with its own byte-sum checksum, while
+    /// `LicenseManager::activate` requires **4 segments** and a check code over
+    /// `"<TIER_TOKEN>-<BLOCK>"`. So every key this panel produced was **rejected when the
+    /// customer tried to activate it**. Any key minted here must satisfy the activation contract.
+    #[test]
+    fn admin_panel_key_passes_the_activation_check() {
+        for tier in ["personal", "team", "agency", "enterprise"] {
+            let mut a = AdminState::default();
+            let key = a.generate_key(tier, 1);
+
+            let parts: Vec<&str> = key.split('-').collect();
+            assert_eq!(
+                parts.len(),
+                4,
+                "the admin panel must emit the 4-segment activation format, got {key}"
+            );
+            assert_eq!(parts[0], "DPF", "keys must start with DPF: {key}");
+
+            let body = format!("{}-{}", parts[1], parts[2]);
+            assert!(
+                check_code(&body).eq_ignore_ascii_case(parts[3]),
+                "admin-minted key {key} failed its own check code — it would be refused on activation"
+            );
+
+            assert_eq!(
+                LicenseTier::from_slug(parts[1]),
+                LicenseTier::from_slug(tier),
+                "the tier token must round-trip through activation for '{tier}' (key: {key})"
+            );
+        }
     }
 }
