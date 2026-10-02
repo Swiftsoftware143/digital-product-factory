@@ -152,6 +152,10 @@ pub struct DpfApp {
     pub loaded_preset_id: Option<String>,
     pub selected_platform: Option<String>,
     pub new_api_key: String,
+    /// Licence activation — must live on the app, not in the frame, or typing resets each frame.
+    pub license_key_input: String,
+    /// (is_error, message) shown under the activation form.
+    pub license_message: Option<(bool, String)>,
     pub publish_target: String,
     pub publish_price: f64,
     pub pending_publish: Option<(String, String, f64)>,
@@ -282,6 +286,8 @@ impl DpfApp {
             selected_preset_id: None, loaded_preset_id: None,
             selected_platform: None,
             new_api_key: String::new(),
+            license_key_input: String::new(),
+            license_message: None,
             publish_target: String::new(),
             publish_price: 9.99,
             pending_publish: None,

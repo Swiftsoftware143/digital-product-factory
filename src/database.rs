@@ -430,6 +430,49 @@ impl Database {
     }
     
     // License operations
+
+    /// Load the stored licence (there is at most one). Used at startup so activation
+    /// survives a restart.
+    pub fn load_active_license(&self) -> SqlResult<Option<License>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT key, tier, max_devices, created_at, expires_at,
+                    status, activated_devices, metadata
+             FROM licenses LIMIT 1",
+        )?;
+        let mut rows = stmt.query([])?;
+        if let Some(row) = rows.next()? {
+            Ok(Some(License {
+                key: row.get(0)?,
+                tier: serde_json::from_str(&row.get::<_, String>(1)?)
+                    .unwrap_or(crate::license_manager::LicenseTier::Personal),
+                max_devices: row.get(2)?,
+                created_at: chrono::DateTime::parse_from_rfc3339(&row.get::<_, String>(3)?)
+                    .map(|d| d.with_timezone(&chrono::Utc))
+                    .unwrap_or_else(|_| chrono::Utc::now()),
+                expires_at: row
+                    .get::<_, Option<String>>(4)?
+                    .and_then(|s| chrono::DateTime::parse_from_rfc3339(&s).ok())
+                    .map(|d| d.with_timezone(&chrono::Utc)),
+                status: serde_json::from_str(&row.get::<_, String>(5)?)
+                    .unwrap_or(crate::license_manager::LicenseStatus::Active),
+                activated_devices: row
+                    .get::<_, Option<String>>(6)?
+                    .and_then(|s| serde_json::from_str(&s).ok())
+                    .unwrap_or_default(),
+                metadata: row.get(7)?,
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub fn delete_license(&self, key: &str) -> SqlResult<()> {
+        let conn = self.conn.lock().unwrap();
+        conn.execute("DELETE FROM licenses WHERE key = ?1", params![key])?;
+        Ok(())
+    }
+
     pub fn save_license(&self, license: &License) -> SqlResult<()> {
         let conn = self.conn.lock().unwrap();
         conn.execute(
