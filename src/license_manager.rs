@@ -263,6 +263,27 @@ pub fn features_for_tier(tier: &LicenseTier) -> Vec<String> {
 }
 
 /// Keys listed in `revoked_keys.json` are refused at activation.
+/// The keys listed in `revoked_keys.json`. Exposed so callers can pass the list to
+/// `LicenseManager::validate_key` explicitly (which keeps that function pure and testable).
+pub fn revoked_keys() -> Vec<String> {
+    let Ok(raw) = std::fs::read_to_string("revoked_keys.json") else {
+        return Vec::new();
+    };
+    let Ok(v) = serde_json::from_str::<serde_json::Value>(&raw) else {
+        return Vec::new();
+    };
+    v.get("revoked_keys")
+        .and_then(|r| r.as_array())
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|s| s.as_str())
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
 fn is_revoked(key: &str) -> bool {
     let Ok(raw) = std::fs::read_to_string("revoked_keys.json") else {
         return false;
@@ -350,9 +371,11 @@ impl LicenseManager {
             .find(|t| features_for_tier(t).iter().any(|f| f == feature))
     }
 
-    /// Activate a key offline. Validates format, tier, check code and the revocation list,
-    /// then persists so it survives a restart.
-    pub fn activate(&mut self, raw: &str) -> Result<(), String> {
+    /// Validate a licence key WITHOUT touching the database.
+    ///
+    /// `activate()` calls this and the tests call it directly, so the tests exercise the **real**
+    /// validation path rather than a copy of it. `revoked` is passed in to keep this pure.
+    pub fn validate_key(raw: &str, revoked: &[String]) -> Result<LicenseTier, String> {
         let key = raw.trim().to_ascii_uppercase();
         if key.is_empty() {
             return Err("Please enter a licence key.".to_string());
@@ -377,9 +400,19 @@ impl LicenseManager {
             return Err("That key's check code is invalid — please re-check it.".to_string());
         }
 
-        if is_revoked(&key) {
+        if revoked.iter().any(|r| r.trim().eq_ignore_ascii_case(&key)) {
             return Err("That key has been revoked and can no longer be activated.".to_string());
         }
+
+        Ok(tier)
+    }
+
+    pub fn activate(&mut self, raw: &str) -> Result<(), String> {
+        // Activate a key offline: validate format, tier, check code and the revocation list,
+        // then persist so it survives a restart.
+        let key = raw.trim().to_ascii_uppercase();
+        let revoked = revoked_keys();
+        let tier = Self::validate_key(raw, &revoked)?;
 
         let license = License {
             key: key.clone(),
@@ -488,5 +521,86 @@ mod tests {
                 "PAID MODULE LEAK: the free tier must not include '{f}'"
             );
         }
+    }
+
+    /// THE HEADLINE TEST: keys produced by the generator the owner will actually run must pass the
+    /// app's **real** activation validation.
+    ///
+    /// Every literal below is verbatim output of the live tool:
+    ///     python3 /opt/swift/scripts/dpf-mint-license.py <TIER> AB12CD34
+    ///     python3 /opt/swift/scripts/dpf-mint-license.py --batch TEAM 3
+    /// If the minting tool and the app ever drift apart, this fails HERE — not in front of a
+    /// paying customer who cannot activate what they paid for.
+    #[test]
+    fn python_minted_keys_validate() {
+        let cases = [
+            ("DPF-PERSONAL-AB12CD34-225Y", LicenseTier::Personal),
+            ("DPF-TEAM-AB12CD34-P9SU", LicenseTier::Team),
+            ("DPF-AGENCY-AB12CD34-HSHJ", LicenseTier::Agency),
+            ("DPF-ENTERPRISE-AB12CD34-HBV3", LicenseTier::Enterprise),
+            // from a real `--batch TEAM 3` run
+            ("DPF-TEAM-V8580S98-W8FU", LicenseTier::Team),
+            ("DPF-TEAM-HGJZR43X-T6MC", LicenseTier::Team),
+            ("DPF-TEAM-N1QQP0X1-KQ53", LicenseTier::Team),
+        ];
+
+        for (key, expected) in cases {
+            let got = LicenseManager::validate_key(key, &[])
+                .unwrap_or_else(|e| panic!("minted key {key} was REFUSED on activation: {e}"));
+            assert_eq!(got, expected, "key {key} resolved to the wrong tier");
+        }
+    }
+
+    /// Customers paste messily. Stray whitespace and lower case must both still activate,
+    /// because a rejected key here looks to the customer like a key that was never delivered.
+    #[test]
+    fn real_world_pasting_is_accepted() {
+        for k in [
+            "  DPF-TEAM-AB12CD34-P9SU  ",
+            "DPF-TEAM-AB12CD34-P9SU\n",
+            "dpf-team-ab12cd34-p9su",
+            "Dpf-Team-Ab12Cd34-P9su",
+        ] {
+            assert!(
+                LicenseManager::validate_key(k, &[]).is_ok(),
+                "should have accepted {k:?}"
+            );
+        }
+    }
+
+    /// ...and every way a key really gets damaged must be refused, each with a message that
+    /// tells the customer what to do rather than just failing.
+    #[test]
+    fn damaged_keys_are_refused_with_a_reason() {
+        // One character changed in the block — the check code no longer matches.
+        let err = LicenseManager::validate_key("DPF-TEAM-AB12CD35-P9SU", &[]).unwrap_err();
+        assert!(err.contains("check code"), "unhelpful message: {err}");
+
+        // A tier we do not sell.
+        let err = LicenseManager::validate_key("DPF-PRO-AB12CD34-P9SU", &[]).unwrap_err();
+        assert!(err.contains("not a tier"), "unhelpful message: {err}");
+
+        // Truncated, as if an email client cut the line.
+        let err = LicenseManager::validate_key("DPF-TEAM-AB12CD34", &[]).unwrap_err();
+        assert!(err.contains("format"), "unhelpful message: {err}");
+
+        // Nothing entered at all.
+        assert!(LicenseManager::validate_key("   ", &[]).is_err());
+
+        // Revoked keys must be refused even though their check code is perfect.
+        let err = LicenseManager::validate_key(
+            "DPF-TEAM-AB12CD34-P9SU",
+            &["DPF-TEAM-AB12CD34-P9SU".to_string()],
+        )
+        .unwrap_err();
+        assert!(err.contains("revoked"), "unhelpful message: {err}");
+    }
+
+    /// A revoked list must be matched case/whitespace insensitively, or a revocation could be
+    /// trivially bypassed by re-typing the key differently.
+    #[test]
+    fn revocation_cannot_be_bypassed_by_formatting() {
+        let revoked = vec!["  dpf-team-ab12cd34-p9su  ".to_string()];
+        assert!(LicenseManager::validate_key("DPF-TEAM-AB12CD34-P9SU", &revoked).is_err());
     }
 }
