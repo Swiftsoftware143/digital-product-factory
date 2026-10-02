@@ -68,8 +68,8 @@ impl AdminState {
                 "tiers": {
                     "personal": { "name": "Personal", "devices": 1, "features": ["pipeline","ai_generation","templates","market_research","contract_generator","export","mockup_compositor"] },
                     "team": { "name": "Team", "devices": 5, "features": ["pipeline","ai_generation","templates","market_research","contract_generator","export","analytics","publishing","bundles","scheduler","presets","mockup_compositor"] },
-                    "agency": { "name": "Agency", "devices": 20, "features": ["pipeline","ai_generation","templates","market_research","contract_generator","export","analytics","publishing","bundles","scheduler","presets","whitelabel","client_management","mockup_compositor"] },
-                    "enterprise": { "name": "Enterprise", "devices": -1, "features": ["pipeline","ai_generation","templates","market_research","contract_generator","export","analytics","publishing","bundles","scheduler","presets","whitelabel","client_management","custom_integrations","api_access","mockup_compositor"] }
+                    "agency": { "name": "Agency", "devices": 20, "features": ["pipeline","ai_generation","templates","market_research","contract_generator","export","analytics","publishing","bundles","scheduler","presets","client_management","mockup_compositor"] },
+                    "enterprise": { "name": "Enterprise", "devices": -1, "features": ["pipeline","ai_generation","templates","market_research","contract_generator","export","analytics","publishing","bundles","scheduler","presets","client_management","custom_integrations","api_access","mockup_compositor"] }
                 }
             });
             let _ = std::fs::write("feature_tiers.json", serde_json::to_string_pretty(&self.feature_tiers).unwrap_or_default());

@@ -80,10 +80,10 @@ Each tier is a strict **superset** of the tier below it (enforced by the
 `scheduler`, `adverts`, `qc`, `assets`, `webhooks`, `mockup_compositor`,
 `logo_generator`, `vector_generator`
 
-**Agency** (23) — all Team features plus: `whitelabel`, `client_management`,
+**Agency** (22) — all Team features plus: `client_management`,
 `compliance`, `custom_integrations`
 
-**Enterprise** (25) — all Agency features plus: `api_access`, `admin_panel`
+**Enterprise** (24) — all Agency features plus: `api_access`, `admin_panel`
 
 ### Tab → feature slug
 
@@ -395,14 +395,14 @@ The licence system is covered by **five unit tests** in `src/license_manager.rs`
 | `check_code_validates_its_own_keys` | Every tier's minted key round-trips through its own check code (4 segments, `DPF` prefix). |
 | `tampered_key_is_rejected` | A single wrong final character fails the check code. |
 | `tiers_are_supersets` | Each tier contains everything in the tier below it, or gating is incoherent. |
-| `free_tier_cannot_reach_paid_modules` | **The business rule:** the free Personal tier must not include any paid module (analytics, publishing, bundles, scheduler, adverts, qc, assets, webhooks, whitelabel, client_management, compliance, api_access, admin_panel). If it fails, the product is giving away what it sells. |
+| `free_tier_cannot_reach_paid_modules` | **The business rule:** the free Personal tier must not include any paid module (analytics, publishing, bundles, scheduler, adverts, qc, assets, webhooks, client_management, compliance, api_access, admin_panel). If it fails, the product is giving away what it sells. |
 
 ### Manual gating test
 
 1. Launch with no licence — confirm only Personal features are reachable and every paid
    tab is dimmed with a 🔒.
 2. Activate a `TEAM` key — confirm Team tabs unlock.
-3. Activate an `AGENCY` key — confirm whitelabel, client management, compliance and
+3. Activate an `AGENCY` key — confirm client management, compliance and
    custom integrations unlock.
 4. Activate an `ENTERPRISE` key — confirm API access and the Admin panel unlock.
 5. Try a tampered key (change one character) — confirm rejection.

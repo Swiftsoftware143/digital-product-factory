@@ -30,7 +30,6 @@ A high-performance Rust desktop application for creating, managing, and selling 
 
 - **Adverts & Campaign Suite** — Campaign planning, AI creative generation, conversion scoring
 - **Compliance Scanner** — AI disclosure rules and denylist checks
-- Whitelabel branding
 - Client management
 - Custom integrations
 
@@ -60,7 +59,7 @@ Press **❓ Help** in the status bar or click **?** next to any section header f
 |------|-------|-------|--------------|
 | Personal | Free | 1 | Pipeline, Create, Research, Contracts, Export |
 | Team | \/mo | 5 | Personal + Analytics, Publishing, Bundles, Scheduler |
-| Agency | \/mo | 20 | Team + Whitelabel, Client Management |
+| Agency | \/mo | 20 | Team + Client Management |
 | Enterprise | \/mo | Unlimited | All features + API access |
 
 ## Project Structure

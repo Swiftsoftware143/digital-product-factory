@@ -1016,7 +1016,7 @@ The app is free to use on the **Personal** tier. Paid tiers unlock more seats an
 |------|-------|---------|-------|
 | **Personal (Free)** | 1 | Pipeline, Create / AI generation, Templates, Market Research, Contract Generator, Export, Presets, Variants | Free |
 | **Team** | 5 | Everything in Personal, plus Analytics, Publishing, Bundles, Scheduler, Adverts, QC Checklist, Asset Library, Webhooks, Mockup compositor, Logo Generator, Vector Generator | $29/mo |
-| **Agency** | 20 | Everything in Team, plus Compliance Scanner, Whitelabel, Client Management, Custom Integrations | $99/mo |
+| **Agency** | 20 | Everything in Team, plus Compliance Scanner, Client Management, Custom Integrations | $99/mo |
 | **Enterprise** | Unlimited | Everything in Agency, plus Admin Panel and API access | $299/mo |
 
 Your current tier is shown in the sidebar underneath the app name.
