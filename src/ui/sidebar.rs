@@ -34,6 +34,7 @@ fn feature_for(tab: Tab) -> &'static str {
         Tab::LogoGenerator => "logo_generator",
         Tab::VectorGenerator => "vector_generator",
         // Agency / Enterprise
+        Tab::Clients => "client_management",
         Tab::Compliance => "compliance",
         Tab::Admin => "admin_panel",
     }
@@ -116,6 +117,7 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
             ui.label("Quality");
             tab_item(app, ui, Tab::QC, "QC Checklist");
             tab_item(app, ui, Tab::Compliance, "Compliance");
+            tab_item(app, ui, Tab::Clients, "👥 Clients");
 
             ui.separator();
             ui.label("Product Data");

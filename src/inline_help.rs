@@ -223,6 +223,12 @@ pub fn all_topics() -> Vec<HelpTopic> {
             tier: "team",
         },
         HelpTopic {
+            id: "clients",
+            title: "Client Management",
+            body: "Keep a record of the clients you produce work for: name, email, company, a status (Prospect, Active, Paused, Closed) and free notes. Filter by name, email or company, and edit or delete any entry. Everything is stored locally with your other data. (Agency and Enterprise feature)",
+            tier: "agency",
+        },
+        HelpTopic {
             id: "compliance",
             title: "Compliance Scanner",
             body: "Scan generated copy for AI-disclosure requirements and protected terms. The protected-term list ships with sensible defaults and can be edited. (Agency+ feature)",

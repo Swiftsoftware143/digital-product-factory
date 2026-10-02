@@ -901,6 +901,57 @@ impl Database {
 
     // ── Sales Records ────────────────────────────────────────────────
 
+    // ── Clients ──────────────────────────────────────────────────────────
+    // Backs the `client_management` feature sold on the Agency + Enterprise tiers.
+
+    pub fn load_clients(&self) -> SqlResult<Vec<crate::client_manager::Client>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT id, name, email, company, status, notes, created_at
+             FROM clients ORDER BY name COLLATE NOCASE ASC",
+        )?;
+
+        let rows = stmt.query_map([], |row| {
+            Ok(crate::client_manager::Client {
+                id: row.get::<_, i64>(0)? as usize,
+                name: row.get(1)?,
+                email: row.get(2)?,
+                company: row.get(3)?,
+                status: crate::client_manager::ClientStatus::from_label(&row.get::<_, String>(4)?),
+                notes: row.get(5)?,
+                created_at: chrono::DateTime::parse_from_rfc3339(&row.get::<_, String>(6)?)
+                    .unwrap_or_default()
+                    .with_timezone(&chrono::Utc),
+            })
+        })?;
+
+        rows.collect()
+    }
+
+    pub fn save_client(&self, client: &crate::client_manager::Client) -> SqlResult<()> {
+        let conn = self.conn.lock().unwrap();
+        conn.execute(
+            "INSERT OR REPLACE INTO clients (id, name, email, company, status, notes, created_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+            params![
+                client.id as i64,
+                client.name,
+                client.email,
+                client.company,
+                client.status.label(),
+                client.notes,
+                client.created_at.to_rfc3339(),
+            ],
+        )?;
+        Ok(())
+    }
+
+    pub fn delete_client(&self, id: usize) -> SqlResult<()> {
+        let conn = self.conn.lock().unwrap();
+        conn.execute("DELETE FROM clients WHERE id = ?1", params![id as i64])?;
+        Ok(())
+    }
+
     pub fn load_sales_records(&self) -> SqlResult<Vec<crate::analytics::SalesRecord>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn.prepare(

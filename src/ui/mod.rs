@@ -19,6 +19,7 @@ pub mod mockup_view;
 pub mod publish_view;
 pub mod variants_view;
 pub mod admin_view;
+pub mod clients_view;
 pub mod advert_preview;
 pub mod advert_composer;
 pub mod adverts_view;

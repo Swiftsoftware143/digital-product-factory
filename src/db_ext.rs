@@ -22,6 +22,20 @@ pub fn init_business_tables(conn: &Connection) -> SqlResult<()> {
         [],
     )?;
 
+    // Clients — backs the `client_management` feature (Agency + Enterprise tiers).
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS clients (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            email TEXT DEFAULT '',
+            company TEXT DEFAULT '',
+            status TEXT NOT NULL DEFAULT 'Prospect',
+            notes TEXT DEFAULT '',
+            created_at TEXT NOT NULL
+        )",
+        [],
+    )?;
+
     // Publish logs
     conn.execute(
         "CREATE TABLE IF NOT EXISTS publish_logs (

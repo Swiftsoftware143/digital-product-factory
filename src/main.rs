@@ -29,6 +29,7 @@ pub mod qc;
 pub mod webhook;
 pub mod asset_library;
 pub mod compliance;
+pub mod client_manager;
 
 mod adverts;
 mod advert_generator;

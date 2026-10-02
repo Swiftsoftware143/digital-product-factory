@@ -6,7 +6,7 @@ use crate::inline_help;
 use crate::qc::{QcResult, QcCheck, QcStatus};
 use crate::compliance::DenylistScanner;
 use super::adverts_view;
-use super::{pipeline_view, analytics_view, publish_view, mockup_view, admin_view, variants_view};
+use super::{pipeline_view, analytics_view, publish_view, mockup_view, admin_view, variants_view, clients_view};
 
 pub fn show(app: &mut DpfApp, ctx: &Context) {
     // Show modal dialogs
@@ -30,6 +30,7 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
         Tab::Settings => show_settings(app, ctx),
         Tab::Admin => admin_view::show(app, ctx),
         Tab::Variants => variants_view::show(app, ctx),
+        Tab::Clients => clients_view::show(app, ctx),
         // New tabs from remote
         Tab::QC => show_qc(app, ctx),
         Tab::Compliance => show_compliance(app, ctx),

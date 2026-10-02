@@ -25,6 +25,7 @@ use crate::{admin::AdminState,
     qc::QcEngine,
     webhook::WebhookState,
     asset_library::AssetLibrary,
+    client_manager::{Client, ClientManager},
     compliance::{DenylistScanner, AiDisclosureRule, AiToolLicense},
     ui::{sidebar, main_content, status_bar, analytics_view, publish_view, settings_dialog, license_dialog},
 };
@@ -138,6 +139,13 @@ pub struct DpfApp {
     pub qc_engine: QcEngine,
     pub webhook_state: WebhookState,
     pub asset_library: AssetLibrary,
+    /// Client Management — the module behind the `client_management` feature slug
+    /// (Agency + Enterprise tiers). See `client_manager`.
+    pub clients: ClientManager,
+    pub client_draft: Client,
+    pub client_editing: Option<usize>,
+    pub client_search: String,
+    pub client_status_message: Option<(bool, String)>,
     pub denylist_scanner: DenylistScanner,
     pub disclosure_rules: Vec<AiDisclosureRule>,
     // -- UI State ----------------------------------------------------
@@ -187,6 +195,7 @@ pub enum Tab {
     Dashboard, Pipeline, Mockup, Create, Research, Templates,
     Bundles, Scheduler, Presets, Contract, Analytics, Publish, Settings,
     Admin, QC, AssetLibrary, Compliance, Webhooks, Variants, Adverts,
+    Clients,
     LogoGenerator,
     VectorGenerator,
 }
@@ -253,6 +262,9 @@ impl DpfApp {
         let mut asset_library = AssetLibrary::new();
         asset_library.load_from_db(&db);
 
+        // Client Management (Agency+ feature)
+        let clients = ClientManager::new(&db);
+
         // Save default disclosure rules
         let disclosure_path = std::path::Path::new("ai_disclosure_rules.json");
         if !disclosure_path.exists() {
@@ -288,6 +300,11 @@ impl DpfApp {
             new_api_key: String::new(),
             license_key_input: String::new(),
             license_message: None,
+            clients,
+            client_draft: Client::new(0),
+            client_editing: None,
+            client_search: String::new(),
+            client_status_message: None,
             publish_target: String::new(),
             publish_price: 9.99,
             pending_publish: None,
