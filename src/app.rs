@@ -215,16 +215,29 @@ impl DpfApp {
         // re-add this properly under a real `#[cfg(feature = "embed-font")]`.
         cc.egui_ctx.set_fonts(fonts);
 
+        // Everything below runs on the UI thread BEFORE the first frame is ever painted. If any
+        // step blocks or panics, the window is already on screen and simply stays black — the
+        // exact symptom reported on Windows. Each step is logged so the startup log names the
+        // step it died in instead of just ending. (This whole block is also the reason a black
+        // window cannot be assumed to be a GPU problem: if the log stops here, it never was.)
+        let t0 = std::time::Instant::now();
+        crate::log_line("startup: reading config");
         let config = if let Some(storage) = cc.storage {
             eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default()
         } else {
             AppConfig::default()
         };
 
+        crate::log_line("startup: creating Tokio runtime");
         let runtime = Arc::new(Runtime::new().expect("Failed to create Tokio runtime"));
+
+        crate::log_line("startup: opening database");
         let db = Arc::new(Database::new().expect("Failed to initialize database"));
 
+        crate::log_line("startup: loading pipeline");
         let pipeline = Pipeline::load(&db);
+
+        crate::log_line("startup: building generator");
         let mut generator = ProductGenerator::new(&db, runtime.clone());
         generator.set_api_keys(
             config.openai_key.clone(),
@@ -234,6 +247,7 @@ impl DpfApp {
             config.moonshot_key.clone(),
         );
 
+        crate::log_line("startup: licence + registries");
         let license_manager = LicenseManager::new(&db);
         let template_registry = TemplateRegistry::new();
         let research = MarketResearch::new(runtime.clone());
@@ -475,6 +489,26 @@ impl eframe::App for DpfApp {
         // the do-nothing background thread this replaced) means tasks run against the real
         // modules and their status reflects what actually happened.
         self.tick_scheduler(ctx);
+
+        // THE decisive line. "frame N rendered" means the app finished setup, built its UI and
+        // handed frames to the renderer — so a black window on top of this is the GPU never
+        // PRESENTING, and the fix is a back end / driver matter. If this line never appears, the
+        // app never reached its first frame at all and no amount of renderer-switching will help:
+        // the fault is in startup, above. Only the first few are logged so the file stays small.
+        {
+            use std::sync::atomic::{AtomicUsize, Ordering};
+            static FRAMES: AtomicUsize = AtomicUsize::new(0);
+            let n = FRAMES.fetch_add(1, Ordering::Relaxed);
+            if n < 3 {
+                crate::log_line(&format!(
+                    "frame {} rendered ({} ideas, {}x{} px)",
+                    n + 1,
+                    self.pipeline.ideas.len(),
+                    ctx.screen_rect().width() as i32,
+                    ctx.screen_rect().height() as i32
+                ));
+            }
+        }
 
         if let Some((product_name, platform, price)) = self.pending_publish.take() {
             let product_id = self.pipeline.ideas.iter()

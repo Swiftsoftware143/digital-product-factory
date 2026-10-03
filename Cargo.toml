@@ -1,6 +1,6 @@
 [package]
 name = "digital-product-factory"
-version = "2.2.1"
+version = "2.3.0"
 edition = "2021"
 authors = ["SwiftSoftware143"]
 description = "Digital Product Factory - Native Rust desktop app for automated digital product creation"

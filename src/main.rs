@@ -1,4 +1,13 @@
 //! Digital Product Factory - Pure Rust Native Desktop App
+
+// A GUI app must declare the Windows GUI subsystem, or Windows treats the binary as a CONSOLE
+// program: double-clicking it opens a black console window, and the customer sees that instead of
+// (or behind) the app. It was missing, so every Windows build shipped a console window.
+//
+// Kept ON in debug builds deliberately: a console is what makes a panic readable during
+// development. Release is silent, which is why dpf-startup.log exists.
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 #![allow(dead_code)]
 #![allow(unused_variables, unused_imports)]
 
@@ -41,45 +50,65 @@ mod vector_export;
 use eframe::NativeOptions;
 use std::io::Write;
 
-/// Where the startup log goes.
+/// Every place we will try to write the log.
+///
+/// A missing log is a disaster for diagnosis: it looks identical to "the app never started", and
+/// the first report of this build was exactly that — no file anywhere. So the log is written to
+/// ALL of these simultaneously rather than falling back down a list, and any one of them
+/// surviving is enough. DPF_LOG forces a single explicit path.
 ///
 /// A Windows GUI binary has NO console, so a panic or a renderer failure is otherwise completely
-/// silent: the user sees a black window and there is nothing to send anybody. This log is the
-/// only record of what actually happened, so it is written next to the executable first (easy to
-/// find — it lands beside dpf.exe) and falls back to %APPDATA% and then the temp dir.
-fn log_path() -> std::path::PathBuf {
+/// silent: the user sees a black window and there is nothing to send anybody.
+fn log_paths() -> Vec<std::path::PathBuf> {
     let name = "dpf-startup.log";
-    if let Ok(exe) = std::env::current_exe() {
-        if let Some(dir) = exe.parent() {
-            let p = dir.join(name);
-            // Probe writability once; a Program Files install is read-only.
-            if std::fs::OpenOptions::new()
-                .create(true)
-                .append(true)
-                .open(&p)
-                .is_ok()
-            {
-                return p;
-            }
+    if let Ok(explicit) = std::env::var("DPF_LOG") {
+        if !explicit.trim().is_empty() {
+            return vec![std::path::PathBuf::from(explicit)];
         }
     }
-    if let Ok(appdata) = std::env::var("APPDATA") {
-        let dir = std::path::PathBuf::from(appdata).join("DigitalProductFactory");
-        let _ = std::fs::create_dir_all(&dir);
-        return dir.join(name);
+    let mut out = Vec::new();
+    // 1. beside the executable - the obvious one, and the one to send to support
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(dir) = exe.parent() {
+            out.push(dir.join(name));
+        }
     }
-    std::env::temp_dir().join(name)
+    // 2. %APPDATA%\DigitalProductFactory - always writable for a normal user, survives the
+    //    executable being run from a temp dir (which is what happens when a zip is opened and the
+    //    exe launched from inside it without extracting)
+    if let Ok(appdata) = std::env::var("APPDATA") {
+        out.push(std::path::PathBuf::from(appdata).join("DigitalProductFactory").join(name));
+    }
+    // 3. %TEMP% - last resort, and the one place guaranteed to exist
+    out.push(std::env::temp_dir().join(name));
+    // 4. the process working directory, which for a double-clicked exe is usually its own folder
+    if let Ok(cwd) = std::env::current_dir() {
+        let p = cwd.join(name);
+        if !out.contains(&p) {
+            out.push(p);
+        }
+    }
+    out
 }
 
 fn log(msg: &str) {
     let line = format!("[{}] {}\n", timestamp(), msg);
-    if let Ok(mut f) = std::fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(log_path())
-    {
-        let _ = f.write_all(line.as_bytes());
+    for path in log_paths() {
+        if let Some(dir) = path.parent() {
+            let _ = std::fs::create_dir_all(dir);
+        }
+        if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&path) {
+            let _ = f.write_all(line.as_bytes());
+        }
     }
+}
+
+/// Public so modules that run BEFORE the first frame (notably `app::DpfApp::new`) can record how
+/// far they got. A window that is already on screen and never paints has two completely
+/// different causes — it blocked/panicked during setup, or it painted and the GPU never
+/// presented — and where the log stops is what tells them apart.
+pub fn log_line(msg: &str) {
+    log(msg);
 }
 
 /// Minimal timestamp without pulling in a date crate for this one call.
@@ -169,7 +198,12 @@ fn main() -> eframe::Result<()> {
         std::env::consts::OS,
         std::env::consts::ARCH
     ));
-    log(&format!("log file: {}", log_path().display()));
+    log("log file (written to all of these):");
+    for p in log_paths() {
+        log(&format!("    {}", p.display()));
+    }
+    log(&format!("exe: {:?}", std::env::current_exe()));
+    log(&format!("cwd: {:?}", std::env::current_dir()));
     log(&format!("renderer: {renderer:?} ({why})"));
 
     let mut options = base_options();
