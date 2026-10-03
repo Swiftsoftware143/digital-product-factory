@@ -36,16 +36,40 @@ jobs:
       # Actions artifacts are the wrong tool for a customer link: they expire after 90 days and
       # downloading one requires a GitHub login. A release asset needs neither, so this is what
       # gets handed to a buyer.
+      #
+      # The two .bat launchers ship WITH the exe because the renderer back end cannot be chosen
+      # automatically: some integrated GPUs render a black window under OpenGL/Glow, others under
+      # wgpu/DirectX, the app cannot detect which, and winit forbids retrying the other back end
+      # inside one process (only one EventLoop per process). So the buyer gets a double-clickable
+      # way to switch instead of a command line. Whatever fails, dpf.exe writes dpf-startup.log
+      # beside itself, which names the back end and the reason.
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: target/release/dpf.exe
+          files: |
+            target/release/dpf.exe
+            dist/dpf-glow.bat
+            dist/dpf-wgpu.bat
           generate_release_notes: true
           body: |
             Digital Product Factory — Windows desktop build.
 
-            Download `dpf.exe` below and run it. No installer required.
+            **Getting started**
 
-            Bring your own AI key: paste a key from OpenAI, Anthropic, Google, DeepSeek or
-            Moonshot in Settings (only one is needed to start).
+            1. Download `dpf.exe` below and run it. No installer required.
+            2. Add your AI key: Settings → paste a key from OpenAI, Anthropic, Google, DeepSeek or
+               Moonshot. Only one is needed to start (you bring your own — the app never supplies one).
+            3. If you have a licence key, open it with the 🔑 Licence button in the left sidebar.
+
+            **If the window is black**
+
+            A few graphics drivers render this app as a blank window on one of the two drawing
+            back ends. It is a driver quirk, not a fault in your copy, and the fix is a double-click:
+
+            * `dpf-glow.bat` — run with OpenGL
+            * `dpf-wgpu.bat` — run with DirectX
+
+            If one is black, the other normally works. Either way, `dpf.exe` writes
+            **`dpf-startup.log`** next to itself — that file names the back end that failed and why,
+            and is the single most useful thing to send to support.
