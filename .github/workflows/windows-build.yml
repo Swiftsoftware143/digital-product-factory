@@ -43,33 +43,55 @@ jobs:
       # inside one process (only one EventLoop per process). So the buyer gets a double-clickable
       # way to switch instead of a command line. Whatever fails, dpf.exe writes dpf-startup.log
       # beside itself, which names the back end and the reason.
+      - name: Assemble the download folder
+        shell: pwsh
+        # Everything a buyer needs goes into ONE folder, then that folder is zipped, so the
+        # download is a single file and everything arrives together. This matters because the
+        # .bat launchers are useless away from dpf.exe - they resolve it relative to themselves
+        # (%~dp0). Shipping three separate release assets made "put them in the same folder"
+        # the buyer's problem, which is one support ticket per confused customer.
+        run: |
+          New-Item -ItemType Directory -Force -Path staging/DigitalProductFactory | Out-Null
+          Copy-Item target/release/dpf.exe        staging/DigitalProductFactory/
+          Copy-Item dist/dpf-glow.bat             staging/DigitalProductFactory/
+          Copy-Item dist/dpf-wgpu.bat             staging/DigitalProductFactory/
+          Copy-Item dist/START-HERE.txt           staging/DigitalProductFactory/
+          Compress-Archive -Path staging/DigitalProductFactory `
+                           -DestinationPath DigitalProductFactory-windows.zip -Force
+          Write-Host "zip contents:"
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [System.IO.Compression.ZipFile]::OpenRead("$PWD/DigitalProductFactory-windows.zip").Entries |
+            ForEach-Object { Write-Host ("  " + $_.FullName + "  " + $_.Length + " bytes") }
+
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            target/release/dpf.exe
-            dist/dpf-glow.bat
-            dist/dpf-wgpu.bat
+            DigitalProductFactory-windows.zip
           generate_release_notes: true
           body: |
-            Digital Product Factory — Windows desktop build.
+            Digital Product Factory — Windows build.
+
+            **Download `DigitalProductFactory-windows.zip` and unzip it.** Everything you need is
+            inside one folder — keep the files together, because the two launcher files have to
+            sit next to the program to work.
 
             **Getting started**
 
-            1. Download `dpf.exe` below and run it. No installer required.
+            1. Run `dpf.exe`. No installer required.
             2. Add your AI key: Settings → paste a key from OpenAI, Anthropic, Google, DeepSeek or
-               Moonshot. Only one is needed to start (you bring your own — the app never supplies one).
+               Moonshot. Only one is needed to start — you bring your own, the app never supplies one.
             3. If you have a licence key, open it with the 🔑 Licence button in the left sidebar.
 
             **If the window is black**
 
-            A few graphics drivers render this app as a blank window on one of the two drawing
+            A few graphics drivers draw this app as a blank window on one of the two drawing
             back ends. It is a driver quirk, not a fault in your copy, and the fix is a double-click:
 
             * `dpf-glow.bat` — run with OpenGL
             * `dpf-wgpu.bat` — run with DirectX
 
-            If one is black, the other normally works. Either way, `dpf.exe` writes
-            **`dpf-startup.log`** next to itself — that file names the back end that failed and why,
-            and is the single most useful thing to send to support.
+            If one is black, the other normally works. Either way `dpf.exe` writes
+            **`dpf-startup.log`** into the same folder — that file names the back end that failed
+            and why, and is the single most useful thing to send to support.

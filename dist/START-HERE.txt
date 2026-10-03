@@ -1,0 +1,47 @@
+DIGITAL PRODUCT FACTORY — START HERE
+=====================================
+
+1. RUN IT
+   Double-click dpf.exe.
+
+   There is no installer. The app is a single program; nothing is written
+   anywhere except its own folder and your Windows user data.
+
+2. ADD YOUR AI KEY (needed before it can generate anything)
+   Open Settings and paste ONE key from any of these:
+
+       OpenAI      Anthropic      Google      DeepSeek      Moonshot
+
+   You bring your own key. The app does not include one and does not
+   supply one - you pay your chosen provider directly, at their prices.
+
+3. IF YOU HAVE A LICENCE KEY
+   Click the key button at the bottom of the left sidebar and paste it in.
+
+
+IF THE WINDOW IS BLACK
+----------------------
+
+A small number of graphics drivers draw this app as a blank window on one
+of the two drawing methods it can use. It is a driver quirk, not a fault in
+your copy, and the fix is one double-click:
+
+    dpf-glow.bat    run with OpenGL
+    dpf-wgpu.bat    run with DirectX
+
+If one is black, the other normally works.
+
+Either way, dpf.exe writes a file called dpf-startup.log into this same
+folder. It records which method was tried and exactly what went wrong.
+If you need support, send that file - it is the single most useful thing
+you can provide.
+
+
+FILES IN THIS FOLDER
+--------------------
+
+    dpf.exe           the application
+    dpf-glow.bat      start it with OpenGL     (use if dpf.exe is black)
+    dpf-wgpu.bat      start it with DirectX    (the default)
+    START-HERE.txt    this file
+    dpf-startup.log   created after you run it - send this if you need help
