@@ -548,6 +548,27 @@ mod tests {
         }
     }
 
+    /// A key minted by the LIVE control centre must activate.
+    ///
+    /// `dpf.swiftsoftware.net` is a separate service holding its own copy of the minting
+    /// algorithm. That makes this the cross-system contract, and it is the only one that
+    /// matters commercially: if the panel mints something this app rejects, the customer has
+    /// paid for software they cannot unlock — and nothing in either codebase would notice,
+    /// because each side's tests only prove it agrees with itself.
+    ///
+    /// The key below was minted by the running service during a smoke test on 2026-10-03.
+    #[test]
+    fn control_centre_minted_keys_validate() {
+        let key = "DPF-TEAM-SMK0TEST-64YJ";
+        let tier = LicenseManager::validate_key(key, &[])
+            .unwrap_or_else(|e| panic!("the CONTROL CENTRE's key was refused: {e}"));
+        assert_eq!(tier, LicenseTier::Team);
+
+        // And the same key must be reproducible from the app's own minting code, proving both
+        // implementations are computing the same thing rather than coincidentally agreeing.
+        assert_eq!(mint_key(&LicenseTier::Team, "SMK0TEST"), key);
+    }
+
     /// Customers paste messily. Stray whitespace and lower case must both still activate,
     /// because a rejected key here looks to the customer like a key that was never delivered.
     #[test]
