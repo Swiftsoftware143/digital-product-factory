@@ -55,7 +55,9 @@ fn show_dashboard(app: &mut DpfApp, ctx: &Context) {
     // First-run guidance. Without a provider key nothing can generate, and a new user would
     // otherwise only discover that when their first Generate fails with a terse error.
     let needs_key = app.has_no_api_key();
+    let needs_licence = !app.license_manager.is_licensed();
     let mut open_settings = false;
+    let mut open_licence = false;
 
     CentralPanel::default().show(ctx, |ui| {
         ui.horizontal(|ui| {
@@ -92,6 +94,37 @@ fn show_dashboard(app: &mut DpfApp, ctx: &Context) {
             ui.add_space(6.0);
         }
 
+        // A customer who has bought a licence needs to know WHERE it goes. Nothing used to point
+        // at the 🔑 Licence button at all, so a new owner could sit on the free Personal tier
+        // believing nothing had been delivered to them.
+        if needs_licence {
+            Frame::group(ui.style())
+                .fill(Color32::from_rgb(28, 46, 62))
+                .stroke(Stroke::new(1.0_f32, Color32::from_rgb(70, 120, 165)))
+                .show(ui, |ui| {
+                    ui.horizontal(|ui| {
+                        ui.label(
+                            RichText::new("🔑 Running on the free Personal plan")
+                                .strong()
+                                .color(Color32::from_rgb(150, 200, 250)),
+                        );
+                        ui.label("— paste the licence key you were sent to unlock more.");
+                        if ui.button("🔑 Enter licence key").clicked() {
+                            open_licence = true;
+                        }
+                    });
+                    ui.label(
+                        RichText::new(
+                            "Your key looks like DPF-TEAM-XXXXXXXX-CCCC. You can also reach this \
+                             from the 🔑 Licence button at the bottom of the sidebar.",
+                        )
+                        .size(11.0)
+                        .weak(),
+                    );
+                });
+            ui.add_space(6.0);
+        }
+
         ui.horizontal(|ui| {
             stat_card(ui, "Total Ideas", &app.pipeline.ideas.len().to_string());
             stat_card(ui, "In Progress", &app.pipeline.ideas_by_stage(crate::pipeline::PipelineStage::Creating).len().to_string());
@@ -115,6 +148,9 @@ fn show_dashboard(app: &mut DpfApp, ctx: &Context) {
 
     if open_settings {
         app.show_settings = true;
+    }
+    if open_licence {
+        app.show_license_dialog = true;
     }
 }
 
