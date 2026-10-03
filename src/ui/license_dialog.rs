@@ -95,9 +95,8 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
                         format!("{} seat{}", t.max_devices(), if t.max_devices() == 1 { "" } else { "s" })
                     };
                     ui.label(format!(
-                        "• {} — {}  ({}, {} modules)",
+                        "• {} — {}  ({} modules)",
                         t.display_name(),
-                        t.price_label(),
                         seats,
                         features_for_tier(&t).len()
                     ));

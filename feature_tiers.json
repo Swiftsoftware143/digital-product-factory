@@ -69,8 +69,7 @@
         "logo_generator",
         "vector_generator",
         "client_management",
-        "compliance",
-        "custom_integrations"
+        "compliance"
       ]
     },
     "enterprise": {
@@ -100,8 +99,6 @@
         "vector_generator",
         "client_management",
         "compliance",
-        "custom_integrations",
-        "api_access",
         "admin_panel"
       ]
     }

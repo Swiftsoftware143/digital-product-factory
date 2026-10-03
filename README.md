@@ -43,25 +43,26 @@ cargo run
 
 | File | Purpose |
 |------|---------|
-| \eature_tiers.json\ | Feature-to-license-tier mapping |
-| \pricing.json\ | Pricing and plan details |
-| \platform_formats.json\ | Marketplace format requirements |
-| \
-evoked_keys.json\ | Revoked license keys list |
+| `feature_tiers.json` | Feature-to-license-tier mapping |
+| `platform_formats.json` | Marketplace format requirements |
+| `revoked_keys.json` | Revoked licence keys, refused at activation |
 
+There is deliberately no `pricing.json`: prices live on the sales page, never in the software.
 ## Inline Help
 
 Press **❓ Help** in the status bar or click **?** next to any section header for contextual help. Full help index available from the status bar button. All license tiers can access all help content.
 
 ## License Tiers
 
-| Tier | Price | Users | Key Features |
-|------|-------|-------|--------------|
-| Personal | Free | 1 | Pipeline, Create, Research, Contracts, Export |
-| Team | \/mo | 5 | Personal + Analytics, Publishing, Bundles, Scheduler |
-| Agency | \/mo | 20 | Team + Client Management |
-| Enterprise | \/mo | Unlimited | All features + API access |
+| Tier | Users | Key Features |
+|------|-------|--------------|
+| Personal | 1 | Pipeline, Create, Research, Contracts, Export |
+| Team | 5 | Personal + Analytics, Publishing, Bundles, Scheduler |
+| Agency | 20 | Team + Client Management |
+| Enterprise | Unlimited | All features |
 
+Prices are not part of the software: they live on the sales page, because a licence may be a
+one-time payment or a subscription.
 ## Project Structure
 
 \\\

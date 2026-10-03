@@ -20,7 +20,6 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
         ui.horizontal(|ui| {
             let sections = [
                 (AdminSection::Features, "📋 Feature Tiers"),
-                (AdminSection::Pricing, "💰 Pricing"),
                 (AdminSection::Formats, "📐 Platform Formats"),
                 (AdminSection::Keys, "🔑 License Keys"),
                 (AdminSection::Revocations, "⛔ Revocations"),
@@ -36,7 +35,6 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
 
         match app.admin.active_section {
             AdminSection::Features => show_feature_tiers(app, ui),
-            AdminSection::Pricing => show_pricing(app, ui),
             AdminSection::Formats => show_platform_formats(app, ui),
             AdminSection::Keys => show_license_keys(app, ui),
             AdminSection::Revocations => show_revocations(app, ui),
@@ -76,31 +74,11 @@ fn show_feature_tiers(app: &mut DpfApp, ui: &mut Ui) {
     }
 }
 
-/// Pricing — JSON editor
-fn show_pricing(app: &mut DpfApp, ui: &mut Ui) {
-    ui.horizontal(|ui| {
-        ui.strong("Pricing Configuration");
-        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-            if ui.button("💾 Save").clicked() {
-                app.admin.save_config("pricing");
-            }
-        });
-    });
-    ui.label("Edit pricing data as JSON. Format: { tier: { price: number, period: string } }");
-    ui.separator();
-
-    let mut json_str = serde_json::to_string_pretty(&app.admin.pricing_data).unwrap_or_default();
-    let response = egui::TextEdit::multiline(&mut json_str)
-        .font(TextStyle::Monospace)
-        .desired_rows(16)
-        .code_editor()
-        .ui(ui);
-    if response.lost_focus() {
-        if let Ok(v) = serde_json::from_str(&json_str) {
-            app.admin.pricing_data = v;
-        }
-    }
-}
+/// There is deliberately no Pricing section.
+///
+/// The app used to ship a JSON editor for a price table. Prices belong on the sales page: a
+/// licence can be sold one-time or as a subscription, and a price compiled into a shipped
+/// binary is wrong for whoever got the other deal — and stale the moment pricing changes.
 
 /// Platform Formats — JSON editor
 fn show_platform_formats(app: &mut DpfApp, ui: &mut Ui) {

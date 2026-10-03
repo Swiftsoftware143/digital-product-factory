@@ -22,34 +22,37 @@ DRM.
 ### How Activation Works
 
 Activation is implemented in `src/license_manager.rs` and runs entirely offline. On
-**Activate**, `LicenseManager::activate()` performs these steps in order:
+**Activate**, `LicenseManager::activate` performs these steps in order:
 
 1. **Shape** — the key must split on `-` into exactly four segments with the first
-   segment `DPF`. Otherwise it is refused.
+ segment `DPF`. Otherwise it is refused.
 2. **Tier token** — segment 2 must be `PERSONAL`, `TEAM`, `AGENCY`, or `ENTERPRISE`.
-   Any other value is refused.
+ Any other value is refused.
 3. **Check code** — the app computes an **FNV-1a (64-bit)** hash over the string
-   `"<TIER>-<BLOCK><SALT>"`, where `SALT = "dpf-1.4.2-license"` (`SALT` is a
-   compile-time constant in `license_manager.rs`). The hash is rendered as **four
-   characters** drawn from the alphabet `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`. That
-   4-character value must equal segment 4. A single wrong character is rejected.
+ `"<TIER>-<BLOCK><SALT>"`, where `SALT = "dpf-1.4.2-license"` (`SALT` is a
+ compile-time constant in `license_manager.rs`). The hash is rendered as **four
+ characters** drawn from the alphabet `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`. That
+ 4-character value must equal segment 4. A single wrong character is rejected.
 4. **Revocation** — the full key is compared (case-insensitively) against the
-   `revoked_keys` array in `revoked_keys.json`. A listed key is refused.
+ `revoked_keys` array in `revoked_keys.json`. A listed key is refused.
 
 On success the licence is persisted to the SQLite `licenses` table so activation
-survives a restart; `LicenseManager::new()` reloads an active licence at startup.
+survives a restart; `LicenseManager::new` reloads an active licence at startup.
 Deactivating removes the row and returns the app to the free tier.
 
 ### License Tiers
 
 Tier is encoded in the key and enforced by the feature list for that tier.
 
-| Tier | Key token | Seats | Price | Features unlocked (count) |
-|------|-----------|-------|-------|---------------------------|
-| **Personal** (default/free) | `PERSONAL` | 1 | Free | 8 |
-| **Team** | `TEAM` | 5 | $29/month | 19 |
-| **Agency** | `AGENCY` | 20 | $99/month | 23 |
-| **Enterprise** | `ENTERPRISE` | Unlimited | $299/month | 25 |
+| Tier | Key token | Seats | Features unlocked (count) |
+|------|-----------|-------|---------------------------|
+| **Personal** (default/free) | `PERSONAL` | 1 | 8 |
+| **Team** | `TEAM` | 5 | 19 |
+| **Agency** | `AGENCY` | 20 | 21 |
+| **Enterprise** | `ENTERPRISE` | Unlimited | 22 |
+
+Prices are set on the sales page, never in the software — a licence may be sold one-time or as
+a subscription, so a price compiled into a shipped binary would be wrong for someone.
 
 An install with no active licence sits on the free **Personal** tier. That default is
 what makes gating work with no key present.
@@ -80,10 +83,10 @@ Each tier is a strict **superset** of the tier below it (enforced by the
 `scheduler`, `adverts`, `qc`, `assets`, `webhooks`, `mockup_compositor`,
 `logo_generator`, `vector_generator`
 
-**Agency** (22) — all Team features plus: `client_management`,
-`compliance`, `custom_integrations`
+**Agency** (21) — all Team features plus: `client_management`,
+`compliance`
 
-**Enterprise** (24) — all Agency features plus: `api_access`, `admin_panel`
+**Enterprise** (22) — all Agency features plus: `admin_panel`
 
 ### Tab → feature slug
 
@@ -126,12 +129,12 @@ Structure:
 
 ```json
 {
-  "tiers": {
-    "personal":   { "name": "Personal",   "price": 0,   "period": "free",  "devices": 1,  "features": ["pipeline", "..."] },
-    "team":       { "name": "Team",       "price": 29,  "period": "month", "devices": 5,  "features": ["pipeline", "..."] },
-    "agency":     { "name": "Agency",     "price": 99,  "period": "month", "devices": 20, "features": ["pipeline", "..."] },
-    "enterprise": { "name": "Enterprise", "price": 299, "period": "month", "devices": -1, "features": ["pipeline", "..."] }
-  }
+ "tiers": {
+ "personal": { "name": "Personal", "price": 0, "period": "free", "devices": 1, "features": ["pipeline", "..."] },
+ "team": { "name": "Team", "price": 29, "period": "month", "devices": 5, "features": ["pipeline", "..."] },
+ "agency": { "name": "Agency", "price": 99, "period": "month", "devices": 20, "features": ["pipeline", "..."] },
+ "enterprise": { "name": "Enterprise", "price": 299, "period": "month", "devices": -1, "features": ["pipeline", "..."] }
+ }
 }
 ```
 
@@ -140,19 +143,6 @@ misspelled, or the file is corrupt, the lookup fails and the app **silently fall
 to the built-in table in `license_manager.rs`. Editing this file therefore has no effect
 unless the first key is exactly `"tiers"` and the JSON parses. Verify any edit by
 re-launching and re-checking which tabs are locked.
-
-### pricing.json
-
-Tier prices and billing periods, read for display. The real file is minimal:
-
-```json
-{
-  "personal":   { "price": 0,   "period": "free" },
-  "team":       { "price": 29,  "period": "month" },
-  "agency":     { "price": 99,  "period": "month" },
-  "enterprise": { "price": 299, "period": "month" }
-}
-```
 
 ### platform_formats.json
 
@@ -185,7 +175,7 @@ saving). Revocation is checked **only at activation time**. Consequences:
 
 - A key that has never been activated on a machine is refused once listed.
 - A key that is **already activated continues to work** until it is deactivated and
-  re-activated. Revocation does not retroactively kick out a running install.
+ re-activated. Revocation does not retroactively kick out a running install.
 
 State this limitation honestly to customers. Distributing a new `revoked_keys.json`
 only affects installs that re-activate.
@@ -226,11 +216,11 @@ instructions, aspect-ratio constraints, and brand-identity extraction.
 ### Troubleshooting
 
 - **Generation fails:** confirm an LLM API key is configured in Settings and has
-  credits; check connectivity. The error is logged in the database.
+ credits; check connectivity. The error is logged in the database.
 - **Export produces empty files:** the advert must have `status` of draft/ready with copy
-  populated; check disk space and write permission to the exports folder.
+ populated; check disk space and write permission to the exports folder.
 - **Preview looks wrong:** verify the pipeline product exists with a thumbnail, and
-  re-generate the concept if the `layout_specs_json` is corrupt.
+ re-generate the concept if the `layout_specs_json` is corrupt.
 
 ---
 
@@ -263,9 +253,9 @@ Keys are minted with the Python tool:
 Usage:
 
 ```bash
-python3 dpf-mint-license.py TEAM AB12CD34     # mint one key for a given block
-python3 dpf-mint-license.py --batch TEAM 5     # mint 5 keys with random blocks
-python3 dpf-mint-license.py --tiers            # print the tier table
+python3 dpf-mint-license.py TEAM AB12CD34 # mint one key for a given block
+python3 dpf-mint-license.py --batch TEAM 5 # mint 5 keys with random blocks
+python3 dpf-mint-license.py --tiers # print the tier table
 ```
 
 The Python tool and the Rust app implement the **identical** FNV-1a algorithm over
@@ -289,7 +279,7 @@ Rust-side minting uses `license_manager::mint_key(&tier, block)`, which shares t
 
 ### Validating keys
 
-When a user enters a key, `activate()`:
+When a user enters a key, `activate`:
 
 1. Checks the `DPF-…` four-segment shape and a recognised tier token.
 2. Recomputes the FNV-1a check code and compares it to segment 4.
@@ -321,7 +311,7 @@ admin panel edits the four JSON config files and the revocation list only.
 
 ### The Admin panel key generator is a valid minting path
 
-The Admin panel's **License Keys** section calls `AdminState::generate_key()`, which delegates to
+The Admin panel's **License Keys** section calls `AdminState::generate_key`, which delegates to
 `license_manager::mint_key` — the *same* function the activation path validates against. A key
 minted in the panel **will activate**, and carries the same FNV-1a check code as keys from
 `/opt/swift/scripts/dpf-mint-license.py`. All three surfaces (app, Admin panel, minting script)
@@ -339,9 +329,9 @@ API keys are **not** entered in the Admin panel. The app exposes them in Setting
 places only:
 
 - The in-tab **API Keys** group (`src/ui/main_content.rs`) — **OpenAI** and
-  **Anthropic** only.
+ **Anthropic** only.
 - The **Settings dialog** (`src/ui/settings_dialog.rs`) — **all five** providers:
-  OpenAI, Anthropic, Google, DeepSeek, Moonshot.
+ OpenAI, Anthropic, Google, DeepSeek, Moonshot.
 
 That is the complete provider-key surface. The Admin panel does not edit API keys.
 
@@ -364,18 +354,17 @@ module as **not implemented**: do not document it as a working automation endpoi
 ## Deployment Checklist
 
 1. **Ship the four config files in the app's working directory:**
-   - `feature_tiers.json` (first key must be `"tiers"`)
-   - `pricing.json`
-   - `platform_formats.json`
-   - `revoked_keys.json` (`{"revoked_keys": []}`)
+ - `feature_tiers.json` (first key must be `"tiers"`)
+ - `platform_formats.json`
+ - `revoked_keys.json` (`{"revoked_keys": []}`)
 2. **Database:** SQLite file `dpf_data.db`, opened **relative to the working directory**
-   (not `$HOME`).
+ (not `$HOME`).
 3. **LLM provider keys (user-provided, in Settings):** OpenAI, Anthropic, Google,
-   DeepSeek, Moonshot.
+ DeepSeek, Moonshot.
 4. **Marketplace API keys:** Etsy API key, Gumroad access token.
 5. **Font:** `/assets/Inter-Regular.ttf`
 6. **Minting tool available at** `/opt/swift/scripts/dpf-mint-license.py` for
-   issuing keys.
+ issuing keys.
 
 ---
 
@@ -400,10 +389,10 @@ The licence system is covered by **five unit tests** in `src/license_manager.rs`
 ### Manual gating test
 
 1. Launch with no licence — confirm only Personal features are reachable and every paid
-   tab is dimmed with a 🔒.
+ tab is dimmed with a 🔒.
 2. Activate a `TEAM` key — confirm Team tabs unlock.
 3. Activate an `AGENCY` key — confirm client management, compliance and
-   custom integrations unlock.
+ custom integrations unlock.
 4. Activate an `ENTERPRISE` key — confirm API access and the Admin panel unlock.
 5. Try a tampered key (change one character) — confirm rejection.
 6. Add a key to `revoked_keys.json`, then try to activate it — confirm rejection.
@@ -421,7 +410,6 @@ The licence system is covered by **five unit tests** in `src/license_manager.rs`
 | File | Purpose | Location |
 |------|---------|----------|
 | `feature_tiers.json` | Tier → feature list (gating source of truth) | App working directory |
-| `pricing.json` | Tier prices and billing periods | App working directory |
 | `platform_formats.json` | Per-marketplace format/tag/length limits | App working directory |
 | `revoked_keys.json` | Revoked licence keys (`{"revoked_keys": []}`) | App working directory |
 | `dpf_data.db` | SQLite database (licences, products, campaigns, adverts, …) | App working directory |

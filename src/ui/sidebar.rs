@@ -58,11 +58,12 @@ fn tab_item(app: &mut DpfApp, ui: &mut Ui, tab: Tab, label: &str) {
 
     let required = LicenseManager::required_tier_for(feature);
     let hint = match required {
+        // No price in the hint: the software says which plan unlocks the tab, and the sales page
+        // says what it costs.
         Some(t) => format!(
-            "{} needs the {} plan ({}). Click to enter a licence key.",
+            "{} needs the {} plan. Click to enter a licence key.",
             label,
-            t.display_name(),
-            t.price_label()
+            t.display_name()
         ),
         None => format!("{} is not included in this licence.", label),
     };

@@ -27,9 +27,9 @@
 1. Download the latest release from GitHub
 2. Extract the archive
 3. Run the executable:
-   - Windows: `dpf.exe`
-   - macOS: `dpf`
-   - Linux: `dpf`
+ - Windows: `dpf.exe`
+ - macOS: `dpf`
+ - Linux: `dpf`
 
 ### First Launch
 
@@ -42,12 +42,12 @@ On first launch, you'll see:
 
 1. Click **⚙ Settings** — the button at the **bottom of the left sidebar** (there is no top-right settings icon).
 2. Add your own API keys. The app ships with **no AI credits**; you bring your own keys (see [Bring Your Own Key (BYOK)](#bring-your-own-key-byok)):
-   - OpenAI API key (for GPT-4o, GPT-3.5)
-   - Anthropic API key (for Claude)
-   - Google API key (for Gemini)
-   - DeepSeek API key (for DeepSeek Chat)
-   - Moonshot API key (for Moonshot v1)
-   All five fields are **masked** on screen and stored locally in the app's own config on your machine.
+ - OpenAI API key (for GPT-4o, GPT-3.5)
+ - Anthropic API key (for Claude)
+ - Google API key (for Gemini)
+ - DeepSeek API key (for DeepSeek Chat)
+ - Moonshot API key (for Moonshot v1)
+ All five fields are **masked** on screen and stored locally in the app's own config on your machine.
 3. Configure preferences (auto-save, dark mode)
 4. Click **Save**
 
@@ -89,7 +89,7 @@ Industry Presets are pre-configured workflows designed for specific business mod
 ### How Industries Benefit from Digital Product Factory
 
 #### Affiliate Marketing
-**Who:** Product reviewers, email marketers, comparison site owners, YouTube reviewers  
+**Who:** Product reviewers, email marketers, comparison site owners, YouTube reviewers 
 **Benefits:**
 - **AI Content Generation**: Create review copy, email sequences, and social posts in minutes
 - **Legal Compliance**: Auto-generate affiliate disclosures and FTC compliance text
@@ -108,7 +108,7 @@ Industry Presets are pre-configured workflows designed for specific business mod
 ---
 
 #### Content Creator / Influencer
-**Who:** YouTubers, TikTok creators, Instagram influencers, podcasters, newsletter writers  
+**Who:** YouTubers, TikTok creators, Instagram influencers, podcasters, newsletter writers 
 **Benefits:**
 - **Sponsor Deal Management**: Generate contracts, SOWs, and rate cards
 - **Content Pipeline**: Track scripts → filming → editing → publishing
@@ -128,7 +128,7 @@ Industry Presets are pre-configured workflows designed for specific business mod
 ---
 
 #### Creator + Affiliate Hybrid
-**Who:** YouTubers with affiliate links, newsletter writers, review channel owners  
+**Who:** YouTubers with affiliate links, newsletter writers, review channel owners 
 **Benefits:**
 - **Dual Revenue Streams**: Manage brand deals AND affiliate revenue in one workflow
 - **Authentic Integration**: Blend sponsored content with natural affiliate mentions
@@ -148,7 +148,7 @@ Industry Presets are pre-configured workflows designed for specific business mod
 ---
 
 #### E-Learning & Online Courses
-**Who:** Course creators, coaches, mentors, training program builders, membership site owners  
+**Who:** Course creators, coaches, mentors, training program builders, membership site owners 
 **Benefits:**
 - **Curriculum Design**: AI-assisted course structure and learning objectives
 - **Content Creation**: Generate scripts, workbooks, and assessments
@@ -168,7 +168,7 @@ Industry Presets are pre-configured workflows designed for specific business mod
 ---
 
 #### SaaS & Software Products
-**Who:** SaaS founders, app developers, API providers, dev tool creators  
+**Who:** SaaS founders, app developers, API providers, dev tool creators 
 **Benefits:**
 - **Product Roadmap**: Track features from idea to shipped
 - **Legal Foundation**: Terms of Service, Privacy Policy, EULA generation
@@ -188,7 +188,7 @@ Industry Presets are pre-configured workflows designed for specific business mod
 ---
 
 #### Digital Marketing Agency
-**Who:** Marketing agencies, PPC managers, SEO consultants, social media managers  
+**Who:** Marketing agencies, PPC managers, SEO consultants, social media managers 
 **Benefits:**
 - **Client Onboarding**: Service agreements, SOWs, KPI definitions
 - **Campaign Management**: Full pipeline from pitch to performance report
@@ -208,7 +208,7 @@ Industry Presets are pre-configured workflows designed for specific business mod
 ---
 
 #### Freelancer / Consultant
-**Who:** Freelance developers, designers, writers, business consultants  
+**Who:** Freelance developers, designers, writers, business consultants 
 **Benefits:**
 - **Lead Management**: Qualify prospects and track inquiries
 - **Proposal Generation**: AI-written custom proposals with pricing
@@ -228,7 +228,7 @@ Industry Presets are pre-configured workflows designed for specific business mod
 ---
 
 #### Info Products & Templates
-**Who:** Template creators, ebook authors, Notion template sellers, digital download shops  
+**Who:** Template creators, ebook authors, Notion template sellers, digital download shops 
 **Benefits:**
 - **Trend Research**: Identify hot topics and validate demand
 - **Rapid Creation**: AI-generated content and designs
@@ -249,7 +249,7 @@ Industry Presets are pre-configured workflows designed for specific business mod
 ---
 
 #### Business Setup (Complete Workflow)
-**Who:** New Etsy sellers, POD entrepreneurs, digital product beginners, side hustlers  
+**Who:** New Etsy sellers, POD entrepreneurs, digital product beginners, side hustlers 
 **Benefits:**
 - **Step-by-Step Guidance**: 12-stage workflow from zero to launch
 - **Platform Setup**: Covers all major marketplaces (Etsy, eBay, Gumroad)
@@ -287,11 +287,11 @@ Industry Presets are pre-configured workflows designed for specific business mod
 
 ### Choosing the Right Preset
 
-**Just starting out?** → Business Setup  
-**Have an audience?** → Content Creator or Creator Hybrid  
-**Want passive income?** → Affiliate Marketing or Info Products  
-**Have expertise to teach?** → E-Learning  
-**Building software?** → SaaS  
+**Just starting out?** → Business Setup 
+**Have an audience?** → Content Creator or Creator Hybrid 
+**Want passive income?** → Affiliate Marketing or Info Products 
+**Have expertise to teach?** → E-Learning 
+**Building software?** → SaaS 
 **Serving clients?** → Freelancer or Marketing Agency
 
 **Pro Tip:** You can load multiple presets and combine workflows. Many successful creators use a hybrid approach.
@@ -358,11 +358,11 @@ Switch between three views using the toolbar:
 **Quick Add:**
 1. Click **"➕ Quick Add Idea"** button
 2. Fill in:
-   - Title (required)
-   - Description
-   - Product type
-   - Priority (Low/Medium/High/Urgent)
-   - Estimated value
+ - Title (required)
+ - Description
+ - Product type
+ - Priority (Low/Medium/High/Urgent)
+ - Estimated value
 3. Click **Add Idea**
 
 **From Dashboard:**
@@ -515,9 +515,9 @@ Click **Preview Prompt** in the Create tab to see the exact prompt a template wi
 1. Go to **Research** tab
 2. Enter search query (e.g., "digital planner 2026")
 3. Select platforms:
-   - Etsy (handmade/creative)
-   - Gumroad (digital products)
-   - Amazon (broader market)
+ - Etsy (handmade/creative)
+ - Gumroad (digital products)
+ - Amazon (broader market)
 4. Click **🔍 Search**
 
 ### Understanding Results
@@ -568,14 +568,14 @@ Click any trend to auto-fill search.
 
 1. Go to **Contracts** section (in Create tab)
 2. Select contract type:
-   - Freelance Service Agreement
-   - Mutual NDA
-   - Rental/Lease Agreement
-   - Employment Contract
-   - Sales of Goods
-   - Partnership Agreement
-   - Consulting Agreement
-   - Coaching Agreement
+ - Freelance Service Agreement
+ - Mutual NDA
+ - Rental/Lease Agreement
+ - Employment Contract
+ - Sales of Goods
+ - Partnership Agreement
+ - Consulting Agreement
+ - Coaching Agreement
 
 ### Guided Prompts
 
@@ -893,15 +893,15 @@ Click **📢 Adverts** in the sidebar under the Business section. Requires a Pip
 - **Campaign** — A grouping of adverts targeting a specific product and audience
 - **Advert** — A single creative in a specific aspect ratio with AI copy and visual concept
 - **Aspect Ratios** — 3 formats supported:
-  - **Square (1:1)** — 1080×1080 px — Instagram feed, Facebook feed
-  - **Story (9:16)** — 1080×1920 px — Instagram Stories, TikTok, Facebook Stories
-  - **Landscape (16:9)** — 1200×628 px — Facebook link ads, Google Display, retargeting
+ - **Square (1:1)** — 1080×1080 px — Instagram feed, Facebook feed
+ - **Story (9:16)** — 1080×1920 px — Instagram Stories, TikTok, Facebook Stories
+ - **Landscape (16:9)** — 1200×628 px — Facebook link ads, Google Display, retargeting
 - **Copy Frameworks** — 5 AI frameworks for ad copy:
-  - **PAS** — Problem → Agitate → Solution
-  - **AIDA** — Attention → Interest → Desire → Action
-  - **BAB** — Before → After → Bridge
-  - **Social Proof** — Testimonials, stats, trust signals
-  - **Benefit-Driven** — Feature → Benefit → Outcome
+ - **PAS** — Problem → Agitate → Solution
+ - **AIDA** — Attention → Interest → Desire → Action
+ - **BAB** — Before → After → Bridge
+ - **Social Proof** — Testimonials, stats, trust signals
+ - **Benefit-Driven** — Feature → Benefit → Outcome
 - **Conversion Score** — AI-generated score (0-100) predicting creative effectiveness with reasoning
 - **Brand Identity** — Extracted brand voice, recommended color palette, target platforms
 - **Layout Spec** — Per-ratio positioning: headline position, subheadline position, CTA position, product scale percentage, product rotation
@@ -911,13 +911,13 @@ Click **📢 Adverts** in the sidebar under the Business section. Requires a Pip
 1. Open the **📢 Adverts** tab
 2. Click **New Campaign**
 3. Fill in:
-   - **Campaign Name** — Internal label (e.g., "Q4 Product Launch")
-   - **Description** — Campaign strategy notes
-   - **Goal** — Campaign goal (Lead Generation, Brand Awareness, Sales Conversion, or Promo Sale)
-   - **Product Name** — Select from existing Pipeline products
-   - **Target Audience** — Describe who you're targeting (e.g., "Small business owners aged 25-45")
-   - **Landing URL** — Optional click destination
-   - **Platform** — Facebook, Instagram, Google, TikTok, LinkedIn, Print, or Other
+ - **Campaign Name** — Internal label (e.g., "Q4 Product Launch")
+ - **Description** — Campaign strategy notes
+ - **Goal** — Campaign goal (Lead Generation, Brand Awareness, Sales Conversion, or Promo Sale)
+ - **Product Name** — Select from existing Pipeline products
+ - **Target Audience** — Describe who you're targeting (e.g., "Small business owners aged 25-45")
+ - **Landing URL** — Optional click destination
+ - **Platform** — Facebook, Instagram, Google, TikTok, LinkedIn, Print, or Other
 4. Click **Save Campaign**
 5. The campaign is stored in the local SQLite database
 
@@ -926,18 +926,18 @@ Click **📢 Adverts** in the sidebar under the Business section. Requires a Pip
 1. Select a campaign from the campaign list
 2. Click **Generate Concepts**
 3. Configure generation parameters:
-   - **Target Audience** — Refine the audience description
-   - **Brand Identity** — Set brand voice (e.g., "Professional yet friendly"), primary colors, industry
-   - **Number of Concepts** — 1-5 concepts per format
+ - **Target Audience** — Refine the audience description
+ - **Brand Identity** — Set brand voice (e.g., "Professional yet friendly"), primary colors, industry
+ - **Number of Concepts** — 1-5 concepts per format
 4. AI generates for each aspect ratio:
-   - **Copy Variations** — Headline, body text, CTA in the selected framework
-   - **Visual Concepts** — 2-3 background concepts with color schemes and prompts
-   - **Conversion Score** — 0-100 with reasoning for the score
-   - **Brand Identity Extraction** — Tone analysis, palette recommendations
-   - **Layout Specs** — Per-ratio positioning data:
-     - Square (1:1): Headline at top-center, CTA at bottom-right, product at 60% scale
-     - Story (9:16): Headline at top-third, CTA at bottom-center-swipe, product at 75% scale
-     - Landscape (16:9): Headline at left-half, CTA at bottom-right, product at 50% scale
+ - **Copy Variations** — Headline, body text, CTA in the selected framework
+ - **Visual Concepts** — 2-3 background concepts with color schemes and prompts
+ - **Conversion Score** — 0-100 with reasoning for the score
+ - **Brand Identity Extraction** — Tone analysis, palette recommendations
+ - **Layout Specs** — Per-ratio positioning data:
+ - Square (1:1): Headline at top-center, CTA at bottom-right, product at 60% scale
+ - Story (9:16): Headline at top-third, CTA at bottom-center-swipe, product at 75% scale
+ - Landscape (16:9): Headline at left-half, CTA at bottom-right, product at 50% scale
 
 ### Editing Adverts (Composer View)
 
@@ -947,9 +947,9 @@ In the **Composer** view, every aspect is editable after AI generation:
 - **Copy Framework**: Switch between PAS, AIDA, BAB, Social Proof, or Benefit-Driven
 - **Brand Identity**: Adjust brand voice, primary colors (hex codes), secondary palette, industry
 - **Product Placement**: 
-  - Scale: 30-100% slider
-  - Position: Center, Left, Right
-  - Rotation: 0-360 degrees
+ - Scale: 30-100% slider
+ - Position: Center, Left, Right
+ - Rotation: 0-360 degrees
 - **Layout Toggles**: Overlay on/off, shadow on/off, text position adjustments
 - **Background**: Swap between generated concepts or enter a custom background prompt
 
@@ -971,8 +971,8 @@ The **Preview** view renders a canvas representation of each ad:
 
 - **JSON Export** — Export advert concepts as structured JSON
 - Export options:
-  - **Single Advert** — Export just one concept
-  - **Campaign Bundle** — Export all adverts in a campaign
+ - **Single Advert** — Export just one concept
+ - **Campaign Bundle** — Export all adverts in a campaign
 - Exported data includes: copy text, layout specs per ratio, brand identity, product placement params, conversion score, generation config
 - Files are saved to `{app_data_dir}/assets/exports/`
 - File naming: `{campaign_name}_{product_name}_{ratio}_{timestamp}.json`
@@ -1012,12 +1012,16 @@ The app is free to use on the **Personal** tier. Paid tiers unlock more seats an
 
 ### Tiers
 
-| Tier | Seats | Unlocks | Price |
-|------|-------|---------|-------|
-| **Personal (Free)** | 1 | Pipeline, Create / AI generation, Templates, Market Research, Contract Generator, Export, Presets, Variants | Free |
-| **Team** | 5 | Everything in Personal, plus Analytics, Publishing, Bundles, Scheduler, Adverts, QC Checklist, Asset Library, Webhooks, Mockup compositor, Logo Generator, Vector Generator | $29/mo |
-| **Agency** | 20 | Everything in Team, plus Compliance Scanner, Client Management, Custom Integrations | $99/mo |
-| **Enterprise** | Unlimited | Everything in Agency, plus Admin Panel and API access | $299/mo |
+| Tier | Seats | Unlocks |
+|------|-------|---------|
+| **Personal (Free)** | 1 | Pipeline, Create / AI generation, Templates, Market Research, Contract Generator, Export, Presets, Variants |
+| **Team** | 5 | Everything in Personal, plus Analytics, Publishing, Bundles, Scheduler, Adverts, QC Checklist, Asset Library, Webhooks, Mockup compositor, Logo Generator, Vector Generator |
+| **Agency** | 20 | Everything in Team, plus Compliance Scanner, Client Management |
+| **Enterprise** | Unlimited | Everything in Agency, plus Admin Panel |
+
+Prices come from the sales page, not from the software: a licence may be a one-time payment or a
+subscription (beta testers get a one-off), so the app tells you which plan you hold and never
+what you paid for it.
 
 Your current tier is shown in the sidebar underneath the app name.
 
@@ -1046,68 +1050,68 @@ Each paid tier includes a set number of seats (Personal 1, Team 5, Agency 20, En
 ### Quick Product Launch (1 hour)
 
 1. **Research** (10 min):
-   - Search Etsy for "digital planner"
-   - Note top keywords and prices
-   - Identify gap in market
+ - Search Etsy for "digital planner"
+ - Note top keywords and prices
+ - Identify gap in market
 
 2. **Create** (30 min):
-   - Select "Daily Planner" template
-   - Configure: 30-min morning routine, Minimal style
-   - Generate with GPT-4o
-   - Review and refine
+ - Select "Daily Planner" template
+ - Configure: 30-min morning routine, Minimal style
+ - Generate with GPT-4o
+ - Review and refine
 
 3. **Export** (5 min):
-   - Export as HTML, then print to PDF if you need a PDF (see [Exporting](#exporting))
-   - Create listing images (Canva/Figma)
+ - Export as HTML, then print to PDF if you need a PDF (see [Exporting](#exporting))
+ - Create listing images (Canva/Figma)
 
 4. **Publish** (15 min):
-   - Upload to Etsy
-   - Use researched keywords in title
-   - Price at market average
+ - Upload to Etsy
+ - Use researched keywords in title
+ - Price at market average
 
 5. **Pipeline**:
-   - Add to "Listed" stage
-   - Set reminder to check sales in 1 week
+ - Add to "Listed" stage
+ - Set reminder to check sales in 1 week
 
 ### Weekly Batch Production (4 hours)
 
 1. **Monday - Research** (1 hour):
-   - Identify 5 trending niches
-   - Analyze top 10 products in each
-   - Document keywords and pricing
+ - Identify 5 trending niches
+ - Analyze top 10 products in each
+ - Document keywords and pricing
 
 2. **Tuesday-Wednesday - Create** (2 hours):
-   - Generate 10 products
-   - Use different templates
-   - Vary styles and parameters
+ - Generate 10 products
+ - Use different templates
+ - Vary styles and parameters
 
 3. **Thursday - Bundle** (30 min):
-   - Auto-bundle by category
-   - Create 3 themed bundles
-   - Set 20-30% discounts
+ - Auto-bundle by category
+ - Create 3 themed bundles
+ - Set 20-30% discounts
 
 4. **Friday - Schedule** (30 min):
-   - Schedule 2 products/day for next week
-   - Set Pinterest pins for optimal times
-   - Enable auto-backup
+ - Schedule 2 products/day for next week
+ - Set Pinterest pins for optimal times
+ - Enable auto-backup
 
 ### VA Team Operation
 
 1. **Setup**:
-   - Install on Team license (5 devices)
-   - Create shared API key pool
-   - Document brand guidelines
+ - Install on Team license (5 devices)
+ - Create shared API key pool
+ - Document brand guidelines
 
 2. **Workflow**:
-   - VA generates products from approved templates
-   - Manager reviews in "Review" stage
-   - Approved products auto-scheduled
-   - Sales tracked in "Selling" stage
+ - VA generates products from approved templates
+ - Manager reviews in "Review" stage
+ - Approved products auto-scheduled
+ - Sales tracked in "Selling" stage
 
 3. **Quality Control**:
-   - Random sample review (10%)
-   - Consistency checks
-   - Monthly performance reports
+ - Random sample review (10%)
+ - Consistency checks
+ - Monthly performance reports
 
 ---
 
@@ -1141,9 +1145,9 @@ Each paid tier includes a set number of seats (Personal 1, Team 5, Agency 20, En
 2. Review error messages carefully
 3. Check GitHub issues: https://github.com/Swiftsoftware143/digital-product-factory-egui/issues
 4. Contact support with:
-   - Error message
-   - Steps to reproduce
-   - System info (OS, RAM)
+ - Error message
+ - Steps to reproduce
+ - System info (OS, RAM)
 
 ---
 
@@ -1280,11 +1284,11 @@ Edit `backup_config.json` to set cloud backup destinations. The config file is e
 
 ```json
 {
-  "enabled": false,
-  "scheduled_backup": false,
-  "backup_interval_hours": 24,
-  "retention_days": 30,
-  "destinations": []
+ "enabled": false,
+ "scheduled_backup": false,
+ "backup_interval_hours": 24,
+ "retention_days": 30,
+ "destinations": []
 }
 ```
 

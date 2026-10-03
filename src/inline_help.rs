@@ -123,7 +123,7 @@ pub fn all_topics() -> Vec<HelpTopic> {
         HelpTopic {
             id: "license",
             title: "Licence & Tiers",
-            body: "Click the 🔑 Licence button at the bottom of the sidebar. Your current tier is shown under the app name. Tiers: Personal (free, 1 seat), Team ($29/mo, 5 seats), Agency ($99/mo, 20 seats), Enterprise ($299/mo, unlimited). Anything your tier does not include shows a 🔒 and cannot be opened.",
+            body: "Click the 🔑 Licence button at the bottom of the sidebar. Your current tier is shown under the app name. Tiers: Personal (free, 1 seat), Team (5 seats), Agency (20 seats), Enterprise (unlimited seats). The app tells you which plan you hold — what it costs is on the sales page, because a licence can be a one-time payment or a subscription. Anything your tier does not include shows a 🔒 and cannot be opened.",
             tier: "personal",
         },
         HelpTopic {

@@ -82,14 +82,14 @@ impl LicenseTier {
         }
     }
 
-    pub fn price_label(&self) -> &'static str {
-        match self {
-            LicenseTier::Personal => "Free",
-            LicenseTier::Team => "$29/month",
-            LicenseTier::Agency => "$99/month",
-            LicenseTier::Enterprise => "$299/month",
-        }
-    }
+    // NOTE: there is deliberately no price label here any more.
+    //
+    // The app used to carry "$29/month", "$99/month", "$299/month" and showed them in the
+    // sidebar and in licence hints. David sells through a sales page and can offer a licence
+    // either as a one-time payment or as a subscription (beta testers get a one-off), so any
+    // price baked into the software is wrong for some customer and ages badly the moment
+    // pricing changes. The software's job is to say WHICH PLAN someone holds, not what they
+    // paid for it.
 
     pub fn all() -> [LicenseTier; 4] {
         [
@@ -157,7 +157,6 @@ impl LicenseTier {
                 "vector_generator",
                 "client_management",
                 "compliance",
-                "custom_integrations",
             ],
             LicenseTier::Enterprise => &[
                 "pipeline",
@@ -181,8 +180,6 @@ impl LicenseTier {
                 "vector_generator",
                 "client_management",
                 "compliance",
-                "custom_integrations",
-                "api_access",
                 "admin_panel",
             ],
         }
@@ -344,7 +341,8 @@ impl LicenseManager {
 
     pub fn tier_name(&self) -> String {
         if self.is_licensed() {
-            format!("{} ({})", self.tier().display_name(), self.tier().price_label())
+            // Plan name only — never a price. Pricing lives on the sales page.
+            self.tier().display_name().to_string()
         } else {
             "Personal (Free)".to_string()
         }
@@ -513,7 +511,6 @@ mod tests {
             "webhooks",
             "client_management",
             "compliance",
-            "api_access",
             "admin_panel",
         ] {
             assert!(

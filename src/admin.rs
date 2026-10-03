@@ -7,7 +7,6 @@ use serde_json::{json, Value};
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AdminSection {
     Features,
-    Pricing,
     Formats,
     Keys,
     Revocations,
@@ -17,7 +16,6 @@ pub enum AdminSection {
 pub struct AdminState {
     pub admin_mode: bool,
     pub feature_tiers: Value,
-    pub pricing_data: Value,
     pub platform_formats: Value,
     pub revoked_keys: Vec<String>,
     pub generate_key_input: String,
@@ -38,7 +36,6 @@ impl AdminState {
         let mut state = Self {
             admin_mode: false,
             feature_tiers: Value::Null,
-            pricing_data: Value::Null,
             platform_formats: Value::Null,
             revoked_keys: Vec::new(),
             generate_key_input: String::new(),
@@ -69,30 +66,19 @@ impl AdminState {
                     "personal": { "name": "Personal", "devices": 1, "features": ["pipeline","ai_generation","templates","market_research","contract_generator","export","mockup_compositor"] },
                     "team": { "name": "Team", "devices": 5, "features": ["pipeline","ai_generation","templates","market_research","contract_generator","export","analytics","publishing","bundles","scheduler","presets","mockup_compositor"] },
                     "agency": { "name": "Agency", "devices": 20, "features": ["pipeline","ai_generation","templates","market_research","contract_generator","export","analytics","publishing","bundles","scheduler","presets","client_management","mockup_compositor"] },
-                    "enterprise": { "name": "Enterprise", "devices": -1, "features": ["pipeline","ai_generation","templates","market_research","contract_generator","export","analytics","publishing","bundles","scheduler","presets","client_management","custom_integrations","api_access","mockup_compositor"] }
+                    "enterprise": { "name": "Enterprise", "devices": -1, "features": ["pipeline","ai_generation","templates","market_research","contract_generator","export","analytics","publishing","bundles","scheduler","presets","client_management","mockup_compositor"] }
                 }
             });
             let _ = std::fs::write("feature_tiers.json", serde_json::to_string_pretty(&self.feature_tiers).unwrap_or_default());
         }
 
-        // pricing.json
-        let path = dir.join("pricing.json");
-        if path.exists() {
-            if let Ok(s) = std::fs::read_to_string(&path) {
-                if let Ok(v) = serde_json::from_str(&s) {
-                    self.pricing_data = v;
-                }
-            }
-        }
-        if self.pricing_data == Value::Null {
-            self.pricing_data = json!({
-                "personal": { "price": 0, "period": "free" },
-                "team": { "price": 29, "period": "month" },
-                "agency": { "price": 99, "period": "month" },
-                "enterprise": { "price": 299, "period": "month" }
-            });
-            let _ = std::fs::write("pricing.json", serde_json::to_string_pretty(&self.pricing_data).unwrap_or_default());
-        }
+        // NOTE: no pricing.json any more.
+        //
+        // The app used to load a price table (and WRITE a default one containing $29/$99/$299
+        // per month into the user's working directory on first run). Prices are set on the sales
+        // page, not in the software: a licence can be sold one-time or as a subscription, and a
+        // price baked into a shipped binary is wrong for whichever customer got the other deal.
+        // The app has no business knowing what anyone paid.
 
         // platform_formats.json
         let path = dir.join("platform_formats.json");
@@ -177,10 +163,6 @@ impl AdminState {
             "features" => {
                 let path = dir.join("feature_tiers.json");
                 std::fs::write(&path, serde_json::to_string_pretty(&self.feature_tiers).unwrap_or_default())
-            }
-            "pricing" => {
-                let path = dir.join("pricing.json");
-                std::fs::write(&path, serde_json::to_string_pretty(&self.pricing_data).unwrap_or_default())
             }
             "formats" => {
                 let path = dir.join("platform_formats.json");
