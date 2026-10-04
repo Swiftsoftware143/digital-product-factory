@@ -49,6 +49,12 @@ pub fn all_topics() -> Vec<HelpTopic> {
             tier: "personal",
         },
         HelpTopic {
+            id: "strategy",
+            title: "Strategy (deep thinking)",
+            body: "Tells you WHAT to build, not just how to build it. Enter a niche and press one button: you get three concrete product ideas with the reasoning behind each, a pricing and bundling suggestion, one explicit 'do not build this' warning, and a confidence level. It runs ONE call on the AI key you already have — it uses whichever provider you pick, or picks the strongest one you hold if you leave it on Auto. You can also type any model id by hand, so a new or retired model never blocks you. This is deliberately a single brief, not a chat, so it cannot run up your bill.",
+            tier: "personal",
+        },
+        HelpTopic {
             id: "bundles",
             title: "Bundles",
             body: "Bundle multiple products with discount pricing. Auto-strategies or manual creation. Export as ZIP. (Team+ feature)",
@@ -240,7 +246,123 @@ pub fn all_topics() -> Vec<HelpTopic> {
             body: "Edit the tier/feature map, pricing, marketplace format rules and the key revocation list, and inspect the licence state. This is where you change what each plan unlocks without rebuilding the app. (Enterprise feature)",
             tier: "enterprise",
         },
+        HelpTopic {
+            id: "asset_library",
+            title: "Asset Library",
+            body: "Where your own files live — images, fonts, logos and anything else you reuse across products. Add assets once, then reference them from the Create, Mockup and Advert tabs instead of hunting for the file each time. Everything is stored locally on your machine.",
+            tier: "personal",
+        },
+        HelpTopic {
+            id: "mockup_compositor",
+            title: "Mockup Compositor",
+            body: "Puts your digital product onto a realistic product shot — a laptop screen, a tablet, a printed page — so buyers can see what they are getting. Pick a base mockup, drop your artwork onto it, and export the result. Note: this composites and arranges existing images; it does not generate new artwork, so you still supply the underlying image.",
+            tier: "team",
+        },
     ]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashSet;
+
+    /// Every `?` button passes a topic id. If that id is not defined here the button silently
+    /// does nothing — a bug that shipped THREE times (`asset_library`, `mockup_compositor`, and
+    /// `strategy` when it was first added).
+    ///
+    /// This scans the real source via CARGO_MANIFEST_DIR rather than trusting a hand-written list:
+    /// a hand-maintained list is exactly what let the third one through (it said `publish` when
+    /// the actual id is `publishing`), so it cannot be the guard.
+    #[test]
+    fn every_help_button_points_at_a_defined_topic() {
+        use std::fs;
+        use std::path::PathBuf;
+
+        let defined: HashSet<&str> = all_topics().iter().map(|t| t.id).collect();
+        assert!(defined.len() > 10, "topic list looks empty");
+
+        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src");
+        let mut checked = 0usize;
+        let mut missing: Vec<String> = Vec::new();
+
+        fn walk(dir: &std::path::Path, out: &mut Vec<PathBuf>) {
+            if let Ok(entries) = fs::read_dir(dir) {
+                for e in entries.flatten() {
+                    let p = e.path();
+                    if p.is_dir() {
+                        walk(&p, out);
+                    } else if p.extension().map(|x| x == "rs").unwrap_or(false) {
+                        out.push(p);
+                    }
+                }
+            }
+        }
+
+        let mut files = Vec::new();
+        walk(&root, &mut files);
+
+        for f in files {
+            if f.file_name().map(|n| n == "inline_help.rs").unwrap_or(false) {
+                continue; // defines topics; does not reference them
+            }
+            let Ok(text) = fs::read_to_string(&f) else { continue };
+            // find `help_button(<anything>, "topic"`
+            for (i, _) in text.match_indices("help_button(") {
+                let rest = &text[i..];
+                let Some(comma) = rest.find(',') else { continue };
+                let after = &rest[comma + 1..];
+                let Some(q1) = after.find('"') else { continue };
+                let after_q = &after[q1 + 1..];
+                let Some(q2) = after_q.find('"') else { continue };
+                let topic = &after_q[..q2];
+                if topic.is_empty() || !topic.chars().all(|c| c.is_ascii_lowercase() || c == '_') {
+                    continue; // not a literal topic id (e.g. a variable)
+                }
+                checked += 1;
+                if !defined.contains(topic) {
+                    missing.push(format!("{topic} ({})", f.file_name().unwrap_or_default().to_string_lossy()));
+                }
+            }
+        }
+
+        assert!(checked >= 10, "only found {checked} help_button calls - scanner is broken");
+        assert!(
+            missing.is_empty(),
+            "these ? buttons have no HelpTopic and do nothing: {missing:?}"
+        );
+    }
+
+    /// The Strategy topic must actually explain the two things a user needs to know: it costs
+    /// them one call on their own key, and it is not a chat.
+    #[test]
+    fn strategy_help_is_honest_about_cost_and_scope() {
+        let t = all_topics()
+            .into_iter()
+            .find(|t| t.id == "strategy")
+            .expect("strategy topic must exist");
+        let b = t.body.to_lowercase();
+        assert!(b.contains("one call") || b.contains("single brief"), "does not state the cost model");
+        assert!(b.contains("not a chat"), "does not say it is not a chat");
+        assert!(b.contains("key"), "does not mention it uses the user's own key");
+    }
+
+    /// Topic ids must be unique, or a `?` button opens the wrong topic.
+    #[test]
+    fn topic_ids_are_unique() {
+        let topics = all_topics();
+        let unique: HashSet<&str> = topics.iter().map(|t| t.id).collect();
+        assert_eq!(unique.len(), topics.len(), "duplicate help topic id");
+    }
+
+    /// Every topic needs a title and body, or the popup renders blank.
+    #[test]
+    fn every_topic_is_renderable() {
+        for t in all_topics() {
+            assert!(!t.id.trim().is_empty(), "topic with empty id");
+            assert!(!t.title.trim().is_empty(), "{} has no title", t.id);
+            assert!(!t.body.trim().is_empty(), "{} has no body", t.id);
+        }
+    }
 }
 
 pub fn help_button(ui: &mut Ui, topic_id: &str, active_topic: &mut Option<String>) {

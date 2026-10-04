@@ -7,16 +7,18 @@
 4. [The Pipeline](#the-pipeline)
 5. [Creating Products](#creating-products)
 6. [Market Research](#market-research)
-7. [Contract Generator](#contract-generator)
-8. [Bundles](#bundles)
-9. [Scheduler](#scheduler)
-10. [Exporting](#exporting)
-11. [Settings](#settings)
-12. [Logo Generator](#logo-generator)
-13. [Vector Generator](#vector-generator)
-14. [Adverts & Campaign Suite](#adverts--campaign-suite)
-15. [Licence & Activation](#licence--activation)
-16. [Workflow Examples](#workflow-examples)
+7. [Strategy (deep thinking)](#strategy-deep-thinking)
+8. [Clients](#clients)
+9. [Contract Generator](#contract-generator)
+10. [Bundles](#bundles)
+11. [Scheduler](#scheduler)
+12. [Exporting](#exporting)
+13. [Settings](#settings)
+14. [Logo Generator](#logo-generator)
+15. [Vector Generator](#vector-generator)
+16. [Adverts & Campaign Suite](#adverts--campaign-suite)
+17. [Licence & Activation](#licence--activation)
+18. [Workflow Examples](#workflow-examples)
 
 ---
 
@@ -559,6 +561,77 @@ Quick-access buttons for hot niches:
 - resume template
 
 Click any trend to auto-fill search.
+
+---
+
+## Strategy (deep thinking)
+
+**Market Research tells you what the market looks like. Strategy tells you what to build.**
+
+This is the one part of the app that does not generate anything — it *decides*. It exists because
+the most expensive mistake a creator makes is not bad copy, it is **building something nobody buys**.
+
+### Using it
+
+Find the **Strategy** panel on the **Research** tab, below the search results.
+
+1. **Niche / market** — what you are thinking of selling into.
+   *e.g. "ADHD planners for working parents"*
+2. **You already sell** *(optional)* — your existing products. Filling this in sharpens the advice
+   considerably, because it can suggest bundles rather than starting from nothing.
+3. **Price positioning** *(optional)* — *e.g. "under $50 impulse buy"*.
+4. Press **🧠 Build strategy brief**.
+
+### What you get back
+
+| Section | What it tells you |
+|---|---|
+| **The buyer** | Who they are and the moment they decide to spend |
+| **Build these** | Three product ideas, each with why it should sell and who it competes with |
+| **Pricing and bundling** | A concrete recommendation with reasoning |
+| **DO NOT build this** | One tempting idea that would fail, and why |
+| **Confidence** | Low/Medium/High, plus the one assumption that would change the answer |
+
+**The "DO NOT build this" section is deliberate and is often the most valuable part.** Advice that
+only ever says "yes, build it" is flattery, not help.
+
+### Choosing the AI that runs it
+
+Strategy uses **the AI key you already have** — the same key that runs the rest of the app. There
+is no separate subscription and nothing extra to sign up for.
+
+**Use:** leave on **Auto (best available)** and it picks the strongest key you hold
+(Claude → DeepSeek → OpenAI → Google → Moonshot). Or pick a provider yourself.
+
+**Model:** the dropdown lists suggested models for the chosen provider. **You can also type any
+model id directly into the box** — so if a provider releases or retires a model, you are never
+stuck waiting for an app update.
+
+**If you choose a provider you have no key for, you get a clear error** rather than a silent switch
+to a different provider. That is intentional: switching behind your back would spend a different
+account's credit.
+
+### Two things to know
+
+- **It is ONE call, and it is not a chat.** Press the button, get the brief. There is no
+  conversation box, deliberately — a strategy chat could run up your usage without you noticing.
+- **The brief is judgement, not verified fact.** It reasons from what you tell it and is instructed
+  not to invent statistics, but treat it as a well-argued second opinion, not a guarantee.
+
+*Available on every tier — it uses your own key, so there is nothing for us to meter.*
+
+---
+
+## Clients
+
+**For running the same workflow for several paying clients.**
+
+Turn client management on and each piece of work can be tagged to a client, so you can see what you
+are producing for whom instead of keeping it all in one pile.
+
+Useful if you sell product-creation as a service rather than selling the products yourself.
+
+*Agency tier and above.*
 
 ---
 

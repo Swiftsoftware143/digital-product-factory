@@ -95,7 +95,7 @@ Each tier is a strict **superset** of the tier below it (enforced by the
 | `pipeline` | Dashboard, Pipeline, Settings |
 | `ai_generation` | Create |
 | `templates` | Templates |
-| `market_research` | Research |
+| `market_research` | Research, **and the Strategy panel** (see note below) |
 | `contract_generator` | Contracts |
 | `presets` | Presets |
 | `variants` | Variants |
@@ -110,8 +110,47 @@ Each tier is a strict **superset** of the tier below it (enforced by the
 | `adverts` | Adverts |
 | `logo_generator` | Logo Generator |
 | `vector_generator` | Vector Generator |
+| `client_management` | Clients |
 | `compliance` | Compliance |
 | `admin_panel` | Admin |
+
+### Note — the Strategy panel is deliberately NOT a gated slug
+
+The **Strategy** panel (deep-thinking product briefs) sits inside the Research tab, so it is covered
+by `market_research` and is therefore available on **every tier including Personal**.
+
+**That is intentional, not an oversight.** Strategy runs on the **customer's own AI key** — it costs
+us nothing per use, so there is nothing to meter or sell. Gating it would add a tier restriction
+that protects no revenue and only annoys users.
+
+**Do not add a `strategy` slug** unless a future change makes us pay for those calls. If that ever
+happens, it needs an allowance cap enforced server-side, because a client-side check is editable by
+the customer.
+
+**Also note:** model ids and provider selection inside Strategy are customer-controlled and
+free-text on purpose (providers retire model ids). Never "fix" that by pinning a model in code —
+it would break the feature for every user the day a model is retired.
+
+### ⚠️ Known defect — prices are compiled into `feature_tiers.json`
+
+`feature_tiers.json` currently carries `price` / `period` values (29 / 99 / 299 monthly).
+
+**House rule: pricing is not a software feature.** A licence may be sold one-time *or* as a
+subscription, and beta testers are often sold a one-off, so **the price belongs on the sales page,
+never in the binary.** The app should show *which plan* the user holds, never what they paid.
+
+Tiers as shipped in `feature_tiers.json`:
+
+| Tier | Price field present | Devices |
+|---|---|---|
+| personal | 0 | 1 |
+| team | 29 | 5 |
+| agency | 99 | 20 |
+| enterprise | 299 | unlimited |
+
+**Action for whoever owns this next:** strip `price` and `period` from the shipped
+`feature_tiers.json`, keep `name` / `devices` / `features`, and confirm nothing in the UI renders a
+price. (Tracked as a separate defect, not part of the Strategy work.)
 
 ---
 
