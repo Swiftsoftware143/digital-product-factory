@@ -86,6 +86,42 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
                 ui.colored_label(color, msg);
             }
 
+            // ── The upgrade offer ────────────────────────────────────────────────────────────
+            // Gating tells the user a feature is locked; this is the part that OFFERS the way
+            // out. It only appears when they are actually missing something, so it never nags a
+            // paying customer who already holds everything.
+            let missing = app.license_manager.required_tier_for_missing();
+            if let Some(target) = missing {
+                ui.add_space(10.0);
+                ui.separator();
+                ui.label(
+                    RichText::new(format!(
+                        "{} of the app is locked on your current plan.",
+                        target.locked_summary()
+                    ))
+                    .strong(),
+                );
+
+                let url = crate::upgrade::upgrade_url();
+                let placeholder = crate::upgrade::is_placeholder(url);
+
+                ui.add_space(4.0);
+                if ui.button(crate::upgrade::cta_label(Some(target.display_name()))).clicked() {
+                    if placeholder {
+                        // Do not pretend we opened a store that does not exist yet.
+                        app.license_message = Some((
+                            false,
+                            "The upgrade page is not connected yet. It will open here as soon as \
+                             the store is live."
+                                .to_string(),
+                        ));
+                    } else {
+                        ui.ctx().open_url(egui::OpenUrl::new_tab(url));
+                    }
+                }
+                ui.small(crate::upgrade::cta_note());
+            }
+
             ui.separator();
             ui.collapsing("Plans", |ui| {
                 for t in LicenseTier::all() {
@@ -101,6 +137,9 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
                         features_for_tier(&t).len()
                     ));
                 }
+                ui.add_space(4.0);
+                // Says where the money question is answered, without answering it here.
+                ui.small("What each plan costs is on the sales page — a licence can be a one-time payment or a subscription.");
             });
 
             ui.separator();

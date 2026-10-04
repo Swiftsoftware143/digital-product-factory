@@ -1098,6 +1098,21 @@ what you paid for it.
 
 Your current tier is shown in the sidebar underneath the app name.
 
+### Upgrading
+
+Anything your plan does not include shows a **🔒** in the sidebar and cannot be opened. Click it and
+the licence dialog opens, telling you what is locked and offering an **Upgrade** button.
+
+- The button takes you to the sales page in your browser, where you can buy.
+- **It offers the next step up, not the far end of the ladder** — on the free plan you are offered
+  Team, not Enterprise, because that is the smaller jump.
+- **If you already hold everything, no button appears at all.** You will never be advertised to once
+  you have bought the top plan.
+- After buying, you get a licence key: paste it into the same dialog and press **Activate**.
+
+*You are never shown a price inside the app — not in the dialog, not in the upgrade offer. What each
+plan costs is on the sales page you are sent to.*
+
 ### Activating a Licence
 
 1. Click **🔑 Licence** — the button at the **bottom of the left sidebar**. This opens the Licence dialog.

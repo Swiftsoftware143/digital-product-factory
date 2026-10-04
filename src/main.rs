@@ -44,6 +44,7 @@ mod adverts;
 mod advert_generator;
 mod advert_export;
 mod strategy;
+mod upgrade;
 mod vector_types;
 mod vector_generator;
 mod vector_renderer;

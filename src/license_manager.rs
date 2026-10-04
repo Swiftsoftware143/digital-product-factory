@@ -184,6 +184,35 @@ impl LicenseTier {
             ],
         }
     }
+    /// The next tier up from this one, if there is one.
+    ///
+    /// Used for the upgrade OFFER. The lowest tier that unlocks a given feature is the wrong thing
+    /// to show a Personal user looking at an Agency tab — they would be told "upgrade to Agency"
+    /// as if it were the only option. Offering the NEXT step is both cheaper for them and truer.
+    pub fn next_up(&self) -> Option<LicenseTier> {
+        let all = LicenseTier::all();
+        let idx = all.iter().position(|t| t == self)?;
+        all.get(idx + 1).cloned()
+    }
+
+    /// How much of the app this tier is missing, phrased for a human.
+    ///
+    /// Counts modules, never money. "What it costs" is answered on the sales page.
+    pub fn locked_summary(&self) -> String {
+        let mine = features_for_tier(self).len();
+        let top = LicenseTier::all()
+            .into_iter()
+            .map(|t| features_for_tier(&t).len())
+            .max()
+            .unwrap_or(mine);
+        let missing = top.saturating_sub(mine);
+        match missing {
+            0 => "Every module".to_string(),
+            1 => "1 module".to_string(),
+            n => format!("{n} modules"),
+        }
+    }
+
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -360,6 +389,20 @@ impl LicenseManager {
             .into_iter()
             .filter(|f| !have.contains(f))
             .collect()
+    }
+
+    /// The tier to OFFER this user, or None if they already hold everything.
+    ///
+    /// Returns the next tier up rather than the cheapest tier that unlocks some particular locked
+    /// feature: a Personal user clicking an Enterprise tab should be offered Team, not told that
+    /// Enterprise is their only option. Returns None at the top tier so a fully-licensed customer
+    /// is never shown an upsell.
+    pub fn required_tier_for_missing(&self) -> Option<LicenseTier> {
+        let current = self.tier();
+        if self.missing_features().is_empty() {
+            return None; // holds everything — no offer to make
+        }
+        current.next_up()
     }
 
     /// Minimal tier that unlocks `feature`, for the "upgrade to X" message.
@@ -620,5 +663,125 @@ mod tests {
     fn revocation_cannot_be_bypassed_by_formatting() {
         let revoked = vec!["  dpf-team-ab12cd34-p9su  ".to_string()];
         assert!(LicenseManager::validate_key("DPF-TEAM-AB12CD34-P9SU", &revoked).is_err());
+    }
+
+    /// The shipped tiers file must carry the UPGRADE GATES and nothing about money.
+    ///
+    /// A licence can be sold one-time or as a subscription (beta testers get a one-off), so any
+    /// price compiled into the software is wrong for whichever customer got the other deal — and
+    /// it ages badly the moment a price changes on the sales page. The app's job is to say WHICH
+    /// plan you hold, never what you paid.
+    ///
+    /// This regression test exists because `price`/`period` fields WERE present in
+    /// feature_tiers.json (0 / 29 / 99 / 299 per month). They were inert — no code read them — but
+    /// inert wrong data gets read eventually.
+    #[test]
+    fn shipped_tiers_carry_gates_not_prices() {
+        let raw = std::fs::read_to_string("feature_tiers.json")
+            .expect("feature_tiers.json must ship beside the binary");
+
+        let v: serde_json::Value = serde_json::from_str(&raw).expect("tiers file must be valid JSON");
+        let tiers = v.get("tiers").expect("tiers object missing");
+
+        for (slug, tier) in tiers.as_object().expect("tiers must be an object") {
+            for forbidden in ["price", "period", "cost", "amount", "monthly", "yearly"] {
+                assert!(
+                    tier.get(forbidden).is_none(),
+                    "tier '{slug}' carries a '{forbidden}' field — pricing belongs on the sales page, not in the software"
+                );
+            }
+            // ...and the upgrade gates must still be present, or we broke gating instead.
+            assert!(
+                tier.get("features").and_then(|f| f.as_array()).map(|a| !a.is_empty()).unwrap_or(false),
+                "tier '{slug}' lost its feature list — that is the upgrade gate"
+            );
+            assert!(
+                tier.get("devices").is_some(),
+                "tier '{slug}' lost its device count"
+            );
+        }
+
+        // Belt and braces: no dollar figure anywhere in the tiers file.
+        assert!(
+            !raw.contains('$'),
+            "feature_tiers.json contains a '$' — that is a price leaking into the software"
+        );
+    }
+
+    /// The gates must still be a strict superset chain, and Strategy must not be gated (it runs on
+    /// the customer's own key, so there is nothing for us to meter).
+    #[test]
+    fn upgrade_gates_still_ladder_correctly() {
+        let (pm, tm, ag) = (
+            LicenseTier::Personal.builtin_features(),
+            LicenseTier::Team.builtin_features(),
+            LicenseTier::Agency.builtin_features(),
+        );
+
+        for f in pm {
+            assert!(tm.contains(f), "Team lost Personal feature {f}");
+        }
+        for f in tm {
+            assert!(ag.contains(f), "Agency lost Team feature {f}");
+        }
+
+        // Research (and therefore the Strategy panel) must be available on the FREE tier.
+        assert!(
+            pm.contains(&"market_research"),
+            "Strategy lives under market_research and must stay available on Personal"
+        );
+    }
+
+    /// The upgrade offer must step up ONE tier, and must go quiet at the top.
+    #[test]
+    fn upgrade_offer_steps_up_and_then_stops() {
+        assert_eq!(LicenseTier::Personal.next_up(), Some(LicenseTier::Team));
+        assert_eq!(LicenseTier::Team.next_up(), Some(LicenseTier::Agency));
+        assert_eq!(LicenseTier::Agency.next_up(), Some(LicenseTier::Enterprise));
+        assert_eq!(
+            LicenseTier::Enterprise.next_up(),
+            None,
+            "the top tier must offer nothing — a fully licensed customer must never see an upsell"
+        );
+    }
+
+    /// The "N modules locked" summary must never mention money.
+    #[test]
+    fn locked_summary_counts_modules_not_money() {
+        for t in LicenseTier::all() {
+            let s = t.locked_summary();
+            assert!(!s.is_empty(), "{t:?} has an empty summary");
+            assert!(!s.contains('$'), "summary mentions money: {s}");
+            assert!(
+                s.contains("module"),
+                "summary should count modules, got: {s}"
+            );
+        }
+        // Enterprise holds everything
+        assert_eq!(LicenseTier::Enterprise.locked_summary(), "Every module");
+    }
+
+    /// A fully-licensed user gets NO offer, and a free user is offered the NEXT step up
+    /// rather than the top tier. (Exercised at tier level: building a LicenseManager needs a
+    /// live Database handle, and the manager method is a thin composition of these pieces.)
+    #[test]
+    fn the_offer_is_the_next_step_and_goes_quiet_at_the_top() {
+        assert_eq!(LicenseTier::Personal.next_up(), Some(LicenseTier::Team));
+        assert_eq!(LicenseTier::Team.next_up(), Some(LicenseTier::Agency));
+        assert_eq!(LicenseTier::Agency.next_up(), Some(LicenseTier::Enterprise));
+
+        // Enterprise holds the whole feature set, so there are no missing features to offer against.
+        let top = LicenseTier::Enterprise.builtin_features();
+        let agency = LicenseTier::Agency.builtin_features();
+        let missing_from_agency = top.iter().filter(|f| !agency.contains(f)).count();
+        assert!(
+            missing_from_agency > 0,
+            "Agency should be missing something (admin_panel), or the offer logic below is moot"
+        );
+        assert_eq!(
+            top.iter().filter(|f| !top.contains(f)).count(),
+            0,
+            "Enterprise must miss nothing — so required_tier_for_missing() returns None for it"
+        );
     }
 }

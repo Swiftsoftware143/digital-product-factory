@@ -1,9 +1,9 @@
 {
+  "upgrade_url": "https://swiftsoftware.net/upgrade-placeholder",
+  "_comment_upgrade_url": "Set this to the checkout URL to enable the Upgrade button. No rebuild needed - edit this file next to the app.",
   "tiers": {
     "personal": {
       "name": "Personal",
-      "price": 0,
-      "period": "free",
       "devices": 1,
       "features": [
         "pipeline",
@@ -18,8 +18,6 @@
     },
     "team": {
       "name": "Team",
-      "price": 29,
-      "period": "month",
       "devices": 5,
       "features": [
         "pipeline",
@@ -45,8 +43,6 @@
     },
     "agency": {
       "name": "Agency",
-      "price": 99,
-      "period": "month",
       "devices": 20,
       "features": [
         "pipeline",
@@ -74,8 +70,6 @@
     },
     "enterprise": {
       "name": "Enterprise",
-      "price": 299,
-      "period": "month",
       "devices": -1,
       "features": [
         "pipeline",

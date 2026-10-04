@@ -114,6 +114,42 @@ Each tier is a strict **superset** of the tier below it (enforced by the
 | `compliance` | Compliance |
 | `admin_panel` | Admin |
 
+### The upgrade offer — and where to put the shopping cart URL
+
+Gating tells a user a feature is locked. The **upgrade offer** is the separate part that shows them
+the way out, and it lives in the licence dialog: when a user is missing modules, the dialog shows
+what is locked plus an **Upgrade** button.
+
+**The button's target is one value in one file, and changing it needs no rebuild:**
+
+```json
+{
+  "upgrade_url": "https://swiftsoftware.net/upgrade-placeholder",
+  "tiers": { ... }
+}
+```
+
+`upgrade_url` sits at the top level of **`feature_tiers.json`**, next to the shipped binary.
+
+**To go live:** replace the placeholder with the real checkout URL and save the file. That is the
+whole procedure — no code change, no redeploy, no version bump. Existing installs pick it up the
+next time the app starts.
+
+**Until it is set, the button does not pretend to work.** It shows *"the upgrade page is not
+connected yet"* instead of opening a dead link, because a button that silently does nothing is
+worse than one that admits it is not ready.
+
+Resolution order (first non-empty wins):
+
+1. `upgrade_url` in `feature_tiers.json`
+2. the `DPF_UPGRADE_URL` environment variable *(testing only)*
+3. the built-in placeholder in `src/upgrade.rs`
+
+**The offer steps up ONE tier, never to the top.** A Personal user looking at an Enterprise tab is
+offered **Team** — the next step — not told Enterprise is their only option. And an **Enterprise
+licence holder is offered nothing at all**: the button is hidden when the user holds every module,
+so a fully-paid customer is never upsold.
+
 ### Note — the Strategy panel is deliberately NOT a gated slug
 
 The **Strategy** panel (deep-thinking product briefs) sits inside the Research tab, so it is covered
@@ -131,26 +167,28 @@ the customer.
 free-text on purpose (providers retire model ids). Never "fix" that by pinning a model in code —
 it would break the feature for every user the day a model is retired.
 
-### ⚠️ Known defect — prices are compiled into `feature_tiers.json`
+### ✅ RESOLVED — prices used to be compiled into `feature_tiers.json`
 
-`feature_tiers.json` currently carries `price` / `period` values (29 / 99 / 299 monthly).
+`feature_tiers.json` **used to carry `price` / `period` fields** (0 / 29 / 99 / 299 per month).
 
 **House rule: pricing is not a software feature.** A licence may be sold one-time *or* as a
-subscription, and beta testers are often sold a one-off, so **the price belongs on the sales page,
-never in the binary.** The app should show *which plan* the user holds, never what they paid.
+subscription, and beta testers are often sold a one-off, so the price belongs on the sales page,
+never in the binary. The app shows *which plan* the user holds, never what they paid.
 
-Tiers as shipped in `feature_tiers.json`:
+**Fixed.** The fields are gone. The gates remain — `name`, `devices`, `features` per tier:
 
-| Tier | Price field present | Devices |
+| Tier | Devices | Features (the upgrade gate) |
 |---|---|---|
-| personal | 0 | 1 |
-| team | 29 | 5 |
-| agency | 99 | 20 |
-| enterprise | 299 | unlimited |
+| personal | 1 | 8 |
+| team | 5 | 19 |
+| agency | 20 | 21 |
+| enterprise | unlimited | 22 |
 
-**Action for whoever owns this next:** strip `price` and `period` from the shipped
-`feature_tiers.json`, keep `name` / `devices` / `features`, and confirm nothing in the UI renders a
-price. (Tracked as a separate defect, not part of the Strategy work.)
+**`u2f`-style regression test added:** `shipped_tiers_carry_gates_not_prices` fails the build if any
+tier regains a `price`/`period`/`cost`/`amount`/`monthly`/`yearly` field, if the feature list or
+device count disappears, or if a `$` appears anywhere in the tiers file. It also
+asserts the gate still ladders (Personal ⊆ Team ⊆ Agency) and that `market_research` — which carries
+the Strategy panel — stays on the FREE tier.
 
 ---
 

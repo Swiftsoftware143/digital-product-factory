@@ -56,6 +56,11 @@ jobs:
           Copy-Item dist/dpf-glow.bat             staging/DigitalProductFactory/
           Copy-Item dist/dpf-wgpu.bat             staging/DigitalProductFactory/
           Copy-Item dist/START-HERE.txt           staging/DigitalProductFactory/
+          # feature_tiers.json MUST ship, because it is the upgrade gate AND holds the
+          # upgrade_url. Without it the app silently falls back to the compiled-in table, and
+          # editing tiers or the sales link would need a full rebuild - which is exactly what
+          # the file exists to avoid. It also means a tier change is a file edit, not a release.
+          Copy-Item feature_tiers.json           staging/DigitalProductFactory/
           Compress-Archive -Path staging/DigitalProductFactory `
                            -DestinationPath DigitalProductFactory-windows.zip -Force
           Write-Host "zip contents:"
