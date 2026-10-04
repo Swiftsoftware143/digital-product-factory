@@ -1,6 +1,7 @@
 //! Main application state and UI
 
 use crate::ui::adverts_view::AdvertsManager;
+use crate::strategy::StrategyState;
 use egui::*;
 use std::sync::Arc;
 use tokio::runtime::Runtime;
@@ -150,6 +151,9 @@ pub struct DpfApp {
     pub last_scheduler_tick: std::time::Instant,
     pub denylist_scanner: DenylistScanner,
     pub disclosure_rules: Vec<AiDisclosureRule>,
+    /// Deep-thinking layer state. The provider/model choice lives in `config` (so it persists);
+    /// this holds the in-flight panel state and the last brief.
+    pub strategy_state: StrategyState,
     // -- UI State ----------------------------------------------------
     pub current_tab: Tab,
     pub sidebar_expanded: bool,
@@ -305,6 +309,7 @@ impl DpfApp {
             create_state: CreateState::default(),
             denylist_scanner: DenylistScanner::new(),
             disclosure_rules,
+            strategy_state: StrategyState::default(),
             // -- UI State -------------------------------------------
             current_tab: Tab::Dashboard,
             sidebar_expanded: true,

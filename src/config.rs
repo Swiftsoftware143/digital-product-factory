@@ -25,6 +25,22 @@ pub struct AppConfig {
     pub max_searches_per_hour: u32,
     pub max_products_per_day: u32,
     pub max_publish_per_hour: u32,
+
+    // Strategy (deep-thinking layer). User-selectable BY DESIGN — the app is never locked
+    // to one provider or one model id. Model ids get retired by providers; a user must be
+    // able to move to a new one without waiting for an app update.
+    //
+    //   strategy_provider: "" = auto-pick the strongest provider the user has a key for.
+    //                      Otherwise one of: anthropic | deepseek | openai | google | moonshot
+    //   strategy_model:    "" = that provider's sensible default. Otherwise ANY model id the
+    //                      user types (free text, so a new/renamed model is never a blocker).
+    //
+    // `serde(default)` keeps existing saved configs loadable — without it, adding these
+    // fields would fail to deserialize every settings file already on disk.
+    #[serde(default)]
+    pub strategy_provider: String,
+    #[serde(default)]
+    pub strategy_model: String,
 }
 
 impl Default for AppConfig {
@@ -44,6 +60,10 @@ impl Default for AppConfig {
             max_searches_per_hour: 20,
             max_products_per_day: 10,
             max_publish_per_hour: 5,
+            // Empty = auto-select the strongest provider/model the user has a key for.
+            // An explicit choice here always wins.
+            strategy_provider: String::new(),
+            strategy_model: String::new(),
         }
     }
 }
