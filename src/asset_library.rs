@@ -72,43 +72,52 @@ impl AssetLibrary {
 
     /// Load assets from the products table in DB
     pub fn load_from_db(&mut self, db: &Database) {
-        let conn = db.conn.lock().unwrap();
-        let mut stmt = conn.prepare(
-            "SELECT id, name, product_type, created_at, status, file_path, metadata
-             FROM products ORDER BY created_at DESC"
-        ).unwrap();
+        // The guard is scoped to the query and dropped before load_versions() is called.
+        //
+        // It used to hold `conn` for the whole body and then call self.load_versions(db), which
+        // locks the SAME std::sync::Mutex. That mutex is NOT reentrant, so the second lock blocked
+        // forever: DpfApp::new never returned, the first frame was never rendered, and the window
+        // stayed black on every machine regardless of GPU or renderer. This was the actual cause of
+        // the black screen — not the graphics back end.
+        let assets: Vec<Asset> = {
+            let conn = db.conn.lock().unwrap();
+            let mut stmt = conn.prepare(
+                "SELECT id, name, product_type, created_at, status, file_path, metadata
+                 FROM products ORDER BY created_at DESC"
+            ).unwrap();
 
-        let assets: Vec<Asset> = stmt.query_map([], |row| {
-            let id_val: i64 = row.get(0)?;
-            let name: String = row.get(1)?;
-            let created: String = row.get(3)?;
-            let file_path: String = row.get::<_, Option<String>>(5).unwrap_or(None).unwrap_or_default();
-            let metadata: String = row.get::<_, Option<String>>(6).unwrap_or(None).unwrap_or_default();
+            stmt.query_map([], |row| {
+                let id_val: i64 = row.get(0)?;
+                let name: String = row.get(1)?;
+                let created: String = row.get(3)?;
+                let file_path: String = row.get::<_, Option<String>>(5).unwrap_or(None).unwrap_or_default();
+                let metadata: String = row.get::<_, Option<String>>(6).unwrap_or(None).unwrap_or_default();
 
-            let tags: Vec<String> = serde_json::from_str(&metadata).unwrap_or_default();
-            let file_size = if !file_path.is_empty() {
-                std::fs::metadata(&file_path).map(|m| m.len()).unwrap_or(0)
-            } else { 0 };
-            let file_format = Path::new(&file_path)
-                .extension().and_then(|e| e.to_str())
-                .unwrap_or("unknown").to_string();
-            let created_at = chrono::DateTime::parse_from_rfc3339(&created)
-                .unwrap_or_default().with_timezone(&chrono::Utc);
+                let tags: Vec<String> = serde_json::from_str(&metadata).unwrap_or_default();
+                let file_size = if !file_path.is_empty() {
+                    std::fs::metadata(&file_path).map(|m| m.len()).unwrap_or(0)
+                } else { 0 };
+                let file_format = Path::new(&file_path)
+                    .extension().and_then(|e| e.to_str())
+                    .unwrap_or("unknown").to_string();
+                let created_at = chrono::DateTime::parse_from_rfc3339(&created)
+                    .unwrap_or_default().with_timezone(&chrono::Utc);
 
-            Ok(Asset {
-                id: id_val as usize,
-                product_id: id_val as usize,
-                product_name: name,
-                file_path,
-                file_size,
-                file_format,
-                version: 1,
-                tags,
-                created_at,
-                updated_at: created_at,
-                notes: String::new(),
-            })
-        }).unwrap().filter_map(|r| r.ok()).collect();
+                Ok(Asset {
+                    id: id_val as usize,
+                    product_id: id_val as usize,
+                    product_name: name,
+                    file_path,
+                    file_size,
+                    file_format,
+                    version: 1,
+                    tags,
+                    created_at,
+                    updated_at: created_at,
+                    notes: String::new(),
+                })
+            }).unwrap().filter_map(|r| r.ok()).collect()
+        }; // <-- conn released here
 
         self.assets = assets;
         self.load_versions(db);

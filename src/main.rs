@@ -193,6 +193,92 @@ fn chosen_renderer() -> (eframe::Renderer, &'static str) {
     }
 }
 
+/// The other back end. Kept in one place so the two call sites cannot disagree.
+fn other_renderer(r: eframe::Renderer) -> eframe::Renderer {
+    match r {
+        eframe::Renderer::Glow => eframe::Renderer::Wgpu,
+        eframe::Renderer::Wgpu => eframe::Renderer::Glow,
+    }
+}
+
+fn renderer_name(r: eframe::Renderer) -> &'static str {
+    match r {
+        eframe::Renderer::Glow => "glow",
+        eframe::Renderer::Wgpu => "wgpu",
+    }
+}
+
+/// Relaunch this executable with the other back end. Returns true if a new process was started.
+///
+/// Sets DPF_RENDERER_FALLBACK=0 in the child so a machine where NEITHER back end works cannot
+/// bounce between two processes forever.
+fn relaunch_with_other_renderer(current: eframe::Renderer) -> bool {
+    if std::env::var("DPF_RENDERER_FALLBACK").as_deref() == Ok("0") {
+        log("fallback already attempted once — not relaunching again (set DPF_RENDERER to choose)");
+        return false;
+    }
+    let exe = match std::env::current_exe() {
+        Ok(p) => p,
+        Err(e) => { log(&format!("cannot locate own executable to relaunch: {e}")); return false; }
+    };
+    let next = renderer_name(other_renderer(current));
+    log(&format!("relaunching with --renderer {next} (fresh process = fresh event loop)"));
+
+    let mut args: Vec<String> = std::env::args().skip(1)
+        .filter(|a| a != "--renderer")
+        .filter(|a| a != renderer_name(current))
+        .filter(|a| a != "glow" && a != "wgpu")
+        .collect();
+    args.push("--renderer".into());
+    args.push(next.into());
+
+    match std::process::Command::new(exe).args(&args)
+        .env("DPF_RENDERER_FALLBACK", "0").spawn()
+    {
+        Ok(_) => true,
+        Err(e) => { log(&format!("relaunch failed: {e}")); false }
+    }
+}
+
+/// Mode 2 watchdog: a back end can initialise and then never present a single pixel, leaving a
+/// black window and a perfectly healthy-looking process. Nothing inside the event loop can decide
+/// to fall back, so this watches the app's own "frame N rendered" marker and relaunches if the
+/// first frame never lands.
+fn spawn_black_window_watchdog(current: eframe::Renderer) {
+    if std::env::var("DPF_RENDERER_FALLBACK").as_deref() == Ok("0") {
+        return;
+    }
+    // Only the DEFAULT back end auto-switches: if the user named one, respect it.
+    if std::env::var("DPF_RENDERER").is_ok() || std::env::args().any(|a| a == "--renderer") {
+        return;
+    }
+    std::thread::spawn(move || {
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(20);
+        loop {
+            std::thread::sleep(std::time::Duration::from_millis(750));
+            if first_frame_rendered() {
+                return; // healthy — the app is drawing
+            }
+            if std::time::Instant::now() >= deadline {
+                log("NO FRAME RENDERED within 20s — the back end is not presenting (black window).");
+                if relaunch_with_other_renderer(current) {
+                    std::process::exit(0); // the relaunched process takes over
+                }
+                return;
+            }
+        }
+    });
+}
+
+/// True once the startup log shows the app reached its first frame.
+fn first_frame_rendered() -> bool {
+    log_paths().iter().any(|p| {
+        std::fs::read_to_string(p)
+            .map(|t| t.contains("frame 1 rendered"))
+            .unwrap_or(false)
+    })
+}
+
 fn main() -> eframe::Result<()> {
     install_panic_logger();
     let (renderer, why) = chosen_renderer();
@@ -216,6 +302,7 @@ fn main() -> eframe::Result<()> {
     options.renderer = renderer;
 
     log("creating window...");
+    spawn_black_window_watchdog(renderer);
     let result = eframe::run_native(
         "Digital Product Factory",
         options,
@@ -230,6 +317,11 @@ fn main() -> eframe::Result<()> {
         Err(e) => {
             log(&format!("{renderer:?} FAILED to start: {e}"));
             log("If this mentions the event loop or a display, the back end could not initialise.");
+            // Mode 1: the back end could not initialise. A fresh process gets a fresh EventLoop,
+            // so relaunching with the other back end is safe here (in-process retry is not).
+            if relaunch_with_other_renderer(renderer) {
+                return Ok(());
+            }
             log("Try the other one: dpf-glow.bat  /  dpf-wgpu.bat");
         }
     }
