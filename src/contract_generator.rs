@@ -102,6 +102,10 @@ impl ContractCategory {
             ContractCategory::Partnership,
             ContractCategory::Consulting,
             ContractCategory::Coaching,
+            // Custom was missing here while templates already used it, so the Custom Agreement could
+            // never be reached through the category filter — it existed and was unselectable. A test
+            // now asserts every template's own category is in this list.
+            ContractCategory::Custom,
         ]
     }
 }
