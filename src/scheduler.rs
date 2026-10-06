@@ -56,6 +56,21 @@ pub struct Scheduler {
     running: bool,
 }
 
+impl TaskType {
+    /// Human label for the UI. Keeping it on the type means a new variant cannot be added without
+    /// deciding what to call it in the interface.
+    pub fn label(&self) -> &'static str {
+        match self {
+            TaskType::GenerateProduct { .. } => "Generate product",
+            TaskType::PublishProduct { .. } => "Publish product",
+            TaskType::ResearchMarket { .. } => "Market research",
+            TaskType::CreateBundle { .. } => "Create bundle",
+            TaskType::PinterestPin { .. } => "Pin to Pinterest",
+            TaskType::BackupData => "Back up data",
+        }
+    }
+}
+
 impl Scheduler {
     pub fn new(db: &Arc<Database>, runtime: Arc<Runtime>) -> Self {
         let tasks = db.load_scheduled_tasks().unwrap_or_default();

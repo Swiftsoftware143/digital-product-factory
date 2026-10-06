@@ -154,6 +154,21 @@ pub struct DpfApp {
     /// Deep-thinking layer state. The provider/model choice lives in `config` (so it persists);
     /// this holds the in-flight panel state and the last brief.
     pub strategy_state: StrategyState,
+    /// Scheduler add-task dialog. The draft lives on the app so it survives the frame — a view is
+    /// redrawn constantly and local state would be wiped between keystrokes.
+    /// Contract flow state: which template is open, its answers, the chosen category filter, and
+    /// the last result/error. On the app because a view is redrawn every frame and local state
+    /// would be wiped between keystrokes.
+    pub contract_selected: Option<String>,
+    pub contract_answers: std::collections::HashMap<String, String>,
+    pub contract_category: Option<crate::contract_generator::ContractCategory>,
+    pub contract_result: Option<crate::contract_generator::GeneratedContract>,
+    pub contract_error: Option<String>,
+    pub scheduler_adding: bool,
+    pub scheduler_draft_name: String,
+    pub scheduler_draft_type: crate::ui::scheduler_view::TaskTypeChoice,
+    pub scheduler_draft_query: String,
+    pub scheduler_draft_freq: crate::ui::scheduler_view::FrequencyChoice,
     // -- UI State ----------------------------------------------------
     pub current_tab: Tab,
     pub sidebar_expanded: bool,
@@ -310,6 +325,16 @@ impl DpfApp {
             denylist_scanner: DenylistScanner::new(),
             disclosure_rules,
             strategy_state: StrategyState::default(),
+            contract_selected: None,
+            contract_answers: std::collections::HashMap::new(),
+            contract_category: None,
+            contract_result: None,
+            contract_error: None,
+            scheduler_adding: false,
+            scheduler_draft_name: String::new(),
+            scheduler_draft_type: crate::ui::scheduler_view::TaskTypeChoice::ResearchMarket,
+            scheduler_draft_query: String::new(),
+            scheduler_draft_freq: crate::ui::scheduler_view::FrequencyChoice::Daily,
             // -- UI State -------------------------------------------
             current_tab: Tab::Dashboard,
             sidebar_expanded: true,

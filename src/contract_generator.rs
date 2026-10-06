@@ -804,7 +804,7 @@ impl ContractGenerator {
     }
 
     /// Generate a contract using the LLM router.
-    pub fn generate(&self, template_id: &str, answers: HashMap<String, String>) -> Result<GeneratedContract, String> {
+    pub fn generate(&self, runtime: &tokio::runtime::Runtime, template_id: &str, answers: HashMap<String, String>) -> Result<GeneratedContract, String> {
         let template = self.templates.get(template_id)
             .ok_or_else(|| "Template not found".to_string())?;
 
@@ -819,7 +819,7 @@ impl ContractGenerator {
         let user_prompt = self.build_user_prompt(template, &answers);
 
         // Try LLM generation; fall back to basic response if router not configured
-        let llm_response = self.call_llm(&user_prompt)?;
+        let llm_response = self.call_llm(runtime, &user_prompt)?;
 
         let disclaimer = self.get_legal_disclaimer();
         let content = format!("{}\n\n{}", llm_response.content, disclaimer);
@@ -856,15 +856,15 @@ impl ContractGenerator {
     }
 
     /// Call the LLM router with the generated prompt and parse the response.
-    fn call_llm(&self, user_prompt: &str) -> Result<LlmContractResponse, String> {
+    fn call_llm(&self, runtime: &tokio::runtime::Runtime, user_prompt: &str) -> Result<LlmContractResponse, String> {
         let router = self.llm_router.as_ref()
             .ok_or_else(|| {
                 "API keys not configured. Please set your API keys in Settings to generate contracts.".to_string()
             })?;
 
-        // We need a runtime to call the async generate() method.
-        let runtime = tokio::runtime::Runtime::new()
-            .map_err(|e| format!("Failed to create Tokio runtime: {}", e))?;
+        // NEVER build a runtime here. This function is reached from the UI thread, which is already
+        // inside a Tokio runtime, and Runtime::new() + block_on() inside a runtime PANICS with
+        // "Cannot start a runtime from within a runtime". The caller passes its own runtime in.
 
         let request = GenerationRequest {
             profile: LLMProfile::Structured,

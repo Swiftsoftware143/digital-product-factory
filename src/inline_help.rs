@@ -43,6 +43,12 @@ pub fn all_topics() -> Vec<HelpTopic> {
             tier: "personal",
         },
         HelpTopic {
+            id: "contract",
+            title: "Contract Generator",
+            body: "Generates a contract from a template. Pick a category to narrow the list, press Select, answer the questions, then Generate. It runs ONE call on the AI key you already have. Required questions are marked with a red star and must be filled in before Generate will run. Read the result before relying on it - this produces a template, not legal advice, and a qualified attorney should review anything you sign.",
+            tier: "personal",
+        },
+        HelpTopic {
             id: "research",
             title: "Market Research",
             body: "Search Etsy, Gumroad, and Amazon to validate product ideas. Shows pricing, ratings, competition level, and top keywords.",
