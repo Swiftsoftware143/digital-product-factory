@@ -4,8 +4,15 @@ DIGITAL PRODUCT FACTORY — START HERE
 1. RUN IT
    Double-click dpf.exe.
 
-   There is no installer. The app is a single program; nothing is written
-   anywhere except its own folder and your Windows user data.
+   There is no installer. The app is a single program.
+
+   YOUR WORK IS SAFE. Your ideas, products, sales, clients and generated
+   files are stored OUTSIDE this folder, in your own Windows user data:
+
+       %APPDATA%\DigitalProductFactory\
+
+   That is deliberate, and it is why updating is safe: your data is not
+   kept next to the program, so replacing the program cannot touch it.
 
 2. ADD YOUR AI KEY (needed before it can generate anything)
    Open Settings and paste ONE key from any of these:
@@ -19,29 +26,54 @@ DIGITAL PRODUCT FACTORY — START HERE
    Click the key button at the bottom of the left sidebar and paste it in.
 
 
+HOW TO UPDATE TO A NEW VERSION
+------------------------------
+
+There is no automatic update, and you do not need to delete anything.
+
+   1. Download the new zip from the address you used before.
+   2. Unzip it and replace dpf.exe with the new one.
+
+That is the whole update. Your data is not in this folder, so it is
+untouched. You do NOT need to re-enter your licence key or your AI key.
+
+DO NOT delete the folder to update - there is no need, and if you have
+ever run an older version that kept its data here, deleting would take
+that older data with it. The app imports such a file automatically the
+first time it starts, and it never deletes the original.
+
+
 IF THE WINDOW IS BLACK
 ----------------------
 
 A small number of graphics drivers draw this app as a blank window on one
 of the two drawing methods it can use. It is a driver quirk, not a fault in
-your copy, and the fix is one double-click:
+your copy.
 
-    dpf-glow.bat    run with OpenGL
-    dpf-wgpu.bat    run with DirectX
+The app normally sorts this out on its own: if the first drawing method
+fails to start, it relaunches itself once using the other one. A window
+that is black for a few seconds and then appears is that recovery working.
 
-If one is black, the other normally works.
+If it stays black, start it with the other method yourself - one
+double-click:
+
+    dpf-glow.bat    run with OpenGL   (try this first on a VPS or Windows Server)
+    dpf-wgpu.bat    run with DirectX  (the default)
 
 Either way, dpf.exe writes a file called dpf-startup.log into this same
-folder. It records which method was tried and exactly what went wrong.
-If you need support, send that file - it is the single most useful thing
-you can provide.
+folder. It records which method was tried, which start-up step it reached,
+and whether the first frame ever painted. If you need support, send that
+file - it is the single most useful thing you can provide.
 
 
 FILES IN THIS FOLDER
 --------------------
 
-    dpf.exe           the application
-    dpf-glow.bat      start it with OpenGL     (use if dpf.exe is black)
-    dpf-wgpu.bat      start it with DirectX    (the default)
-    START-HERE.txt    this file
-    dpf-startup.log   created after you run it - send this if you need help
+    dpf.exe                 the application
+    dpf-glow.bat            start it with OpenGL     (use if dpf.exe is black)
+    dpf-wgpu.bat            start it with DirectX    (the default)
+    feature_tiers.json      which features each plan unlocks, and the upgrade link
+    favicon/                the DPF brand icon set, for your own site or listing
+    MODULE-TEST-SHEET.md    a short sheet for checking every screen in the app
+    START-HERE.txt          this file
+    dpf-startup.log         created after you run it - send this if you need help

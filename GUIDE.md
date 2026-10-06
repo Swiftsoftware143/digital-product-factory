@@ -33,6 +33,41 @@
  - macOS: `dpf`
  - Linux: `dpf`
 
+There is **no installer** and nothing is added to your system. The app is a single program you can
+move anywhere, including a USB stick.
+
+### Where your work is stored
+
+Your ideas, products, sales, clients, licence, and generated files are stored in your **own user
+data folder** — not in the program folder:
+
+| Platform | Location |
+|----------|----------|
+| Windows | `%APPDATA%\DigitalProductFactory\` |
+| macOS | `~/Library/Application Support/DigitalProductFactory/` |
+| Linux | `~/.local/share/DigitalProductFactory/` (`$XDG_DATA_HOME` if set) |
+
+This matters in two practical ways:
+
+- **Updating cannot touch your data.** Replacing the program file leaves your work alone.
+- **Moving the program cannot lose your work**, and launching it from a different folder shows the
+  same data. (Earlier versions stored the database next to the program, which meant both of those
+  could lose work — that is fixed. If you have an old database in the program folder, the app
+  imports it on first start and leaves the original in place.)
+
+**Back up that folder** to keep your work safe — it is the whole of your data.
+
+### Updating to a new version
+
+There is **no automatic update**. To update:
+
+1. Download the new release from the same address
+2. Unzip it and replace `dpf.exe` with the new one
+
+**Do not delete the folder to update** — there is no need, and your data is not in it. You do not
+need to re-enter your licence key or your AI key. If a release ever needs your attention for a
+change, it is called out in the release notes.
+
 ### First Launch
 
 On first launch, you'll see:
@@ -926,6 +961,19 @@ You can also produce a **Favicon Package** into a folder you choose. It contains
 - `apple-touch-icon.png`
 - `site.webmanifest`
 
+### Saving a raw SVG
+
+**Export SVG** saves the logo as a **scalable vector file** (`.svg`), rather than a picture of one.
+
+Reach for this when you need the artwork itself rather than a fixed-size image:
+
+- Opening or editing the logo in Illustrator, Figma, Inkscape or Affinity
+- Placing it on a website or a print job at any size — vectors stay sharp at any resolution
+- Handing the logo to a printer or a client who needs the source artwork
+
+Favicons are raster images at set sizes; the raw SVG is the original vector. Choose per job, and
+save both when you are unsure.
+
 ---
 
 ## Vector Generator
@@ -1049,6 +1097,20 @@ The **Preview** view renders a canvas representation of each ad:
 - Exported data includes: copy text, layout specs per ratio, brand identity, product placement params, conversion score, generation config
 - Files are saved to `{app_data_dir}/assets/exports/`
 - File naming: `{campaign_name}_{product_name}_{ratio}_{timestamp}.json`
+
+**Export Summary (Markdown)**
+
+**Export Summary** writes a readable campaign overview as a **Markdown** file — the version to read
+yourself or send to a client, rather than feed to another program.
+
+Use it when you want to review or share a campaign:
+
+- A human-readable summary of every advert in the campaign, with its copy and conversion score
+- Paste into Notion, Obsidian, GitHub, or any Markdown editor
+- Send to a client for sign-off without them needing the app
+
+**Which export to use:** JSON is for machines (feeding Canva, Figma, Photoshop); Markdown is for
+people. The names in the copy may be added as social usernames or hashtags where relevant.
 
 ### Copy Frameworks Explained
 
@@ -1227,11 +1289,36 @@ Each paid tier includes a set number of seats (Personal 1, Team 5, Agency 20, En
 - Reduce concurrent tasks
 - Check database size (auto-vacuum runs monthly)
 
+**"The window is black / nothing appears"**
+
+This is a graphics back end that cannot present on your machine, and the app now recovers from it
+by itself. What to know:
+
+- On start-up the app picks a back end automatically. If the first one fails to initialise, it
+  relaunches itself once using the other one. **You do not need to do anything.**
+- If the window stays black for about 20 seconds, the app relaunches itself on the other back end.
+  A black window that resolves by itself after a few seconds is this watchdog working — not a fault.
+- To choose a back end yourself, use the launcher next to the program:
+  - **`dpf-glow.bat`** — OpenGL. Try this first on Windows Server, a VPS, or any machine with no
+    dedicated graphics card.
+  - **`dpf-wgpu.bat`** — DirectX 12. The default; best on a normal desktop or laptop with a GPU.
+- You can also pass it on the command line: `dpf.exe --renderer glow` (or `--renderer wgpu`).
+  Set `DPF_RENDERER` to the same value to make it stick.
+- **If both back ends leave a black window**, the fault is earlier than graphics. The app writes
+  **`dpf-startup.log`** next to itself, and it names the exact start-up stage it reached. Send that
+  file to support — it turns "it is black" into a specific answer.
+- The log also prints **`frame 1 rendered`** as soon as the app actually paints. If that line is
+  absent, the app never reached its first frame and no graphics setting will help.
+
+⚠️ Only one copy of the app should hold the data file at a time. Opening a second copy while the
+first is running is supported, but if the app ever appears to hang on start-up, close every copy
+and try once more.
+
 ### Getting Help
 
-1. Check this guide first
+1. Check this guide first — and the **?** button on any screen for help on that screen
 2. Review error messages carefully
-3. Check GitHub issues: https://github.com/Swiftsoftware143/digital-product-factory-egui/issues
+3. Open an issue: https://github.com/Swiftsoftware143/digital-product-factory/issues
 4. Contact support with:
  - Error message
  - Steps to reproduce

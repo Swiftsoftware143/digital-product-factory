@@ -303,6 +303,52 @@ instructions, aspect-ratio constraints, and brand-identity extraction.
 
 ## Key Generation
 
+### Using the licence control centre (recommended)
+
+The control centre is the normal way to issue keys. It is a separate web app, so it keeps working
+when you are away from your own computer — issue a key from a phone if a sale lands while you are out.
+
+**https://dpf.swiftsoftware.net** → sign in with your admin user and password → **Dashboard**.
+
+The dashboard has a section headed **"Issue a licence key"**:
+
+| Field | What it is for |
+|-------|----------------|
+| **Tier** | `PERSONAL` / `TEAM` / `AGENCY` / `ENTERPRISE`. Enterprise unlocks everything. |
+| **Customer email** | Who the key is for. Recorded against the key. |
+| **Customer name** | Optional. |
+| **Order reference** | Optional — put the store's order id here so a key can be traced back to a sale. |
+| **Block** | The key's middle segment. Leave blank for a random one, or type a short code (for example a customer initials + number) to make the key recognisable. |
+| **Note** | Optional free text. |
+
+Press **Mint key**. The key appears immediately in the **Licences** table below the form, showing its
+tier, customer, and activation count. Copy it and send it to the customer.
+
+**Revoke / reinstate.** Every row in the Licences table has a **Revoke** button, and a revoked key
+shows a **Reinstate** button. Revoking is the "cut a key off" control.
+
+> ⚠️ **Revocation only bites at activation.** Licence checking is offline by design — the app never
+> calls home — so a key that is *already activated* on a machine keeps working even after it is
+> revoked here. Revoking stops the key being activated on a **new** machine. If you ever need to
+> stop an already-activated copy, that requires online activation, which is a separate decision.
+
+The centre also exposes `GET /api/activate` (used at activation time) and `GET /healthz`
+(for uptime monitoring). Minting here uses the **identical algorithm** to the desktop app and to
+`dpf-mint-license.py`; the centre refuses to start if its keys would not be accepted by the app.
+
+### Minting from the command line (offline fallback)
+
+If the control centre is unreachable:
+
+```bash
+python3 /opt/swift/scripts/dpf-mint-license.py ENTERPRISE AB12CD34   # one key
+python3 /opt/swift/scripts/dpf-mint-license.py --batch TEAM 5        # five keys
+python3 /opt/swift/scripts/dpf-mint-license.py --tiers               # what each tier unlocks
+```
+
+Use this only as a fallback — keys minted here are **not recorded** in the control centre, so they
+will not appear in the Licences table and cannot be revoked from it.
+
 ### Key format
 
 ```

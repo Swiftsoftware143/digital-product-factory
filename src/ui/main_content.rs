@@ -780,7 +780,7 @@ fn show_asset_library(app: &mut DpfApp, ctx: &Context) {
     CentralPanel::default().show(ctx, |ui| {
         ui.horizontal(|ui| {
             ui.heading("🗂️ Asset Library");
-            inline_help::help_button(ui, "asset_library", &mut app.active_help_topic);
+            inline_help::help_button(ui, "assets", &mut app.active_help_topic);
             if ui.button("🔄 Refresh").clicked() {
                 app.asset_library.load_from_db(&app.db);
             }

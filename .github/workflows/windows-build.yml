@@ -61,6 +61,10 @@ jobs:
           # editing tiers or the sales link would need a full rebuild - which is exactly what
           # the file exists to avoid. It also means a tier change is a file edit, not a release.
           Copy-Item feature_tiers.json           staging/DigitalProductFactory/
+          # The brand asset set, for customers who want the icon for their own listing or site.
+          Copy-Item assets/favicon               staging/DigitalProductFactory/ -Recurse -Force
+          # A plain-English sheet for walking every module, so a fault can be reported precisely.
+          Copy-Item MODULE-TEST-SHEET.md         staging/DigitalProductFactory/
           Compress-Archive -Path staging/DigitalProductFactory `
                            -DestinationPath DigitalProductFactory-windows.zip -Force
           Write-Host "zip contents:"

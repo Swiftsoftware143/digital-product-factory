@@ -147,7 +147,7 @@ fn install_panic_logger() {
 }
 
 fn base_options() -> NativeOptions {
-    NativeOptions {
+    let mut options = NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([1400.0, 900.0])
             .with_min_inner_size([800.0, 600.0])
@@ -158,7 +158,32 @@ fn base_options() -> NativeOptions {
         vsync: false,
         hardware_acceleration: eframe::HardwareAcceleration::Preferred,
         ..Default::default()
+    };
+
+    // Brand icon in the title bar and the taskbar. Embedded in the binary, so the executable is
+    // still a single self-contained file — there is no icon file for the user to keep next to it.
+    if let Some(icon) = app_icon() {
+        options.viewport = options.viewport.with_icon(std::sync::Arc::new(icon));
     }
+
+    options
+}
+
+/// Decode the embedded brand mark into the pixel form egui wants for a window icon.
+///
+/// Failure is not fatal: a missing or unreadable icon should cost the icon, never the application.
+fn app_icon() -> Option<egui::IconData> {
+    let bytes = include_bytes!("../assets/icon.png");
+    let decoded = image::load_from_memory(bytes).ok()?.into_rgba8();
+    let (width, height) = decoded.dimensions();
+    if width == 0 || height == 0 {
+        return None;
+    }
+    Some(egui::IconData {
+        rgba: decoded.into_raw(),
+        width,
+        height,
+    })
 }
 
 /// Which back end to use, and why there is no automatic retry.

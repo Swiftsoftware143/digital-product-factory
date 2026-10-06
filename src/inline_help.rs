@@ -13,6 +13,12 @@ pub struct HelpTopic {
 pub fn all_topics() -> Vec<HelpTopic> {
     vec![
         HelpTopic {
+            id: "black_window",
+            title: "Black window / nothing appears",
+            body: "The app picks a graphics back end for your machine and switches to the other one by itself if the first will not start, so normally you do nothing. If the window is black for about 20 seconds, close the app and start it with dpf-glow.bat instead of dpf.exe - that is the launcher for machines with no dedicated graphics card, such as a Windows Server or a VPS. If it is still black, the app writes dpf-startup.log next to itself and it names the exact start-up step it reached; send that file to support. A black window is never caused by your licence or your AI key.",
+            tier: "personal",
+        },
+        HelpTopic {
             id: "dashboard",
             title: "Dashboard",
             body: "Your command center. Shows total ideas, in-progress products, active sales, and total revenue from Analytics.",
@@ -76,12 +82,6 @@ pub fn all_topics() -> Vec<HelpTopic> {
             id: "presets",
             title: "Industry Presets",
             body: "9 pre-configured workflows for different business models. Each includes stages, actions, and tips. Loading a preset fills your pipeline with the right starting ideas.",
-            tier: "personal",
-        },
-        HelpTopic {
-            id: "contracts",
-            title: "Contract Generator",
-            body: "Create legal documents: NDAs, Service Agreements, Coaching Contracts, and more. Guided prompts, export as DOCX or PDF.",
             tier: "personal",
         },
         HelpTopic {
@@ -211,12 +211,6 @@ pub fn all_topics() -> Vec<HelpTopic> {
             tier: "team",
         },
         HelpTopic {
-            id: "mockup",
-            title: "Mockup Compositor",
-            body: "Drop a product onto a mockup and export the composite as PNG or JPG. Useful for marketplace thumbnails and listing images. (Team+ feature)",
-            tier: "team",
-        },
-        HelpTopic {
             id: "assets",
             title: "Asset Library",
             body: "One place for every file your products have generated. Search by name, tag or format, and each asset keeps a version history so you can roll back to an earlier version. (Team+ feature)",
@@ -251,12 +245,6 @@ pub fn all_topics() -> Vec<HelpTopic> {
             title: "Admin Panel",
             body: "Edit the tier/feature map, pricing, marketplace format rules and the key revocation list, and inspect the licence state. This is where you change what each plan unlocks without rebuilding the app. (Enterprise feature)",
             tier: "enterprise",
-        },
-        HelpTopic {
-            id: "asset_library",
-            title: "Asset Library",
-            body: "Where your own files live — images, fonts, logos and anything else you reuse across products. Add assets once, then reference them from the Create, Mockup and Advert tabs instead of hunting for the file each time. Everything is stored locally on your machine.",
-            tier: "personal",
         },
         HelpTopic {
             id: "mockup_compositor",

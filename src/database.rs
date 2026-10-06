@@ -10,9 +10,111 @@ pub struct Database {
     pub conn: Arc<Mutex<Connection>>,
 }
 
+/// The per-user application data directory for this platform.
+///
+/// Deliberately dependency-free: a handful of environment variables cover every platform we ship
+/// to, and adding a crate for this would be more surface area than the job needs. Falls back to the
+/// current directory only if the environment gives us nothing at all, which keeps the app working
+/// in an unusual setup rather than refusing to start.
+fn data_dir() -> std::path::PathBuf {
+    const APP: &str = "DigitalProductFactory";
+
+    // Windows: %APPDATA%\DigitalProductFactory
+    if cfg!(windows) {
+        if let Ok(appdata) = std::env::var("APPDATA") {
+            if !appdata.trim().is_empty() {
+                return std::path::PathBuf::from(appdata).join(APP);
+            }
+        }
+        if let Ok(profile) = std::env::var("USERPROFILE") {
+            if !profile.trim().is_empty() {
+                return std::path::PathBuf::from(profile).join("AppData").join("Roaming").join(APP);
+            }
+        }
+        return std::path::PathBuf::from(".");
+    }
+
+    // macOS: ~/Library/Application Support/DigitalProductFactory
+    if cfg!(target_os = "macos") {
+        if let Ok(home) = std::env::var("HOME") {
+            if !home.trim().is_empty() {
+                return std::path::PathBuf::from(home)
+                    .join("Library")
+                    .join("Application Support")
+                    .join(APP);
+            }
+        }
+        return std::path::PathBuf::from(".");
+    }
+
+    // Linux/BSD: $XDG_DATA_HOME/DigitalProductFactory, else ~/.local/share/DigitalProductFactory
+    if let Ok(xdg) = std::env::var("XDG_DATA_HOME") {
+        if !xdg.trim().is_empty() {
+            return std::path::PathBuf::from(xdg).join(APP);
+        }
+    }
+    if let Ok(home) = std::env::var("HOME") {
+        if !home.trim().is_empty() {
+            return std::path::PathBuf::from(home).join(".local").join("share").join(APP);
+        }
+    }
+    std::path::PathBuf::from(".")
+}
+
 impl Database {
+    /// Where the database lives.
+    ///
+    /// This used to be the bare relative path "dpf_data.db", which means the file landed in
+    /// whatever directory the app happened to be launched from. Three things followed from that,
+    /// all bad for a shipped product:
+    ///
+    ///   1. Moving or replacing the executable lost every idea, product, sale and asset — because
+    ///      "delete the folder and unzip the new version" is exactly how people update.
+    ///   2. Launching from a different folder silently opened a DIFFERENT, empty database, so the
+    ///      user's work appeared to have vanished.
+    ///   3. A shortcut with a different "Start in" directory changed which data you saw.
+    ///
+    /// The data now lives in the per-user application data directory for the platform, which is
+    /// independent of where the program file sits. Updating is therefore just replacing the
+    /// executable.
+    pub fn data_file_path() -> std::path::PathBuf {
+        let dir = data_dir();
+        let _ = std::fs::create_dir_all(&dir);
+        dir.join("dpf_data.db")
+    }
+
+    /// Import a database left in the current directory by an older version, so upgrading does not
+    /// look like data loss. The original is left in place (never deleted) and the import happens
+    /// only when the new location has no database yet.
+    fn migrate_legacy_cwd_database(target: &std::path::Path) {
+        let legacy = std::path::Path::new("dpf_data.db");
+        if target.exists() || !legacy.exists() {
+            return;
+        }
+        // canonicalise so we never copy a file onto itself
+        let a = std::fs::canonicalize(legacy).ok();
+        let b = std::fs::canonicalize(target).ok();
+        if a.is_some() && a == b {
+            return;
+        }
+        match std::fs::copy(legacy, target) {
+            Ok(bytes) => crate::log_line(&format!(
+                "data: imported existing database from the program folder ({} bytes) into {}",
+                bytes,
+                target.display()
+            )),
+            Err(e) => crate::log_line(&format!(
+                "data: could NOT import the database in the program folder: {e}"
+            )),
+        }
+    }
+
     pub fn new() -> SqlResult<Self> {
-        let conn = Connection::open("dpf_data.db")?;
+        let path = Self::data_file_path();
+        Self::migrate_legacy_cwd_database(&path);
+        crate::log_line(&format!("data: database at {}", path.display()));
+
+        let conn = Connection::open(&path)?;
         
         // Enable WAL mode for better concurrency.
         // NOTE: "PRAGMA journal_mode=..." always returns the resulting mode
