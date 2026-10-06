@@ -11,7 +11,12 @@ use crate::app::DpfApp;
 /// Show the advert preview panel
 pub fn show(app: &mut DpfApp, ctx: &Context) {
     CentralPanel::default().show(ctx, |ui| {
-        ui.heading("👁️ Advert Preview");
+        ui.horizontal(|ui| {
+            if ui.button("← Back to Suite").clicked() {
+                app.adverts_manager.mode = crate::ui::adverts_view::AdvertMode::Suite;
+            }
+            ui.heading("👁️ Advert Preview");
+        });
         ui.separator();
 
         let campaign = match &app.adverts_manager.campaign {

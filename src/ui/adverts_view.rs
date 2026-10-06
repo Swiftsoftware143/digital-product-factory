@@ -18,6 +18,21 @@ use crate::app::DpfApp;
 
 // ── Campaign Manager State ────────────────────────────────────────────
 
+
+
+/// Which sub-view the Adverts tab is showing.
+///
+/// The Composer and Preview buttons existed but were wired to nothing — `advert_composer::show`
+/// and `advert_preview::show` were complete views that no caller ever reached, which is also why
+/// every helper only they used showed up as dead code. This mode is the connection.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum AdvertMode {
+    #[default]
+    Suite,
+    Composer,
+    Preview,
+}
+
 #[derive(Default)]
 pub struct AdvertsManager {
     /// Currently loaded campaign (if any)
@@ -48,6 +63,8 @@ pub struct AdvertsManager {
     pub num_variations: usize,
     pub generating: bool,
     pub export_path: String,
+    /// Which sub-view is showing. Defaults to the suite.
+    pub mode: AdvertMode,
 }
 
 impl AdvertsManager {
@@ -57,6 +74,7 @@ impl AdvertsManager {
             selected_frameworks: vec![true, true, false],
             num_variations: 2,
             export_path: "exports/".to_string(),
+            mode: AdvertMode::Suite,
             ..Default::default()
         }
     }
@@ -103,6 +121,14 @@ impl AdvertsManager {
 // ── Main View ─────────────────────────────────────────────────────────
 
 pub fn show(app: &mut DpfApp, ctx: &Context) {
+    // The Composer and Preview sub-views are separate view functions. Route to them here so the
+    // tab's buttons actually go somewhere.
+    match app.adverts_manager.mode {
+        AdvertMode::Composer => return crate::ui::advert_composer::show(app, ctx),
+        AdvertMode::Preview => return crate::ui::advert_preview::show(app, ctx),
+        AdvertMode::Suite => {}
+    }
+
     // Destructure app for split borrows
     let (mgr, config, runtime) = (
         &mut app.adverts_manager,
@@ -168,10 +194,10 @@ fn show_campaign_actions(ui: &mut Ui, mgr: &mut AdvertsManager) {
         ));
 
         if ui.button("📝 Edit (Composer)").clicked() {
-            // Switch to compositor view — handled in main_content
+            mgr.mode = AdvertMode::Composer;
         }
         if ui.button("👁️ Preview").clicked() {
-            // Switch to preview tab
+            mgr.mode = AdvertMode::Preview;
         }
         if ui.button("📥 Export All").clicked() {
             if let Some(ref campaign) = mgr.campaign {

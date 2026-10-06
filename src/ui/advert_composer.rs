@@ -14,7 +14,12 @@ use crate::app::DpfApp;
 /// Show the advert composition form in a scrollable panel
 pub fn show(app: &mut DpfApp, ctx: &Context) {
     CentralPanel::default().show(ctx, |ui| {
-        ui.heading("✏️ Advert Composer");
+        ui.horizontal(|ui| {
+            if ui.button("← Back to Suite").clicked() {
+                app.adverts_manager.mode = crate::ui::adverts_view::AdvertMode::Suite;
+            }
+            ui.heading("✏️ Advert Composer");
+        });
         ui.separator();
 
         let campaign = match &mut app.adverts_manager.campaign {
