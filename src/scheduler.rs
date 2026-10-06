@@ -51,7 +51,6 @@ pub enum TaskStatus {
 
 pub struct Scheduler {
     db: Arc<Database>,
-    runtime: Arc<Runtime>,
     tasks: Vec<ScheduledTask>,
     running: bool,
 }
@@ -77,7 +76,6 @@ impl Scheduler {
         
         Self {
             db: db.clone(),
-            runtime,
             tasks,
             running: false,
         }

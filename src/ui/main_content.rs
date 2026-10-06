@@ -401,18 +401,21 @@ fn show_templates(app: &mut DpfApp, ctx: &Context) {
 
         // ── Template catalogue (name · description · category · tags ·
         //    trending score · output format) ───────────────────────────
+        // Uses the registry's own search/trending rather than re-implementing them. The inline
+        // version this replaced filtered on four fields; templates.search() only knew three, so
+        // the library was widened to match before the view was pointed at it — otherwise "wiring
+        // it up" would have silently dropped category search.
         let filter = state.filter.trim().to_lowercase();
         let registry = app.generator.get_template_registry();
-        let mut templates = registry.list();
-        if !filter.is_empty() {
-            templates.retain(|t| {
-                t.name.to_lowercase().contains(&filter)
-                    || t.description.to_lowercase().contains(&filter)
-                    || t.category.name().to_lowercase().contains(&filter)
-                    || t.tags.iter().any(|tag| tag.to_lowercase().contains(&filter))
-            });
-        }
-        templates.sort_by(|a, b| b.trending_score.cmp(&a.trending_score));
+        let mut templates = if filter.is_empty() {
+            // registry.trending() is the library's "sorted most-trending-first" accessor; the view
+            // used to sort by hand. usize::MAX = "no cap", i.e. the whole catalogue in trend order.
+            registry.trending(usize::MAX)
+        } else {
+            let mut hits = registry.search(&filter);
+            hits.sort_by(|a, b| b.trending_score.cmp(&a.trending_score));
+            hits
+        };
 
         ScrollArea::vertical().max_height(340.0).show(ui, |ui| {
             ui.label(format!("{} template(s)", templates.len()));

@@ -39,8 +39,6 @@ pub struct AdvertsManager {
     pub campaign: Option<Campaign>,
     /// Saved campaigns list
     pub campaigns: Vec<Campaign>,
-    /// ID counter for new campaigns
-    pub next_campaign_id: usize,
     /// Selected advert index for composer
     pub selected_advert: Option<usize>,
     /// Selected advert index for preview
@@ -65,6 +63,8 @@ pub struct AdvertsManager {
     pub export_path: String,
     /// Which sub-view is showing. Defaults to the suite.
     pub mode: AdvertMode,
+    /// Last export/action message, shown as a toast. Cleared once shown.
+    pub notice: Option<String>,
 }
 
 impl AdvertsManager {
@@ -140,11 +140,22 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
 
         ui.horizontal(|ui| {
             ui.heading("📢 Adverts & Campaign Suite");
+            // `generating` was set but never read, so a campaign could be mid-generation with
+            // nothing on screen saying so — the UI just looked frozen.
+            if mgr.generating {
+                ui.colored_label(Color32::YELLOW, "⏳ Generating campaign…");
+            }
             if let Some(ref campaign) = mgr.campaign {
                 ui.label(format!("— Active: {}", campaign.name));
             }
         });
         ui.separator();
+
+        // The toast helper existed unused; a completed export should acknowledge itself rather
+        // than silently writing a file the user has to go looking for.
+        if let Some(msg) = mgr.notice.take() {
+            crate::ui::components::toast(ctx, &msg, 3.0);
+        }
 
         // If no campaign loaded, show generation form + saved campaigns
         // Otherwise show campaign actions
@@ -208,6 +219,22 @@ fn show_campaign_actions(ui: &mut Ui, mgr: &mut AdvertsManager) {
                 match exporter.write_json_batch_file(&campaign.adverts, &path) {
                     Ok(_) => tracing::info!("Exported campaign to {}", path),
                     Err(e) => tracing::error!("Export failed: {}", e),
+                }
+            }
+        }
+        // Campaign summary as Markdown (wired: export_campaign_summary had 0 call sites).
+        // The exporter could already render a readable summary of every advert in a campaign;
+        // there was no way to ask for it.
+        if ui.button("📄 Export Summary").clicked() {
+            if let Some(ref campaign) = mgr.campaign {
+                let md = AdvertExporter::new()
+                    .export_campaign_summary(&campaign.name, &campaign.adverts);
+                let safe: String = campaign.name.chars()
+                    .map(|c| if c == ' ' { '_' } else { c }).collect();
+                let path = format!("{}_summary.md", safe);
+                match std::fs::write(&path, md) {
+                    Ok(_) => mgr.notice = Some(format!("Summary written to {}", path)),
+                    Err(e) => mgr.notice = Some(format!("Summary export failed: {}", e)),
                 }
             }
         }

@@ -61,6 +61,19 @@ pub enum CompetitionLevel {
     Saturated,
 }
 
+impl CompetitionLevel {
+    /// Human label for the UI. On the type itself so a new variant cannot be added without
+    /// deciding what to call it on screen.
+    pub fn name(&self) -> &'static str {
+        match self {
+            CompetitionLevel::Low => "low",
+            CompetitionLevel::Medium => "medium",
+            CompetitionLevel::High => "high",
+            CompetitionLevel::Saturated => "saturated",
+        }
+    }
+}
+
 impl MarketResearch {
     pub fn new(runtime: Arc<Runtime>) -> Self {
         let client = Client::builder()

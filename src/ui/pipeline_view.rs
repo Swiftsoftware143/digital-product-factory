@@ -10,6 +10,12 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
         // Toolbar
         ui.horizontal(|ui| {
             ui.heading("Pipeline");
+            // pipeline.stats() counts ideas per stage and existed with no caller, so the board
+            // showed per-column counts but never a total or a per-stage summary in one place.
+            {
+                let st = app.pipeline.stats();
+                ui.label(format!("{} idea(s) in the pipeline", st.total));
+            }
             
             ui.separator();
             
@@ -59,6 +65,11 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
 }
 
 fn show_kanban(app: &mut DpfApp, ui: &mut Ui) {
+    // Delete is requested while a card is borrowed from the board, so it is recorded here and
+    // applied after every column has been drawn. Mutating the list mid-iteration would drop an
+    // idea while it is still on screen.
+    let mut delete_request: Option<usize> = None;
+
     ScrollArea::horizontal().show(ui, |ui| {
         ui.horizontal(|ui| {
             for stage in PipelineStage::all() {
@@ -94,7 +105,7 @@ fn show_kanban(app: &mut DpfApp, ui: &mut Ui) {
                         .collect();
                     
                     for idea in ideas {
-                        show_idea_card(app, ui, &idea);
+                        show_idea_card(app, ui, &idea, &mut delete_request);
                     }
                     
                     // Handle drops
@@ -110,9 +121,17 @@ fn show_kanban(app: &mut DpfApp, ui: &mut Ui) {
             }
         });
     });
+
+    // Apply the delete now that nothing is borrowed.
+    if let Some(id) = delete_request {
+        app.pipeline.delete_idea(&app.db, id);
+        if app.pipeline.selected_idea == Some(id) {
+            app.pipeline.selected_idea = None;
+        }
+    }
 }
 
-fn show_idea_card(app: &mut DpfApp, ui: &mut Ui, idea: &ProductIdea) {
+fn show_idea_card(app: &mut DpfApp, ui: &mut Ui, idea: &ProductIdea, delete_request: &mut Option<usize>) {
     let card_id = ui.id().with(idea.id);
     
     Frame::group(ui.style()).show(ui, |ui| {
@@ -146,6 +165,11 @@ fn show_idea_card(app: &mut DpfApp, ui: &mut Ui, idea: &ProductIdea) {
             ui.colored_label(idea.priority.color(), idea.priority.name());
             
             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                // Delete (wired: delete_idea had 0 call sites) — an idea could be created and never
+                // removed, so a board filled with abandoned ideas had no way to shed them.
+                if ui.small_button("🗑").on_hover_text("Delete this idea").clicked() {
+                    *delete_request = Some(idea.id);
+                }
                 if idea.estimated_value > 0.0 {
                     ui.label(format!("${:.0}", idea.estimated_value));
                 }

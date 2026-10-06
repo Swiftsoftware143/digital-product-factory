@@ -68,13 +68,4 @@ impl Default for AppConfig {
     }
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct PublishingConfig {
-    pub platform_settings_path: String,
-}
 
-impl PublishingConfig {
-    pub fn default_path() -> String {
-        "platform_formats.json".to_string()
-    }
-}

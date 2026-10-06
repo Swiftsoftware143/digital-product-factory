@@ -30,16 +30,14 @@ pub struct ProductMetadata {
 }
 
 pub struct ProductGenerator {
-    db: Arc<Database>,
     llm_router: Option<LLMRouter>,
     template_registry: TemplateRegistry,
     runtime: Arc<Runtime>,
 }
 
 impl ProductGenerator {
-    pub fn new(db: &Arc<Database>, runtime: Arc<Runtime>) -> Self {
+    pub fn new(_db: &Arc<Database>, runtime: Arc<Runtime>) -> Self {
         Self {
-            db: db.clone(),
             llm_router: None,
             template_registry: TemplateRegistry::new(),
             runtime,

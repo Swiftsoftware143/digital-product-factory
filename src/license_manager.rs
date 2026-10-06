@@ -310,23 +310,6 @@ pub fn revoked_keys() -> Vec<String> {
         .unwrap_or_default()
 }
 
-fn is_revoked(key: &str) -> bool {
-    let Ok(raw) = std::fs::read_to_string("revoked_keys.json") else {
-        return false;
-    };
-    let Ok(v) = serde_json::from_str::<serde_json::Value>(&raw) else {
-        return false;
-    };
-    v.get("revoked_keys")
-        .and_then(|r| r.as_array())
-        .map(|arr| {
-            arr.iter()
-                .filter_map(|s| s.as_str())
-                .any(|s| s.trim().eq_ignore_ascii_case(key))
-        })
-        .unwrap_or(false)
-}
-
 pub struct LicenseManager {
     db: Arc<Database>,
     current_license: Option<License>,

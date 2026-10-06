@@ -119,6 +119,16 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
                                     .desired_rows(18),
                             );
                         });
+                        // The disclaimer is already appended to `content`; showing it separately
+                        // as a styled warning means it is seen rather than skimmed past at the
+                        // bottom of a long document.
+                        if !result.disclaimer.trim().is_empty() {
+                            ui.add_space(6.0);
+                            ui.group(|ui| {
+                                ui.colored_label(Color32::YELLOW, "⚠️ Legal notice");
+                                ui.label(&result.disclaimer);
+                            });
+                        }
                         ui.small(
                             "Read it before relying on it. This is a template, not legal advice.",
                         );

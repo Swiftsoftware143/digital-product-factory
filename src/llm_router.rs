@@ -453,27 +453,4 @@ impl LLMRouter {
             tokens_used: tokens,
         })
     }
-
-    /// Auto-select best profile based on task
-    pub fn auto_select_profile(task: &str) -> LLMProfile {
-        let task_lower = task.to_lowercase();
-
-        if task_lower.contains("creative") || task_lower.contains("write") || task_lower.contains("story") {
-            LLMProfile::Creative
-        } else if task_lower.contains("structure") || task_lower.contains("data") || task_lower.contains("json") {
-            LLMProfile::Structured
-        } else if task_lower.contains("technical") || task_lower.contains("code") {
-            LLMProfile::Technical
-        } else if task_lower.contains("professional") || task_lower.contains("business") {
-            LLMProfile::Professional
-        } else if task_lower.contains("image") || task_lower.contains("visual") {
-            LLMProfile::Visual
-        } else if task_lower.contains("logic") || task_lower.contains("reasoning") || task_lower.contains("analysis") {
-            LLMProfile::Logic
-        } else if task_lower.contains("chinese") || task_lower.contains("cn") {
-            LLMProfile::Chinese
-        } else {
-            LLMProfile::Fast
-        }
-    }
 }

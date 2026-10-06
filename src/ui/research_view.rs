@@ -85,6 +85,45 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
             if results.is_empty() {
                 ui.label(RichText::new("No results yet — run a search above.").weak());
             } else {
+                // ── Market insight (wired: analyze_market had 0 call sites) ────────────────────
+                // The engine that turns raw results into a buying decision — average price, the
+                // price band, the words that recur, how crowded it is, and a 0-100 opportunity
+                // score — was fully implemented and never shown. The user got listings and had to
+                // do the arithmetic themselves.
+                {
+                    let insight = app.research.analyze_market(&results);
+                    ui.group(|ui| {
+                        ui.horizontal(|ui| {
+                            ui.strong("Market insight");
+                            let colour = if insight.opportunity_score >= 70 {
+                                Color32::from_rgb(120, 210, 140)
+                            } else if insight.opportunity_score >= 40 {
+                                Color32::YELLOW
+                            } else {
+                                Color32::from_rgb(240, 120, 120)
+                            };
+                            ui.colored_label(colour, format!("opportunity {}/100", insight.opportunity_score));
+                        });
+                        ui.label(format!(
+                            "Average price ${:.2} · range ${:.2}–${:.2} · competition: {}",
+                            insight.avg_price,
+                            insight.price_range.0,
+                            insight.price_range.1,
+                            insight.competition_level.name(),
+                        ));
+                        if !insight.top_keywords.is_empty() {
+                            let words: Vec<String> = insight
+                                .top_keywords
+                                .iter()
+                                .take(10)
+                                .map(|(w, n)| format!("{w} ({n})"))
+                                .collect();
+                            ui.label(format!("Recurring words: {}", words.join(", ")));
+                        }
+                    });
+                    ui.add_space(6.0);
+                }
+
                 for r in &results {
                     ui.separator();
                     ui.label(

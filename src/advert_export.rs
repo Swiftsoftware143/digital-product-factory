@@ -14,19 +14,7 @@ impl AdvertExporter {
     }
 
     /// Export a single advert as a JSON string
-    pub fn export_json(&self, advert: &Advert) -> Result<String, String> {
-        let export = AdvertExport {
-            advert: advert.clone(),
-            export_format: ExportFormat::Json,
-            exported_at: Utc::now(),
-            file_path: None,
-        };
-
-        serde_json::to_string_pretty(&export)
-            .map_err(|e| format!("Serialization error: {}", e))
-    }
-
-    /// Export a batch of adverts as a JSON array
+        /// Export a batch of adverts as a JSON array
     pub fn export_json_batch(&self, adverts: &[Advert]) -> Result<String, String> {
         let exports: Vec<AdvertExport> = adverts
             .iter()
@@ -43,15 +31,7 @@ impl AdvertExporter {
     }
 
     /// Write a single advert JSON export to disk
-    pub fn write_json_file(&self, advert: &Advert, path: &str) -> Result<(), String> {
-        let json = self.export_json(advert)?;
-        let safe_name = advert.name.replace([' ', '/', '\\', ':'], "_");
-        let file_path = format!("{}/{}.json", path.trim_end_matches('/'), safe_name);
-        std::fs::write(&file_path, &json)
-            .map_err(|e| format!("Write error: {}", e))
-    }
-
-    /// Write batch export to a single JSON file
+        /// Write batch export to a single JSON file
     pub fn write_json_batch_file(&self, adverts: &[Advert], file_path: &str) -> Result<(), String> {
         let json = self.export_json_batch(adverts)?;
         std::fs::write(file_path, &json)

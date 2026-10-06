@@ -770,7 +770,11 @@ Time investment: 1 day per month".to_string(),
             .filter(|t| {
                 t.name.to_lowercase().contains(&query_lower) ||
                 t.description.to_lowercase().contains(&query_lower) ||
-                t.tags.iter().any(|tag| tag.to_lowercase().contains(&query_lower))
+                t.tags.iter().any(|tag| tag.to_lowercase().contains(&query_lower)) ||
+                // Category was missing here while the Create view filtered on it inline, so the two
+                // implementations disagreed. The view was the better one; this now matches it, and
+                // the view calls this instead of duplicating the logic.
+                t.category.name().to_lowercase().contains(&query_lower)
             })
             .collect()
     }

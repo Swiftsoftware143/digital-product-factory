@@ -142,7 +142,11 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
                 app.show_license_dialog = true;
             }
             if ui.button("⚙ Settings").clicked() {
-                app.show_settings = true;
+                // Route to the Settings TAB. The dialog flag is kept as well because the existing
+                // dialog covers the same ground; the Tab variant was defined and routed but never
+                // constructed, so one of the two settings surfaces was dead.
+                app.current_tab = Tab::Settings;
+                app.show_settings = false;
             }
         });
 }

@@ -127,20 +127,7 @@ impl AdvertGenerator {
         Self { llm_router: None }
     }
 
-    pub fn set_api_keys(
-        &mut self,
-        openai: String,
-        anthropic: String,
-        google: String,
-        deepseek: String,
-        moonshot: String,
-    ) {
-        self.llm_router = Some(LLMRouter::new(
-            openai, anthropic, google, deepseek, moonshot,
-        ));
-    }
-
-    pub fn generate_campaign(
+        pub fn generate_campaign(
         &self,
         config: &GenerationConfig,
         campaign_name: &str,
@@ -278,10 +265,7 @@ impl AdvertGenerator {
         })
     }
 
-    pub fn score_advert(&self, advert: &Advert) -> u8 {
-        advert.conversion_score
     }
-}
 
 fn parse_aspect_ratio(s: &str) -> AspectRatio {
     match s {

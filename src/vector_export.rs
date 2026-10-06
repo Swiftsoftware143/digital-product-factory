@@ -75,23 +75,3 @@ pub fn export_vector_png(asset: &VectorAsset, path: &Path, size: u32) -> Result<
     Ok(path.to_path_buf())
 }
 
-/// Create a ZIP archive of all export files
-pub fn export_zip(files: &[(String, Vec<u8>)], output_path: &Path) -> Result<PathBuf, String> {
-    use std::io::Write;
-    let file = std::fs::File::create(output_path)
-        .map_err(|e| format!("Failed to create ZIP: {}", e))?;
-    let mut zip = zip::ZipWriter::new(file);
-
-    for (name, data) in files {
-        let options = zip::write::FileOptions::default()
-            .compression_method(zip::CompressionMethod::Deflated);
-        zip.start_file(name, options)
-            .map_err(|e| format!("ZIP start_file error: {}", e))?;
-        zip.write_all(data)
-            .map_err(|e| format!("ZIP write error: {}", e))?;
-    }
-
-    zip.finish()
-        .map_err(|e| format!("ZIP finish error: {}", e))?;
-    Ok(output_path.to_path_buf())
-}

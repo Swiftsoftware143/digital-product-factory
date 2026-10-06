@@ -138,6 +138,28 @@ pub fn show(app: &mut DpfApp, ctx: &egui::Context) {
                     }
                 }
 
+                // --- Raw SVG export (wired: was 0 call sites) ------------------
+                // The favicon package above gives PNGs and an .ico, but a designer who wants the
+                // actual vector — to re-colour it, scale it to a billboard, or hand it to a printer
+                // — had no way to get it. export_logo_svg existed and nothing called it.
+                if state.current_logo.is_some()
+                    && ui.button("🎨 Export SVG").clicked() {
+                    if let Some(dir) = rfd::FileDialog::new().pick_folder() {
+                        if let Some(logo) = state.current_logo.clone() {
+                            let name = if logo.name.trim().is_empty() {
+                                "logo".to_string()
+                            } else {
+                                logo.name.trim().replace(' ', "_")
+                            };
+                            let path = dir.join(format!("{}.svg", name));
+                            match crate::vector_export::export_logo_svg(&logo, &path) {
+                                Ok(p) => notice = Some((false, format!("SVG written to {}", p.display()))),
+                                Err(e) => notice = Some((true, format!("SVG export failed: {}", e))),
+                            }
+                        }
+                    }
+                }
+
                 // --- Save (wired: real INSERT + in-memory list) ----------------
                 if state.current_logo.is_some()
                     && ui.button("💾 Save Logo").clicked() {
