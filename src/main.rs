@@ -8,7 +8,11 @@
 // development. Release is silent, which is why dpf-startup.log exists.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-#![allow(dead_code)]
+// Dead code is WARNED, not silenced. A crate-level `allow(dead_code)` means the compiler never
+// reports anything — which is how 39 unused items and 15 unused imports accumulated unnoticed, and
+// why the cleanup mandate ("nothing left behind") was unenforceable. Warning keeps the build green
+// while making every dead item visible in `cargo check`, so nothing can hide again.
+#![warn(dead_code)]
 #![allow(unused_variables, unused_imports)]
 
 #![allow(clippy::too_many_arguments)]
