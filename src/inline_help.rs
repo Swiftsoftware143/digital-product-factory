@@ -135,7 +135,7 @@ pub fn all_topics() -> Vec<HelpTopic> {
         HelpTopic {
             id: "license",
             title: "Licence & Tiers",
-            body: "Click the 🔑 Licence button at the bottom of the sidebar. Your current tier is shown under the app name. Tiers: Personal (free, 1 seat), Team (5 seats), Agency (20 seats), Enterprise (unlimited seats). The app tells you which plan you hold — what it costs is on the sales page, because a licence can be a one-time payment or a subscription. Anything your tier does not include shows a 🔒 and cannot be opened.",
+            body: "Click the 🔑 Licence button at the bottom of the sidebar. Your current tier is shown under the app name. Tiers: Personal (free, 1 seat), Team (5 seats), Pro (20 seats), Enterprise (unlimited seats). The app tells you which plan you hold — what it costs is on the sales page, because a licence can be a one-time payment or a subscription. Anything your tier does not include shows a 🔒 and cannot be opened.",
             tier: "personal",
         },
         HelpTopic {
@@ -231,14 +231,14 @@ pub fn all_topics() -> Vec<HelpTopic> {
         HelpTopic {
             id: "clients",
             title: "Client Management",
-            body: "Keep a record of the clients you produce work for: name, email, company, a status (Prospect, Active, Paused, Closed) and free notes. Filter by name, email or company, and edit or delete any entry. Everything is stored locally with your other data. (Agency and Enterprise feature)",
-            tier: "agency",
+            body: "Keep a record of the clients you produce work for: name, email, company, a status (Prospect, Active, Paused, Closed) and free notes. Filter by name, email or company, and edit or delete any entry. Everything is stored locally with your other data. (Pro and Enterprise feature)",
+            tier: "pro",
         },
         HelpTopic {
             id: "compliance",
             title: "Compliance Scanner",
-            body: "Scan generated copy for AI-disclosure requirements and protected terms. The protected-term list ships with sensible defaults and can be edited. (Agency+ feature)",
-            tier: "agency",
+            body: "Scan generated copy for AI-disclosure requirements and protected terms. The protected-term list ships with sensible defaults and can be edited. (Pro+ feature)",
+            tier: "pro",
         },
         HelpTopic {
             id: "admin",
@@ -386,7 +386,7 @@ pub fn show_help_popup(ctx: &Context, topic_id: &str, active_topic: &mut Option<
                     let (tier_label, color) = match t.tier {
                         "personal" => ("Available on all tiers", Color32::GREEN),
                         "team" => ("Requires Team+ license", Color32::YELLOW),
-                        "agency" => ("Requires Agency+ license", Color32::from_rgb(255, 165, 0)),
+                        "pro" => ("Requires Pro+ license", Color32::from_rgb(255, 165, 0)),
                         "enterprise" => ("Requires Enterprise license", Color32::RED),
                         _ => ("", Color32::GRAY),
                     };
@@ -420,7 +420,7 @@ pub fn show_help_index(ctx: &Context, active_topic: &mut Option<String>) {
                 for topic in all_topics() {
                     let tier_tag = match topic.tier {
                         "team" => " [Team+]",
-                        "agency" => " [Agency+]",
+                        "pro" => " [Pro+]",
                         "enterprise" => " [Enterprise]",
                         _ => "",
                     };

@@ -22,7 +22,7 @@ pub fn init_business_tables(conn: &Connection) -> SqlResult<()> {
         [],
     )?;
 
-    // Clients — backs the `client_management` feature (Agency + Enterprise tiers).
+    // Clients — backs the `client_management` feature (Pro + Enterprise tiers).
     conn.execute(
         "CREATE TABLE IF NOT EXISTS clients (
             id INTEGER PRIMARY KEY,

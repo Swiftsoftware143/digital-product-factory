@@ -141,7 +141,7 @@ pub struct DpfApp {
     pub webhook_state: WebhookState,
     pub asset_library: AssetLibrary,
     /// Client Management — the module behind the `client_management` feature slug
-    /// (Agency + Enterprise tiers). See `client_manager`.
+    /// (Pro + Enterprise tiers). See `client_manager`.
     pub clients: ClientManager,
     pub client_draft: Client,
     pub client_editing: Option<usize>,
@@ -297,7 +297,7 @@ impl DpfApp {
         let mut asset_library = AssetLibrary::new();
         asset_library.load_from_db(&db);
 
-        // Client Management (Agency+ feature)
+        // Client Management (Pro+ feature)
         let clients = ClientManager::new(&db);
 
         // Save default disclosure rules

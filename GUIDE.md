@@ -100,6 +100,21 @@ To add or change a marketplace, edit `platform_formats.json` next to the app; no
 
 **3. Your licence — optional.** The free Personal tier works with no key at all.
 
+### Which plan unlocks what
+
+| Plan | Seats | Ideal for | Unlocks |
+|------|-------|-----------|---------|
+| **Personal** | 1 | Solo creators | Pipeline, 20+ product generators, research, contracts, multi-format export, industry presets |
+| **Team** | 5 | Growing brands and stores | Everything in Personal, plus analytics, direct publishing to Etsy/Gumroad, bundles, scheduler, adverts & campaign suite, QC checklist, asset library, webhooks |
+| **Pro** | 20 | Agencies, freelancers, consultants | Everything in Team, plus client account management and the compliance scanner |
+| **Enterprise** | Unlimited | High-volume teams | Everything in Pro, with no seat limit |
+
+The app always tells you which plan you hold — never what it cost, because a licence may be a
+one-time payment or a subscription, and that is answered on the sales page.
+
+**Upgrade:** open the licence dialog (🔑) — if your plan is missing modules, it offers the next
+step up and links to **https://swiftsoftware.net/dpf**.
+
 ### First Launch
 
 On first launch, you'll see:
@@ -698,7 +713,7 @@ are producing for whom instead of keeping it all in one pile.
 
 Useful if you sell product-creation as a service rather than selling the products yourself.
 
-*Agency tier and above.*
+*Pro tier and above.*
 
 ---
 
@@ -1183,8 +1198,8 @@ The app is free to use on the **Personal** tier. Paid tiers unlock more seats an
 |------|-------|---------|
 | **Personal (Free)** | 1 | Pipeline, Create / AI generation, Templates, Market Research, Contract Generator, Export, Presets, Variants |
 | **Team** | 5 | Everything in Personal, plus Analytics, Publishing, Bundles, Scheduler, Adverts, QC Checklist, Asset Library, Webhooks, Mockup compositor, Logo Generator, Vector Generator |
-| **Agency** | 20 | Everything in Team, plus Compliance Scanner, Client Management |
-| **Enterprise** | Unlimited | Everything in Agency, plus Admin Panel |
+| **Pro** | 20 | Everything in Team, plus Compliance Scanner, Client Management |
+| **Enterprise** | Unlimited | Everything in Pro, with no seat limit |
 
 Prices come from the sales page, not from the software: a licence may be a one-time payment or a
 subscription (beta testers get a one-off), so the app tells you which plan you hold and never
@@ -1223,7 +1238,7 @@ Modules your tier doesn't include appear in the sidebar with a **🔒** and cann
 
 ### Device Seats
 
-Each paid tier includes a set number of seats (Personal 1, Team 5, Agency 20, Enterprise unlimited). Deactivate a licence to release its seat before activating it elsewhere.
+Each paid tier includes a set number of seats (Personal 1, Team 5, Pro 20, Enterprise unlimited). Deactivate a licence to release its seat before activating it elsewhere.
 
 ---
 
@@ -1566,7 +1581,7 @@ Each variant tracks its own version history:
 
 ### All Tiers
 
-Product Variants are available on all license tiers — Personal, Team, Agency, and Enterprise.
+Product Variants are available on all licence tiers — Personal, Team, Pro, and Enterprise.
 
 ---
 

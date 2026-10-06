@@ -114,7 +114,7 @@ fn show_license_keys(app: &mut DpfApp, ui: &mut Ui) {
 
     ui.horizontal(|ui| {
         ui.label("Tier:");
-        let tiers = ["personal", "team", "agency", "enterprise"];
+        let tiers = ["personal", "team", "pro", "enterprise"];
         let current_idx = tiers.iter().position(|t| *t == app.admin.generate_key_input.as_str()).unwrap_or(0);
         egui::ComboBox::from_id_source("tier_combo")
             .selected_text(tiers[current_idx])

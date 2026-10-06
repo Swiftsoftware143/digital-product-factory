@@ -48,7 +48,7 @@ Tier is encoded in the key and enforced by the feature list for that tier.
 |------|-----------|-------|---------------------------|
 | **Personal** (default/free) | `PERSONAL` | 1 | 8 |
 | **Team** | `TEAM` | 5 | 19 |
-| **Agency** | `AGENCY` | 20 | 21 |
+| **Pro** | `AGENCY` | 20 | 21 |
 | **Enterprise** | `ENTERPRISE` | Unlimited | 22 |
 
 Prices are set on the sales page, never in the software — a licence may be sold one-time or as
@@ -83,10 +83,11 @@ Each tier is a strict **superset** of the tier below it (enforced by the
 `scheduler`, `adverts`, `qc`, `assets`, `webhooks`, `mockup_compositor`,
 `logo_generator`, `vector_generator`
 
-**Agency** (21) — all Team features plus: `client_management`,
+**Pro** (21) — all Team features plus: `client_management`,
 `compliance`
 
-**Enterprise** (22) — all Agency features plus: `admin_panel`
+**Enterprise** — every module a customer can buy (21). Differs from Pro by SEATS only:
+Pro allows 20 computers, Enterprise is unlimited.
 
 ### Tab → feature slug
 
@@ -187,7 +188,7 @@ never in the binary. The app shows *which plan* the user holds, never what they 
 **`u2f`-style regression test added:** `shipped_tiers_carry_gates_not_prices` fails the build if any
 tier regains a `price`/`period`/`cost`/`amount`/`monthly`/`yearly` field, if the feature list or
 device count disappears, or if a `$` appears anywhere in the tiers file. It also
-asserts the gate still ladders (Personal ⊆ Team ⊆ Agency) and that `market_research` — which carries
+asserts the gate still ladders (Personal ⊆ Team ⊆ Pro ⊆ Enterprise) and that `market_research` — which carries
 the Strategy panel — stays on the FREE tier.
 
 ---
@@ -207,10 +208,10 @@ Structure:
 ```json
 {
  "tiers": {
- "personal": { "name": "Personal", "price": 0, "period": "free", "devices": 1, "features": ["pipeline", "..."] },
- "team": { "name": "Team", "price": 29, "period": "month", "devices": 5, "features": ["pipeline", "..."] },
- "agency": { "name": "Agency", "price": 99, "period": "month", "devices": 20, "features": ["pipeline", "..."] },
- "enterprise": { "name": "Enterprise", "price": 299, "period": "month", "devices": -1, "features": ["pipeline", "..."] }
+ "personal": { "name": "Personal", "devices": 1, "features": ["pipeline", "..."] },
+ "team": { "name": "Team", "devices": 5, "features": ["pipeline", "..."] },
+ "pro": { "name": "Pro", "devices": 20, "features": ["pipeline", "..."] },
+ "enterprise": { "name": "Enterprise", "devices": -1, "features": ["pipeline", "..."] }
  }
 }
 ```
@@ -479,7 +480,7 @@ That is the complete provider-key surface. The Admin panel does not edit API key
 
 ### Webhooks are not implemented
 
-The `webhooks` feature is in the Team/Agency/Enterprise feature lists and the Webhooks
+The `webhooks` feature is in the Team/Pro/Enterprise feature lists and the Webhooks
 tab has **Start**/**Stop** buttons, but the module (`src/webhook.rs`) contains **no
 listener** — no TCP socket is bound. The **Running/Stopped** indicator is driven by an
 in-memory `AtomicBool` the UI sets itself, not by a live server. Treat the webhook

@@ -7,7 +7,7 @@
 //! - Scale/offset controls
 //! - Export as PNG/JPG
 //!
-//! Tier: Agency+ (gated)
+//! Tier: Team+ (gated)
 
 use image::GenericImageView;
 use egui::*;
@@ -25,7 +25,7 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
         if !app.mockup_compositor.can_use_compositor() {
             ui.vertical_centered(|ui| {
                 ui.add_space(40.0);
-                ui.label(RichText::new("🔒 Agency+ Feature").size(24.0).strong().color(Color32::GOLD));
+                ui.label(RichText::new("🔒 Team+ Feature").size(24.0).strong().color(Color32::GOLD));
                 ui.add_space(8.0);
                 ui.label("Upgrade your license to unlock the Mockup Compositor.");
                 ui.label("Create professional product mockups with scene templates,");

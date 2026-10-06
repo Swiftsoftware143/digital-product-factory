@@ -1,4 +1,4 @@
-//! Client Management tab — the `client_management` feature (Agency + Enterprise tiers).
+//! Client Management tab — the `client_management` feature (Pro + Enterprise tiers).
 //!
 //! The licence system gated this slug while nothing implemented it. This is the module behind it:
 //! a simple local client book (name, contact, company, status, notes) stored in SQLite.

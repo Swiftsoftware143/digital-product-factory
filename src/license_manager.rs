@@ -28,7 +28,7 @@ pub const SALT: &str = "dpf-1.4.2-license";
 pub enum LicenseTier {
     Personal,
     Team,
-    Agency,
+    Pro,
     Enterprise,
     /// The owner's own class. Not sold, not listed, not offered as an upgrade: it exists so the
     /// person who runs this business can reach the Admin panel and a customer never can.
@@ -41,7 +41,7 @@ impl LicenseTier {
         match self {
             LicenseTier::Personal => "personal",
             LicenseTier::Team => "team",
-            LicenseTier::Agency => "agency",
+            LicenseTier::Pro => "pro",
             LicenseTier::Enterprise => "enterprise",
             // `feature_tiers.json` has no "owner" section on purpose; owner features come from
             // `builtin_features` so there is no file a customer could edit to grant themselves it.
@@ -54,7 +54,7 @@ impl LicenseTier {
         match self {
             LicenseTier::Personal => "PERSONAL",
             LicenseTier::Team => "TEAM",
-            LicenseTier::Agency => "AGENCY",
+            LicenseTier::Pro => "PRO",
             LicenseTier::Enterprise => "ENTERPRISE",
             LicenseTier::Owner => "OWNER",
         }
@@ -64,7 +64,7 @@ impl LicenseTier {
         match s.trim().to_ascii_lowercase().as_str() {
             "personal" => Some(LicenseTier::Personal),
             "team" => Some(LicenseTier::Team),
-            "agency" => Some(LicenseTier::Agency),
+            "pro" => Some(LicenseTier::Pro),
             "enterprise" => Some(LicenseTier::Enterprise),
             "owner" => Some(LicenseTier::Owner),
             _ => None,
@@ -75,7 +75,7 @@ impl LicenseTier {
         match self {
             LicenseTier::Personal => "Personal",
             LicenseTier::Team => "Team",
-            LicenseTier::Agency => "Agency",
+            LicenseTier::Pro => "Pro",
             LicenseTier::Enterprise => "Enterprise",
             LicenseTier::Owner => "Owner",
         }
@@ -86,7 +86,7 @@ impl LicenseTier {
         match self {
             LicenseTier::Personal => 1,
             LicenseTier::Team => 5,
-            LicenseTier::Agency => 20,
+            LicenseTier::Pro => 20,
             LicenseTier::Enterprise => -1,
             LicenseTier::Owner => -1,
         }
@@ -105,7 +105,7 @@ impl LicenseTier {
         [
             LicenseTier::Personal,
             LicenseTier::Team,
-            LicenseTier::Agency,
+            LicenseTier::Pro,
             LicenseTier::Enterprise,
         ]
     }
@@ -145,7 +145,7 @@ impl LicenseTier {
                 "logo_generator",
                 "vector_generator",
             ],
-            LicenseTier::Agency => &[
+            LicenseTier::Pro => &[
                 "pipeline",
                 "ai_generation",
                 "templates",
@@ -223,7 +223,7 @@ impl LicenseTier {
     /// The next tier up from this one, if there is one.
     ///
     /// Used for the upgrade OFFER. The lowest tier that unlocks a given feature is the wrong thing
-    /// to show a Personal user looking at an Agency tab — they would be told "upgrade to Agency"
+    /// to show a Personal user looking at a Pro tab — they would be told "upgrade to Pro"
     /// as if it were the only option. Offering the NEXT step is both cheaper for them and truer.
     pub fn next_up(&self) -> Option<LicenseTier> {
         let all = LicenseTier::all();
@@ -459,7 +459,7 @@ impl LicenseManager {
 
         let tier = LicenseTier::from_slug(parts[1]).ok_or_else(|| {
             format!(
-                "'{}' is not a tier we recognise. Expected PERSONAL, TEAM, AGENCY or ENTERPRISE.",
+                "'{}' is not a tier we recognise. Expected PERSONAL, TEAM, PRO or ENTERPRISE.",
                 parts[1]
             )
         })?;
@@ -520,7 +520,7 @@ mod tests {
     #[test]
     fn mint_matches_python() {
         assert_eq!(mint_key(&LicenseTier::Team, "AB12CD34"), "DPF-TEAM-AB12CD34-P9SU");
-        assert_eq!(mint_key(&LicenseTier::Agency, "ZZ99YY88"), "DPF-AGENCY-ZZ99YY88-R5QY");
+        assert_eq!(mint_key(&LicenseTier::Pro, "ZZ99YY88"), "DPF-PRO-ZZ99YY88-TW78");
     }
 
     /// A key must round-trip through its own check code.
@@ -553,16 +553,16 @@ mod tests {
     fn tiers_are_supersets() {
         let p = features_for_tier(&LicenseTier::Personal);
         let t = features_for_tier(&LicenseTier::Team);
-        let a = features_for_tier(&LicenseTier::Agency);
+        let pr = features_for_tier(&LicenseTier::Pro);
         let e = features_for_tier(&LicenseTier::Enterprise);
         for f in &p {
             assert!(t.contains(f), "Team is missing Personal feature {f}");
         }
         for f in &t {
-            assert!(a.contains(f), "Agency is missing Team feature {f}");
+            assert!(pr.contains(f), "Pro is missing Team feature {f}");
         }
-        for f in &a {
-            assert!(e.contains(f), "Enterprise is missing Agency feature {f}");
+        for f in &pr {
+            assert!(e.contains(f), "Enterprise is missing Pro feature {f}");
         }
     }
 
@@ -604,7 +604,7 @@ mod tests {
         let cases = [
             ("DPF-PERSONAL-AB12CD34-225Y", LicenseTier::Personal),
             ("DPF-TEAM-AB12CD34-P9SU", LicenseTier::Team),
-            ("DPF-AGENCY-AB12CD34-HSHJ", LicenseTier::Agency),
+            ("DPF-PRO-AB12CD34-KYZ3", LicenseTier::Pro),
             ("DPF-ENTERPRISE-AB12CD34-HBV3", LicenseTier::Enterprise),
             // from a real `--batch TEAM 3` run
             ("DPF-TEAM-V8580S98-W8FU", LicenseTier::Team),
@@ -665,8 +665,8 @@ mod tests {
         let err = LicenseManager::validate_key("DPF-TEAM-AB12CD35-P9SU", &[]).unwrap_err();
         assert!(err.contains("check code"), "unhelpful message: {err}");
 
-        // A tier we do not sell.
-        let err = LicenseManager::validate_key("DPF-PRO-AB12CD34-P9SU", &[]).unwrap_err();
+        // A tier we do not sell. (PRO is a real tier now — this must be a token that is not one.)
+        let err = LicenseManager::validate_key("DPF-ULTRA-AB12CD34-P9SU", &[]).unwrap_err();
         assert!(err.contains("not a tier"), "unhelpful message: {err}");
 
         // Truncated, as if an email client cut the line.
@@ -743,14 +743,14 @@ mod tests {
         let (pm, tm, ag) = (
             LicenseTier::Personal.builtin_features(),
             LicenseTier::Team.builtin_features(),
-            LicenseTier::Agency.builtin_features(),
+            LicenseTier::Pro.builtin_features(),
         );
 
         for f in pm {
             assert!(tm.contains(f), "Team lost Personal feature {f}");
         }
         for f in tm {
-            assert!(ag.contains(f), "Agency lost Team feature {f}");
+            assert!(ag.contains(f), "Pro lost Team feature {f}");
         }
 
         // Research (and therefore the Strategy panel) must be available on the FREE tier.
@@ -764,8 +764,8 @@ mod tests {
     #[test]
     fn upgrade_offer_steps_up_and_then_stops() {
         assert_eq!(LicenseTier::Personal.next_up(), Some(LicenseTier::Team));
-        assert_eq!(LicenseTier::Team.next_up(), Some(LicenseTier::Agency));
-        assert_eq!(LicenseTier::Agency.next_up(), Some(LicenseTier::Enterprise));
+        assert_eq!(LicenseTier::Team.next_up(), Some(LicenseTier::Pro));
+        assert_eq!(LicenseTier::Pro.next_up(), Some(LicenseTier::Enterprise));
         assert_eq!(
             LicenseTier::Enterprise.next_up(),
             None,
@@ -795,20 +795,20 @@ mod tests {
     #[test]
     fn the_offer_is_the_next_step_and_goes_quiet_at_the_top() {
         assert_eq!(LicenseTier::Personal.next_up(), Some(LicenseTier::Team));
-        assert_eq!(LicenseTier::Team.next_up(), Some(LicenseTier::Agency));
-        assert_eq!(LicenseTier::Agency.next_up(), Some(LicenseTier::Enterprise));
+        assert_eq!(LicenseTier::Team.next_up(), Some(LicenseTier::Pro));
+        assert_eq!(LicenseTier::Pro.next_up(), Some(LicenseTier::Enterprise));
 
-        // `admin_panel` used to be the single feature separating Agency from Enterprise, and it was
+        // `admin_panel` used to be the single feature separating Pro from Enterprise, and it was
         // removed from the sold tiers because it let a CUSTOMER generate licence keys. So the two
         // paid tiers now ship the same feature list, and what Enterprise adds is SEATS — 20 versus
         // unlimited. Asserted rather than assumed, so a future edit that silently drops a feature
         // from Enterprise (and so makes it a downgrade) fails here.
         let top = LicenseTier::Enterprise.builtin_features();
-        let agency = LicenseTier::Agency.builtin_features();
-        for f in agency {
+        let pro = LicenseTier::Pro.builtin_features();
+        for f in pro {
             assert!(
                 top.contains(f),
-                "Enterprise must include everything Agency has; '{f}' is missing"
+                "Enterprise must include everything Pro has; '{f}' is missing"
             );
         }
         // `-1` means unlimited, so it cannot be compared with `>`. Normalise first: unlimited is
@@ -822,7 +822,7 @@ mod tests {
             }
         };
         assert!(
-            seats(LicenseTier::Enterprise) > seats(LicenseTier::Agency),
+            seats(LicenseTier::Enterprise) > seats(LicenseTier::Pro),
             "Enterprise must be worth buying: it is the unlimited-seat tier"
         );
 

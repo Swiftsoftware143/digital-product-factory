@@ -1,6 +1,6 @@
 //! Client management — for running work for multiple clients.
 //!
-//! This implements the `client_management` feature that the **Agency** and **Enterprise** tiers
+//! This implements the `client_management` feature that the **Pro** and **Enterprise** tiers
 //! sell. Until now that slug was gated by the licence system while **no module existed behind
 //! it** — the tier advertised something that did not exist. (The same was true of `whitelabel`,
 //! which has been removed from the product entirely.)

@@ -6,7 +6,7 @@
 //! - Drag/resize overlay placement
 //! - Export composite as PNG or JPG
 //!
-//! Tier: Agency+ (gated)
+//! Tier: Team+ (gated)
 
 use image::{DynamicImage, ImageBuffer, GenericImageView, imageops};
 use std::path::Path;
@@ -213,7 +213,7 @@ impl MockupCompositor {
         self.has_valid_license = valid;
     }
 
-    /// Check if the user can use this feature (Agency+ tier)
+    /// Check if the user can use this feature (Team+ tier)
     pub fn can_use_compositor(&self) -> bool {
         self.has_valid_license
     }

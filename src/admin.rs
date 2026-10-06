@@ -65,7 +65,7 @@ impl AdminState {
                 "tiers": {
                     "personal": { "name": "Personal", "devices": 1, "features": ["pipeline","ai_generation","templates","market_research","contract_generator","export","mockup_compositor"] },
                     "team": { "name": "Team", "devices": 5, "features": ["pipeline","ai_generation","templates","market_research","contract_generator","export","analytics","publishing","bundles","scheduler","presets","mockup_compositor"] },
-                    "agency": { "name": "Agency", "devices": 20, "features": ["pipeline","ai_generation","templates","market_research","contract_generator","export","analytics","publishing","bundles","scheduler","presets","client_management","mockup_compositor"] },
+                    "pro": { "name": "Pro", "devices": 20, "features": ["pipeline","ai_generation","templates","market_research","contract_generator","export","analytics","publishing","bundles","scheduler","presets","client_management","mockup_compositor"] },
                     "enterprise": { "name": "Enterprise", "devices": -1, "features": ["pipeline","ai_generation","templates","market_research","contract_generator","export","analytics","publishing","bundles","scheduler","presets","client_management","mockup_compositor"] }
                 }
             });
@@ -262,7 +262,7 @@ mod tests {
     /// customer tried to activate it**. Any key minted here must satisfy the activation contract.
     #[test]
     fn admin_panel_key_passes_the_activation_check() {
-        for tier in ["personal", "team", "agency", "enterprise"] {
+        for tier in ["personal", "team", "pro", "enterprise"] {
             let mut a = AdminState::default();
             let key = a.generate_key(tier, 1);
 

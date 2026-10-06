@@ -1004,7 +1004,7 @@ impl Database {
     // ── Sales Records ────────────────────────────────────────────────
 
     // ── Clients ──────────────────────────────────────────────────────────
-    // Backs the `client_management` feature sold on the Agency + Enterprise tiers.
+    // Backs the `client_management` feature sold on the Pro + Enterprise tiers.
 
     pub fn load_clients(&self) -> SqlResult<Vec<crate::client_manager::Client>> {
         let conn = self.conn.lock().unwrap();

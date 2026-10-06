@@ -34,7 +34,7 @@ fn feature_for(tab: Tab) -> &'static str {
         Tab::Adverts => "adverts",
         Tab::LogoGenerator => "logo_generator",
         Tab::VectorGenerator => "vector_generator",
-        // Agency / Enterprise
+        // Pro / Enterprise
         Tab::Clients => "client_management",
         Tab::Compliance => "compliance",
         Tab::Admin => "admin_panel",
