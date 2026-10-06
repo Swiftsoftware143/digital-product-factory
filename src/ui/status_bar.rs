@@ -14,22 +14,10 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
                     app.active_help_topic = Some("__index__".to_string());
                 }
 
-                // Admin toggle button
-                let admin_active = app.admin.admin_mode;
-                let admin_label = if admin_active { "🛡️ Admin" } else { "🛡️" };
-                let admin_btn = if admin_active {
-                    ui.selectable_label(true, admin_label)
-                } else {
-                    ui.selectable_label(false, admin_label)
-                };
-                if admin_btn.clicked() {
-                    app.admin.admin_mode = !app.admin.admin_mode;
-                    if app.admin.admin_mode {
-                        app.current_tab = crate::app::Tab::Admin;
-                    } else if app.current_tab == crate::app::Tab::Admin {
-                        app.current_tab = crate::app::Tab::Dashboard;
-                    }
-                }
+                // Admin is reached from the sidebar, and only with an OWNER licence. There used to
+                // be a 🛡️ toggle here that flipped `admin_mode` with no licence check at all, which
+                // meant ANY customer — including the free tier — could open the key-generation
+                // screen. Removed: the sidebar entry is owner-gated, and nothing here can bypass it.
 
                 // Theme toggle — one click between the night and daylight themes.
                 // The label shows the CURRENT theme; clicking switches to the other one.

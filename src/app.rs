@@ -508,9 +508,9 @@ impl eframe::App for DpfApp {
         // Settings checkbox, but nothing ever called `set_visuals`, so the setting had no effect
         // whatsoever. Applying it every frame keeps the status-bar toggle instant.
         ctx.set_visuals(if self.config.dark_mode {
-            egui::Visuals::dark()
+            crate::theme::dark()
         } else {
-            egui::Visuals::light()
+            crate::theme::light()
         });
 
         ctx.request_repaint_after(std::time::Duration::from_millis(16));

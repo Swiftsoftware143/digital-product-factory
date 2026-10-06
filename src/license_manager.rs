@@ -30,6 +30,9 @@ pub enum LicenseTier {
     Team,
     Agency,
     Enterprise,
+    /// The owner's own class. Not sold, not listed, not offered as an upgrade: it exists so the
+    /// person who runs this business can reach the Admin panel and a customer never can.
+    Owner,
 }
 
 impl LicenseTier {
@@ -40,6 +43,9 @@ impl LicenseTier {
             LicenseTier::Team => "team",
             LicenseTier::Agency => "agency",
             LicenseTier::Enterprise => "enterprise",
+            // `feature_tiers.json` has no "owner" section on purpose; owner features come from
+            // `builtin_features` so there is no file a customer could edit to grant themselves it.
+            LicenseTier::Owner => "owner",
         }
     }
 
@@ -50,6 +56,7 @@ impl LicenseTier {
             LicenseTier::Team => "TEAM",
             LicenseTier::Agency => "AGENCY",
             LicenseTier::Enterprise => "ENTERPRISE",
+            LicenseTier::Owner => "OWNER",
         }
     }
 
@@ -59,6 +66,7 @@ impl LicenseTier {
             "team" => Some(LicenseTier::Team),
             "agency" => Some(LicenseTier::Agency),
             "enterprise" => Some(LicenseTier::Enterprise),
+            "owner" => Some(LicenseTier::Owner),
             _ => None,
         }
     }
@@ -69,16 +77,18 @@ impl LicenseTier {
             LicenseTier::Team => "Team",
             LicenseTier::Agency => "Agency",
             LicenseTier::Enterprise => "Enterprise",
+            LicenseTier::Owner => "Owner",
         }
     }
 
-    /// Seat limit. `-1` means unlimited (Enterprise).
+    /// Seat limit. `-1` means unlimited (Enterprise and the owner).
     pub fn max_devices(&self) -> i64 {
         match self {
             LicenseTier::Personal => 1,
             LicenseTier::Team => 5,
             LicenseTier::Agency => 20,
             LicenseTier::Enterprise => -1,
+            LicenseTier::Owner => -1,
         }
     }
 
@@ -159,6 +169,32 @@ impl LicenseTier {
                 "compliance",
             ],
             LicenseTier::Enterprise => &[
+                "pipeline",
+                "ai_generation",
+                "templates",
+                "market_research",
+                "contract_generator",
+                "export",
+                "presets",
+                "variants",
+                "analytics",
+                "publishing",
+                "bundles",
+                "scheduler",
+                "adverts",
+                "qc",
+                "assets",
+                "webhooks",
+                "mockup_compositor",
+                "logo_generator",
+                "vector_generator",
+                "client_management",
+                "compliance",
+            ],
+            // The owner holds everything, including the Admin panel. Note `admin_panel` is the ONLY
+            // feature that appears here and not in Enterprise: reaching it is an ownership fact, not
+            // something that can be bought, so it is deliberately absent from the sold tiers.
+            LicenseTier::Owner => &[
                 "pipeline",
                 "ai_generation",
                 "templates",
@@ -328,6 +364,15 @@ impl LicenseManager {
             db: db.clone(),
             current_license,
         }
+    }
+
+    /// Is this the OWNER's own key?
+    ///
+    /// This — not a tier — is what unlocks the Admin panel. A customer cannot buy it, and it is
+    /// deliberately checked separately from `has_feature` so that no future edit to a tier table
+    /// can hand the Admin panel to a paying customer.
+    pub fn is_owner(&self) -> bool {
+        self.is_licensed() && self.tier() == LicenseTier::Owner
     }
 
     pub fn is_licensed(&self) -> bool {
@@ -753,18 +798,111 @@ mod tests {
         assert_eq!(LicenseTier::Team.next_up(), Some(LicenseTier::Agency));
         assert_eq!(LicenseTier::Agency.next_up(), Some(LicenseTier::Enterprise));
 
-        // Enterprise holds the whole feature set, so there are no missing features to offer against.
+        // `admin_panel` used to be the single feature separating Agency from Enterprise, and it was
+        // removed from the sold tiers because it let a CUSTOMER generate licence keys. So the two
+        // paid tiers now ship the same feature list, and what Enterprise adds is SEATS — 20 versus
+        // unlimited. Asserted rather than assumed, so a future edit that silently drops a feature
+        // from Enterprise (and so makes it a downgrade) fails here.
         let top = LicenseTier::Enterprise.builtin_features();
         let agency = LicenseTier::Agency.builtin_features();
-        let missing_from_agency = top.iter().filter(|f| !agency.contains(f)).count();
+        for f in agency {
+            assert!(
+                top.contains(f),
+                "Enterprise must include everything Agency has; '{f}' is missing"
+            );
+        }
+        // `-1` means unlimited, so it cannot be compared with `>`. Normalise first: unlimited is
+        // strictly more than any finite seat count.
+        let seats = |t: LicenseTier| -> i64 {
+            let n = t.max_devices();
+            if n < 0 {
+                i64::MAX
+            } else {
+                n
+            }
+        };
         assert!(
-            missing_from_agency > 0,
-            "Agency should be missing something (admin_panel), or the offer logic below is moot"
+            seats(LicenseTier::Enterprise) > seats(LicenseTier::Agency),
+            "Enterprise must be worth buying: it is the unlimited-seat tier"
         );
-        assert_eq!(
-            top.iter().filter(|f| !top.contains(f)).count(),
-            0,
-            "Enterprise must miss nothing — so required_tier_for_missing() returns None for it"
+
+        // The OWNER class must never be reachable as an upgrade: no tier may offer it, and it must
+        // not appear in the sellable list at all.
+        assert!(
+            !LicenseTier::all().contains(&LicenseTier::Owner),
+            "Owner is not a sellable tier and must never appear in all()"
         );
+        for t in LicenseTier::all() {
+            assert_ne!(t.next_up(), Some(LicenseTier::Owner));
+        }
+
+        // And the owner's feature set must be a strict superset of the top sold tier, or the owner
+        // would hold LESS than a customer who bought Enterprise.
+        let owner = LicenseTier::Owner.builtin_features();
+        for f in top {
+            assert!(owner.contains(f), "Owner must include Enterprise's '{f}'");
+        }
+        assert!(
+            owner.contains(&"admin_panel"),
+            "the Admin panel is the owner's, and only the owner's"
+        );
+        assert!(
+            !top.contains(&"admin_panel"),
+            "admin_panel must never be sold in a customer tier"
+        );
+    }
+
+    /// The Owner class is the single gate on the Admin panel, and no SOLD tier may reach it.
+    ///
+    /// This is the regression guard for a real defect: `admin_panel` used to sit inside ENTERPRISE
+    /// and there was an unguarded toggle in the status bar, so a paying customer could open the
+    /// licence-key generator and mint themselves unlimited keys.
+    #[test]
+    fn only_the_owner_can_reach_the_admin_panel() {
+        // The real, shipped key text, so this also proves the OWNER token parses and checks out.
+        let owner_key = "DPF-OWNER-SWIFTCEO-T2JG";
+        let tier = LicenseManager::validate_key(owner_key, &[])
+            .expect("the owner key must validate against the shipped check-code algorithm");
+        assert_eq!(tier, LicenseTier::Owner, "OWNER must map to the Owner class");
+        assert!(
+            features_for_tier(&LicenseTier::Owner).iter().any(|f| f == "admin_panel"),
+            "the Owner class must hold admin_panel"
+        );
+
+        // No sellable tier may hold it, now or after any future edit to a tier table.
+        for t in LicenseTier::all() {
+            assert!(
+                !features_for_tier(&t).iter().any(|f| f == "admin_panel"),
+                "{t:?} is a SOLD tier and must never grant admin_panel"
+            );
+        }
+
+        // ...and the shipped JSON must agree, since that file (not the code) is authoritative for
+        // a tier's feature list at runtime.
+        if let Ok(raw) = std::fs::read_to_string("feature_tiers.json") {
+            if let Ok(v) = serde_json::from_str::<serde_json::Value>(&raw) {
+                if let Some(tiers) = v.get("tiers").and_then(|t| t.as_object()) {
+                    for (slug, t) in tiers {
+                        let has = t
+                            .get("features")
+                            .and_then(|f| f.as_array())
+                            .map(|a| a.iter().any(|x| x.as_str() == Some("admin_panel")))
+                            .unwrap_or(false);
+                        assert!(
+                            !has,
+                            "feature_tiers.json sells admin_panel in '{slug}' — \
+                             a customer could generate licence keys"
+                        );
+                    }
+                }
+            }
+        }
+
+        // A customer key must NOT validate as the owner.
+        for k in ["DPF-PERSONAL-AB12CD34-ZZ00", "DPF-ENTERPRISE-SWIFTCEO-T2JG"] {
+            if let Ok(t) = LicenseManager::validate_key(k, &[]) {
+                assert_ne!(t, LicenseTier::Owner, "{k} must not be treated as an owner key");
+            }
+        }
     }
 }

@@ -7,6 +7,7 @@
 
 use egui::*;
 use crate::app::{DpfApp, Tab};
+use crate::theme::{self, TEAL, TEXT_DIM, AMBER};
 use crate::license_manager::LicenseManager;
 
 /// Which feature slug a tab requires. Anything the free Personal tier includes keeps the app
@@ -38,6 +39,22 @@ fn feature_for(tab: Tab) -> &'static str {
         Tab::Compliance => "compliance",
         Tab::Admin => "admin_panel",
     }
+}
+
+/// A small-caps section label. Deliberately quiet: it separates groups without competing with the
+/// tab names, which is the whole point of a sidebar.
+fn section(ui: &mut Ui, label: &str) {
+    ui.add_space(8.0);
+    ui.horizontal(|ui| {
+        ui.add_space(4.0);
+        ui.label(
+            RichText::new(label.to_uppercase())
+                .size(10.0)
+                .strong()
+                .color(TEXT_DIM.gamma_multiply(0.85)),
+        );
+    });
+    ui.add_space(2.0);
 }
 
 /// Draw one nav entry, gated on the licence.
@@ -80,52 +97,76 @@ fn tab_item(app: &mut DpfApp, ui: &mut Ui, tab: Tab, label: &str) {
 }
 
 pub fn show(app: &mut DpfApp, ctx: &Context) {
+    // An explicit frame, not the inherited panel fill: the sidebar must sit visually ABOVE the
+    // content area or the whole window reads as one flat field with no depth.
+    let frame = Frame::none()
+        .fill(theme::SURFACE)
+        .inner_margin(Margin::symmetric(10.0, 8.0))
+        .stroke(Stroke::new(1.0, theme::BLUE.gamma_multiply(0.35)));
+
     SidePanel::left("sidebar")
         .resizable(false)
-        .default_width(200.0)
+        .default_width(210.0)
+        .frame(frame)
         .show(ctx, |ui| {
+            // Brand header. The rule under the wordmark is the brand teal, so the first thing on
+            // screen is unmistakably this product rather than a default framework panel.
+            ui.add_space(6.0);
             ui.vertical_centered(|ui| {
-                ui.heading("DPF");
+                ui.label(RichText::new("DIGITAL PRODUCT").size(9.0).color(TEXT_DIM));
+                ui.label(
+                    RichText::new("FACTORY")
+                        .size(19.0)
+                        .strong()
+                        .color(egui::Color32::WHITE),
+                );
+                ui.add_space(2.0);
+                // The plan badge: which plan you hold, never what it cost.
+                let licensed = app.license_manager.is_licensed();
                 ui.label(
                     RichText::new(app.license_manager.tier_name())
-                        .size(11.0)
-                        .color(Color32::GRAY),
+                        .size(10.5)
+                        .strong()
+                        .color(if licensed { TEAL } else { TEXT_DIM }),
                 );
             });
+            ui.add_space(6.0);
+            // A full-width teal rule, drawn rather than a separator so it carries the brand colour.
+            let (rect, _) = ui.allocate_exact_size(
+                vec2(ui.available_width(), 2.0),
+                Sense::hover(),
+            );
+            ui.painter()
+                .rect_filled(rect, Rounding::same(1.0), TEAL.gamma_multiply(0.9));
+            ui.add_space(2.0);
 
-            ui.separator();
-            ui.label("Main");
+            section(ui, "Start here");
             tab_item(app, ui, Tab::Dashboard, "Dashboard");
             tab_item(app, ui, Tab::Pipeline, "Pipeline");
             tab_item(app, ui, Tab::Create, "Create");
             tab_item(app, ui, Tab::Research, "Research");
             tab_item(app, ui, Tab::Templates, "Templates");
 
-            ui.separator();
-            ui.label("Tools");
+            section(ui, "Create & plan");
             tab_item(app, ui, Tab::Bundles, "Bundles");
             tab_item(app, ui, Tab::Scheduler, "Scheduler");
             tab_item(app, ui, Tab::Mockup, "Mockups");
             tab_item(app, ui, Tab::Presets, "Presets");
             tab_item(app, ui, Tab::Contract, "Contracts");
 
-            ui.separator();
-            ui.label("Business");
+            section(ui, "Sell & measure");
             tab_item(app, ui, Tab::Analytics, "Analytics");
             tab_item(app, ui, Tab::Publish, "Publish");
 
-            ui.separator();
-            ui.label("Quality");
+            section(ui, "Run the business");
             tab_item(app, ui, Tab::QC, "QC Checklist");
             tab_item(app, ui, Tab::Compliance, "Compliance");
             tab_item(app, ui, Tab::Clients, "👥 Clients");
 
-            ui.separator();
-            ui.label("Product Data");
+            section(ui, "Product data");
             tab_item(app, ui, Tab::Variants, "Variants");
 
-            ui.separator();
-            ui.label("Library");
+            section(ui, "Assets & marketing");
             tab_item(app, ui, Tab::Adverts, "📢 Adverts");
             tab_item(app, ui, Tab::LogoGenerator, "🎨 Logo Generator");
             tab_item(app, ui, Tab::VectorGenerator, "📐 Vector Generator");
@@ -135,9 +176,15 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
             tab_item(app, ui, Tab::Webhooks, "Webhooks");
 
             ui.separator();
-            tab_item(app, ui, Tab::Admin, "Admin");
+            // The Admin panel is OWNER-ONLY and is not merely locked for everyone else: it is not
+            // drawn at all. A customer should never learn that a key-generation screen exists,
+            // because the only thing that knowledge buys them is an attempt to reach it. Reaching it
+            // requires an OWNER licence (see `LicenseManager::is_owner`), which is not for sale.
+            if app.license_manager.is_owner() {
+                tab_item(app, ui, Tab::Admin, "Admin");
+                ui.separator();
+            }
 
-            ui.separator();
             if ui.button("🔑 Licence").clicked() {
                 app.show_license_dialog = true;
             }

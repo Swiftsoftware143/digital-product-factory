@@ -6,6 +6,7 @@ use crate::inline_help;
 use crate::qc::{QcResult, QcCheck, QcStatus};
 use crate::compliance::DenylistScanner;
 use super::adverts_view;
+use super::settings_view;
 use super::{pipeline_view, analytics_view, publish_view, mockup_view, admin_view, variants_view, clients_view};
 
 pub fn show(app: &mut DpfApp, ctx: &Context) {
@@ -27,8 +28,13 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
         Tab::Analytics => analytics_view::show(app, ctx),
         Tab::Publish => publish_view::show(app, ctx),
         Tab::Mockup => mockup_view::show(app, ctx),
-        Tab::Settings => show_settings(app, ctx),
-        Tab::Admin => admin_view::show(app, ctx),
+        Tab::Settings => settings_view::show(app, ctx),
+        // Defence in depth. The sidebar does not offer this tab to a non-owner, but a stale saved
+        // `current_tab`, a restored session, or a future edit elsewhere could still land here. The
+        // renderer refuses on its own authority, so the Admin panel has exactly one gate that must
+        // be open — and it is the licence.
+        Tab::Admin if app.license_manager.is_owner() => admin_view::show(app, ctx),
+        Tab::Admin => show_dashboard(app, ctx),
         Tab::Variants => variants_view::show(app, ctx),
         Tab::Clients => clients_view::show(app, ctx),
         // New tabs from remote
@@ -564,27 +570,6 @@ fn show_scheduler(app: &mut DpfApp, ctx: &Context) {
 
 fn show_contract(app: &mut DpfApp, ctx: &Context) {
     super::contract_view::show(app, ctx);
-}
-
-fn show_settings(app: &mut DpfApp, ctx: &Context) {
-    CentralPanel::default().show(ctx, |ui| {
-        ui.horizontal(|ui| {
-            ui.heading("Settings");
-            inline_help::help_button(ui, "settings", &mut app.active_help_topic);
-        });
-
-        ui.group(|ui| {
-            ui.label("API Keys");
-            ui.add(egui::TextEdit::singleline(&mut app.config.openai_key).hint_text("OpenAI API Key"));
-            ui.add(egui::TextEdit::singleline(&mut app.config.anthropic_key).hint_text("Anthropic API Key"));
-        });
-
-        ui.group(|ui| {
-            ui.label("Preferences");
-            ui.checkbox(&mut app.config.auto_save, "Auto-save");
-            ui.checkbox(&mut app.config.dark_mode, "Dark mode");
-        });
-    });
 }
 
 // ── QC Checklist View ─────────────────────────────────────────────────

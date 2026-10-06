@@ -53,6 +53,7 @@ mod vector_types;
 mod vector_generator;
 mod vector_renderer;
 mod vector_export;
+mod theme;
 use eframe::NativeOptions;
 use std::io::Write;
 

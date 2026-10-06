@@ -92,8 +92,7 @@
         "logo_generator",
         "vector_generator",
         "client_management",
-        "compliance",
-        "admin_panel"
+        "compliance"
       ]
     }
   }
