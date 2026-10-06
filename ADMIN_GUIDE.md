@@ -301,6 +301,25 @@ instructions, aspect-ratio constraints, and brand-identity extraction.
 
 ---
 
+## Who can reach the Admin panel
+
+**Only an OWNER licence.** This matters, so it is worth being precise:
+
+- The Admin panel holds the **licence-key generator**. Anyone who can open it can mint unlimited
+  keys and give your product away.
+- It is **not a tier**, and it is not for sale. A customer who buys the highest plan does **not**
+  get it, and the app does not even draw the menu entry for them — a customer should not learn the
+  screen exists.
+- Reaching it needs an **OWNER** key: `DPF-OWNER-XXXXXXXX-CCCC`, the same format as any other key
+  but with the `OWNER` marker. It grants every module plus the Admin panel.
+
+**To issue yourself one:** open the control centre → *Issue a licence key* → the OWNER class, or run
+`/opt/swift/scripts/dpf-mint-license.py OWNER <BLOCK>`.
+
+⚠️ **Do not give an OWNER key to a customer.** It is the only way to reach key generation, and it
+holds nothing a customer cannot buy — so there is never a reason to hand one out. If you want to
+give someone everything the product offers, that is the **Enterprise** plan.
+
 ## Key Generation
 
 ### Using the licence control centre (recommended)

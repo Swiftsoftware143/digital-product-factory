@@ -74,6 +74,7 @@ FILES IN THIS FOLDER
     dpf-wgpu.bat            start it with DirectX    (the default)
     feature_tiers.json      which features each plan unlocks, and the upgrade link
     favicon/                the DPF brand icon set, for your own site or listing
+    GUIDE.md                the full user guide — how to set up and use every screen
     MODULE-TEST-SHEET.md    a short sheet for checking every screen in the app
     START-HERE.txt          this file
     dpf-startup.log         created after you run it - send this if you need help

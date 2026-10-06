@@ -57,6 +57,11 @@ This matters in two practical ways:
 
 **Back up that folder** to keep your work safe — it is the whole of your data.
 
+### Themes
+
+The app ships a night theme (default) and a daylight theme, both using the DPF
+brand colours. Switch any time from **🌙 / ☀️** in the status bar, or from Settings.
+
 ### Updating to a new version
 
 There is **no automatic update**. To update:
@@ -67,6 +72,33 @@ There is **no automatic update**. To update:
 **Do not delete the folder to update** — there is no need, and your data is not in it. You do not
 need to re-enter your licence key or your AI key. If a release ever needs your attention for a
 change, it is called out in the release notes.
+
+### Setting up: everything is on the Settings page
+
+**Settings is the one place you configure your business.** If you are not sure what to do next, open
+it — it opens with a checklist that reflects what you actually have, so an unticked line is the next
+thing to do.
+
+**1. An AI provider key — required.** You need **one**, from any of these. Add more if you want
+different jobs routed to different models.
+
+| Provider | Good for |
+|----------|----------|
+| OpenAI | All-round creative copy and visuals |
+| Anthropic | Long, structured documents and business strategy |
+| Google | Fast, cheap, bulk and factual work |
+| DeepSeek | Strong reasoning for the money — a good single key to start with |
+| Moonshot | Chinese-language content |
+
+You buy these **directly from the provider at their prices**. The app does not include, resell or
+proxy them, and your key is stored on your machine and sent only to the provider you chose.
+
+**2. Where you sell.** The page lists every marketplace the app formats for, with that
+marketplace's real limits — image size, tag count, title length, accepted file types. The QC check
+and the exporters enforce these, so you find out a listing would be rejected *before* you make it.
+To add or change a marketplace, edit `platform_formats.json` next to the app; no rebuild needed.
+
+**3. Your licence — optional.** The free Personal tier works with no key at all.
 
 ### First Launch
 

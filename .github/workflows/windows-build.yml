@@ -70,6 +70,9 @@ jobs:
           Copy-Item assets/favicon               staging/DigitalProductFactory/ -Recurse -Force
           # A plain-English sheet for walking every module, so a fault can be reported precisely.
           Copy-Item MODULE-TEST-SHEET.md         staging/DigitalProductFactory/
+          # The user guide ships with the app. The app is offline by design, so a guide that
+          # only exists online is a guide the customer cannot read when they need it.
+          Copy-Item GUIDE.md                     staging/DigitalProductFactory/
           Compress-Archive -Path staging/DigitalProductFactory `
                            -DestinationPath DigitalProductFactory-windows.zip -Force
           Write-Host "zip contents:"
