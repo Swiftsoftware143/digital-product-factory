@@ -1,4 +1,5 @@
-//! Market research module - Etsy, Gumroad, Amazon scraping
+//! Market research module - Etsy and Gumroad listing search.
+//! Amazon is NOT implemented here; the research view says so on screen.
 
 use reqwest::Client;
 use serde::{Deserialize, Serialize};

@@ -57,7 +57,7 @@ pub fn all_topics() -> Vec<HelpTopic> {
         HelpTopic {
             id: "research",
             title: "Market Research",
-            body: "Search Etsy, Gumroad, and Amazon to validate product ideas. Shows pricing, ratings, competition level, and top keywords.",
+            body: "Search Etsy and Gumroad to validate product ideas. Shows pricing, ratings, competition level, and top keywords.",
             tier: "personal",
         },
         HelpTopic {
