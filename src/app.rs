@@ -547,21 +547,70 @@ impl eframe::App for DpfApp {
         }
 
         if let Some((product_name, platform, price)) = self.pending_publish.take() {
-            let product_id = self.pipeline.ideas.iter()
-                .find(|i| i.title == product_name)
-                .map(|i| i.id)
-                .unwrap_or(0);
-            tracing::info!("Queued publish: {} on {} for ${:.2}", product_name, platform, price);
-            let log = crate::publishing::PublishLog {
-                id: self.publish_manager.publish_logs.len() + 1,
+            // THIS USED TO ONLY QUEUE. It wrote a row with status Pending and never called the
+            // publisher, so the row stayed Pending forever and the product was never listed -
+            // while the UI showed a Publish button and a "Published" state that could never
+            // occur. The adapters and `PublishManager::publish` existed the whole time with no
+            // caller. It is now actually called.
+            let idea = self.pipeline.ideas.iter().find(|i| i.title == product_name).cloned();
+            let product_id = idea.as_ref().map(|i| i.id).unwrap_or(0);
+            let title = idea.as_ref().map(|i| i.title.clone()).unwrap_or_else(|| product_name.clone());
+            let description = idea.as_ref().map(|i| i.description.clone()).unwrap_or_default();
+
+            tracing::info!("Publishing {} to {} at ${:.2}", product_name, platform, price);
+
+            // Clone the Arcs FIRST: that leaves only one mutable borrow of `self` (the publisher)
+            // for the duration of block_on, which is what makes this compile without an unsafe
+            // split. Same blocking pattern as ProductGenerator::generate_blocking.
+            let rt = self.runtime.clone();
+            let db = self.db.clone();
+            let result = rt.block_on(self.publish_manager.publish(
+                &db,
                 product_id,
-                product_name: product_name.clone(),
-                platform: platform.clone(),
-                listing_url: None, listing_id: None,
-                status: crate::publishing::PublishStatus::Pending,
-                error_message: None,
-                published_at: chrono::Utc::now(),
+                &product_name,
+                &platform,
+                &title,
+                &description,
+                price,
+                // No file is attached from this screen yet; the adapter treats None as
+                // "listing only" rather than inventing a path that does not exist.
+                None,
+            ));
+
+            // An honest outcome either way: success carries the real listing URL, failure
+            // carries the real reason. Nothing is left silently Pending.
+            let log = match result {
+                Ok(mut l) => {
+                    l.id = self.publish_manager.publish_logs.len() + 1;
+                    tracing::info!("Published: {} -> {:?}", product_name, l.listing_url);
+                    l
+                }
+                Err(e) => crate::publishing::PublishLog {
+                    id: self.publish_manager.publish_logs.len() + 1,
+                    product_id,
+                    product_name: product_name.clone(),
+                    platform: platform.clone(),
+                    listing_url: None,
+                    listing_id: None,
+                    status: crate::publishing::PublishStatus::Failed,
+                    error_message: Some(e.to_string()),
+                    published_at: chrono::Utc::now(),
+                },
             };
+
+            crate::webhooks::dispatch(
+                &self.config.webhook,
+                &self.webhook_log,
+                crate::webhooks::WebhookEvent::ProductPublished,
+                serde_json::json!({
+                    "platform": platform,
+                    "product": product_name,
+                    "status": format!("{:?}", log.status),
+                    "listing_url": log.listing_url,
+                    "error": log.error_message,
+                }),
+            );
+
             let _ = self.db.save_publish_log(&log);
             self.publish_manager.publish_logs.insert(0, log);
         }
