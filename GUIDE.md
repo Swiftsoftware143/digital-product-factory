@@ -160,6 +160,40 @@ Every key field is **masked** on screen. Keys are stored locally on your own mac
 - The app picks a sensible model per task from whichever providers you've configured (see [AI Models](#ai-models)).
 - Check your provider's pricing before generating at volume — cost and rate limits are entirely between you and your provider.
 
+### How to Get Each Key
+
+You need an account with the provider and a payment method on file. All five offer a free or trial
+tier; none of them require you to tell us anything. In **⚙ Settings** each provider row now shows a
+**"get one at:"** link that opens the right page for you.
+
+| Provider | Where to create your key | Notes |
+|---|---|---|
+| **OpenAI** | platform.openai.com/api-keys | Click **Create new secret key**. It is shown **once** - copy it immediately. Starts with `sk-`. |
+| **Anthropic** (Claude) | console.anthropic.com/settings/keys | Click **Create Key**. Shown **once**. Starts with `sk-ant-`. |
+| **Google** (Gemini) | aistudio.google.com/app/apikey | Sign in with a Google account, then **Create API key**. Free tier is generous. |
+| **DeepSeek** | platform.deepseek.com/api_keys | Click **Create new API key**. Cheapest strong reasoning; a good single key if you want one to do most jobs. |
+| **Moonshot** (Kimi) | platform.moonshot.ai/console/api-keys | Click **Create API Key**. Only needed if you produce Chinese-language content. |
+
+**Steps that are the same for all five:**
+
+1. Create an account and add a payment method (most give free credit first).
+2. Open the link above and create a key.
+3. **Copy it immediately** - most providers show it only once. If you lose it, create another.
+4. In Digital Product Factory open **⚙ Settings** (bottom of the left sidebar) and paste it into the
+   matching row. Each field is masked, and the row shows a green tick once a key is held.
+5. Click **Save**.
+
+**Things worth knowing:**
+
+- **Do not paste a key into a chat, a screenshot, or an email.** Anyone who has it can spend on your
+  account.
+- Keys are stored **locally on your machine**, in the app's own config file. They are not uploaded.
+- The app only ever sends a request **directly to the provider you chose** for that task.
+- A key can be **revoked** on the provider's own page at any time - do that immediately if you think
+  one has leaked.
+- You do **not** need all five. One is enough to start; add others later for better results per task
+  type.
+
 ### Minimum to Get Started
 
 You need **at least one** API key configured to use Create / AI generation. Add keys in **⚙ Settings**, then go to the Create tab (see [Creating Products](#creating-products)).
@@ -1554,38 +1588,43 @@ Asset Library requires a **Team** or higher license.
 
 ---
 
-## Webhooks — not yet available
+## Webhooks (outbound)
 
-> **This feature is not built yet.** The Webhooks tab exists and, when you press its start button,
-> the interface reports a running server on a port — but **no web server is actually started** in
-> this build. Nothing can connect to it. Do not build any automation against it, and do not treat
-> the "running" indicator as real. This is a known gap in the app, not a setting you have got wrong.
+Digital Product Factory can **send** an event to a URL you choose when something happens. This is how
+you connect it to Zapier, Make, n8n or your own server.
 
-### What is planned
+**These are outbound only.** Nothing listens on a port, so there is nothing to open in your firewall
+and no inbound connection for anyone to reach.
 
-When it is implemented, the intent is a small local HTTP endpoint so external tools can trigger a
-generation run without opening the app, roughly:
+### Setting It Up
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/generate` | POST | Trigger product generation with a JSON payload |
-| `/status` | GET | Report whether the server is running |
-| `/schema` | GET | Return the JSON schema for the generate endpoint |
+1. Open the **Webhooks** tab.
+2. Paste the **URL** you want events delivered to.
+3. Optionally set a **signing secret**. If you do, every request carries
+   `X-DPF-Signature: sha256=<hmac>` computed over the exact request body, so your endpoint can prove
+   the event came from you.
+4. Press **Send a test event** to check it works. The result is shown immediately, including the
+   reason if it failed.
 
-The server would bind to **localhost only**, so it is never exposed to your network.
+### Events
 
-### What to do instead, today
+| Event | Fires when |
+|---|---|
+| `product.generated` | an AI generation completes and the product is kept |
+| `product.exported` | an export succeeds (single file or ZIP) |
+| `product.published` | a publish is attempted, carrying the platform, status and listing URL |
+| `licence.activated` | a licence key is accepted |
 
-Use the app's own automation that *is* implemented: the **Scheduler** tab can run generation,
-publishing and research on a recurring basis, and **Publishing** pushes to your connected
-marketplaces directly. If you need to drive the app from outside, do it through the user interface
-until this section is replaced with real instructions.
+Each payload is JSON containing `event`, `app`, `version`, `sent_at` and a `data` object specific to
+the event.
 
-Webhooks are intended to be a **Team** or higher feature. Until they ship, nothing is charged for
-them.
+### The Delivery Log
 
----
+**Every attempt is recorded with its result**, including failures and the reason - "could not connect
+to that host", "no response within 5s". A dead endpoint never freezes the app: requests are sent on a
+worker thread with a 5-second timeout.
 
+If you see nothing arriving, check the delivery log first - it names the failure.
 ## Product Variants
 
 Create multiple variants of a product for different formats, prices, or configurations — with full version history.
@@ -1712,12 +1751,29 @@ Publish digital products directly to marketplaces from within the app.
 
 ### Connected Platforms
 
-| Platform | Status | Requirements |
-|----------|--------|-------------|
-| **Etsy** | ✅ Supported | API key, 3000x3000 thumbnails, 20MB max |
-| **Gumroad** | ✅ Supported | Access token, 1280x720 thumbnails, 50MB max |
-| **Shopify** | 🔧 Coming Soon | — |
-| **Payhip** | 🔧 Coming Soon | — |
+| Platform | Status | What it needs |
+|----------|--------|----------------|
+| **Gumroad** | ✅ Connects today | An **access token** from your own Gumroad account - see below |
+| **Etsy** | 🔧 Coming Soon | Etsy requires **account authorisation** through their OAuth flow, and an Etsy-approved app. Pasting a key is not enough, so this is not sold as working. |
+| **Shopify** | 🔧 Coming Soon | Needs a Shopify Admin API access token. Not built yet. |
+| **Payhip** | 🔧 Coming Soon | Needs a Payhip API key. Not built yet. |
+
+**We label these rather than hide them**, so you can see exactly what connects before you buy.
+Etsy, Shopify and Payhip appear in the app marked **Coming Soon** and cannot be connected yet.
+
+### Getting a Gumroad Access Token
+
+Gumroad issues **you** (the seller) an access token from your own account. There is no application
+to register and no approval step, which is why Gumroad is the one store that connects today.
+
+1. Sign in at **gumroad.com**.
+2. Go to **Settings -> Advanced**.
+3. Find the **Applications** section and click **Create application** (or use an existing one).
+4. Copy the **access token** it gives you.
+5. In Digital Product Factory open the **Publishing** tab, select **Gumroad**, paste the token and
+   click **Save Key**.
+
+The token is long-lived. If you ever think it has leaked, come back to the same page and revoke it.
 
 ### Credential Management
 
@@ -1742,7 +1798,13 @@ To remove credentials, click **Remove** — it deletes the key from the keychain
 5. Set a price
 6. Click **Publish**
 
-The publish is queued and a log entry is created. Actual publishing to marketplace APIs requires marketplace-specific formatting handled by the platform format rules.
+Pressing **Publish** now really calls the marketplace. The result is recorded in the **Publish Log**:
+
+- **✓ Published** - with a link to the listing, which opens in your browser
+- **✗ Failed** - with the actual reason (a bad token, a rejected field, a network problem)
+
+You will not see a row sitting on "Pending" forever: every attempt ends as either Published or
+Failed, and a failure tells you why so you can fix it.
 
 ### Platform Format Configuration
 

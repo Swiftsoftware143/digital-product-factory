@@ -14,6 +14,9 @@ use egui::*;
 struct ProviderRow {
     label: &'static str,
     hint: &'static str,
+    /// Where the user CREATES this key. Shown as a clickable link, because "paste your key" is
+    /// useless advice to someone who does not yet have one.
+    key_url: &'static str,
     /// The `config` field this row edits.
     field: fn(&mut crate::config::AppConfig) -> &mut String,
 }
@@ -22,26 +25,31 @@ const PROVIDERS: &[ProviderRow] = &[
     ProviderRow {
         label: "OpenAI",
         hint: "gpt-4o and friends. Strong all-rounder for creative copy and visuals.",
+        key_url: "https://platform.openai.com/api-keys",
         field: |c| &mut c.openai_key,
     },
     ProviderRow {
         label: "Anthropic",
         hint: "Claude. Strong at long, structured documents and business strategy.",
+        key_url: "https://console.anthropic.com/settings/keys",
         field: |c| &mut c.anthropic_key,
     },
     ProviderRow {
         label: "Google",
         hint: "Gemini. Fast and cheap; good for bulk, technical and factual work.",
+        key_url: "https://aistudio.google.com/app/apikey",
         field: |c| &mut c.google_key,
     },
     ProviderRow {
         label: "DeepSeek",
         hint: "Strong reasoning for the money. Good default if you want one key to do most things.",
+        key_url: "https://platform.deepseek.com/api_keys",
         field: |c| &mut c.deepseek_key,
     },
     ProviderRow {
         label: "Moonshot",
         hint: "Kimi. Best choice if you also produce Chinese-language content.",
+        key_url: "https://platform.moonshot.ai/console/api-keys",
         field: |c| &mut c.moonshot_key,
     },
 ];
@@ -174,7 +182,7 @@ fn show_providers(app: &mut DpfApp, ui: &mut Ui) {
                 ui.add_sized(
                     [340.0, 22.0],
                     TextEdit::singleline((p.field)(&mut app.config))
-                        .hint_text("paste your key")
+                        .hint_text("paste your key - see the link below")
                         .password(true),
                 );
                 ui.label(
@@ -183,6 +191,21 @@ fn show_providers(app: &mut DpfApp, ui: &mut Ui) {
                         .color(Color32::from_gray(140)),
                 );
             });
+            // Where to actually GET this key. Without this the row just says "paste your key",
+            // which is no help to someone who does not have one yet.
+            ui.horizontal(|ui| {
+                ui.add_space(26.0);
+                ui.label(
+                    RichText::new(if held { "replace it at:" } else { "get one at:" })
+                        .size(10.5)
+                        .color(Color32::from_gray(130)),
+                );
+                ui.hyperlink_to(
+                    RichText::new(p.key_url).size(10.5),
+                    p.key_url,
+                );
+            });
+            ui.add_space(4.0);
         }
 
         ui.add_space(4.0);
