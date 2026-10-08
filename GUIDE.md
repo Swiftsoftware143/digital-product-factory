@@ -1312,6 +1312,40 @@ Each paid tier includes a set number of seats (Personal 1, Team 5, Pro 20, Enter
 
 ---
 
+### Webhooks — notify your own tools
+
+The Webhooks tab (`🔌`) sends a small JSON event to a URL **you** choose whenever something
+happens in DPF. It is outbound only: nothing listens on your computer, so no port is opened and
+nothing can connect in.
+
+**Setting it up**
+
+1. Open **Webhooks** in the sidebar.
+2. Paste the URL your tool gives you (Zapier, Make, n8n, or your own endpoint).
+3. Leave **Signing secret** empty for a plain POST, or set one to have every request signed.
+4. Tick the events you want, then press **Send a test event**.
+
+**Events**
+
+| Event | Fires when |
+|-------|-----------|
+| `product.generated` | An AI workflow finishes and the product is kept |
+| `product.exported` | A file or ZIP is written to disk successfully |
+| `product.published` | A listing is pushed to a connected marketplace |
+| `licence.activated` | A licence key is accepted |
+
+**The payload** is JSON: `event`, `app`, `version`, `sent_at`, and a `data` object with the
+details of that event.
+
+**Verifying it is genuine.** If you set a signing secret, each request carries
+`X-DPF-Signature: sha256=<hex>`, an HMAC-SHA256 of the raw request body keyed with your secret.
+Compute the same value on your side and compare — if it matches, the event came from your copy
+of DPF and was not altered in transit.
+
+**If nothing arrives**, the **Recent deliveries** list tells you why: it records every attempt
+with the HTTP status, or the reason it failed (could not connect, no response in 5 seconds).
+A failure is never silent, and a slow endpoint never freezes the app.
+
 ## Troubleshooting
 
 ### Common Issues

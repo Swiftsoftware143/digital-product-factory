@@ -11,6 +11,11 @@ pub struct AppConfig {
     pub deepseek_key: String,
     pub moonshot_key: String,
 
+    /// Outbound automation webhooks. `serde(default)` so a settings file written before this
+    /// field existed still loads instead of failing.
+    #[serde(default)]
+    pub webhook: crate::webhooks::WebhookConfig,
+
     // Preferences
     pub auto_save: bool,
     pub dark_mode: bool,
@@ -51,6 +56,7 @@ impl Default for AppConfig {
             google_key: String::new(),
             deepseek_key: String::new(),
             moonshot_key: String::new(),
+            webhook: crate::webhooks::WebhookConfig::default(),
             auto_save: true,
             dark_mode: true,
             sidebar_expanded: true,

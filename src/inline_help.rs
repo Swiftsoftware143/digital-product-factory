@@ -218,8 +218,8 @@ pub fn all_topics() -> Vec<HelpTopic> {
         },
         HelpTopic {
             id: "webhooks",
-            title: "Webhooks — not yet available",
-            body: "The Webhooks tab is a placeholder: the interface reports a running listener, but no web server is actually started in this build, so nothing can connect to it. Do not rely on it. This is a known gap, not a configuration problem on your side.",
+            title: "Webhooks — send events to your own automation",
+            body: "Tell DPF where to send an event when something happens, and it will POST a small JSON payload there. It sends events OUT \u{2014} nothing listens on your machine, so there is no port to open and nothing for anyone to connect to. Point it at Zapier, Make, n8n or any endpoint you run. Choose which events to send (product generated, exported, published). If you set a signing secret, each request also carries an X-DPF-Signature header \u{2014} a sha256 HMAC over the exact body \u{2014} so your endpoint can prove the event really came from DPF. Use \"Send a test event\" to check it works before relying on it, and the delivery list shows every attempt with its result, including failures and why. Nothing is dropped silently. (Team+ feature)",
             tier: "team",
         },
         HelpTopic {

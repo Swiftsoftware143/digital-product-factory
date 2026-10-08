@@ -1188,7 +1188,7 @@ dependencies = [
 
 [[package]]
 name = "digital-product-factory"
-version = "2.4.8"
+version = "2.4.9"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1196,6 +1196,7 @@ dependencies = [
  "eframe",
  "egui",
  "egui_extras",
+ "hmac",
  "ico",
  "image 0.24.9",
  "keyring",
@@ -1210,6 +1211,7 @@ dependencies = [
  "scraper",
  "serde",
  "serde_json",
+ "sha2",
  "tokio",
  "tracing",
  "tray-icon",

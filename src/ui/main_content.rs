@@ -331,6 +331,8 @@ fn show_templates(app: &mut DpfApp, ctx: &Context) {
             product.format = f;
         }
 
+        // Report a successful export to the user's automation. Both branches below call this
+        // helper, so the event fires exactly once per successful export, never on a failure.
         if state.choice == ExportChoice::Zip {
             // ZIP is a batch export: all Pipeline products, or just the picked one.
             let items: Vec<crate::product_generator::GeneratedProduct> =
@@ -354,6 +356,12 @@ fn show_templates(app: &mut DpfApp, ctx: &Context) {
                 match app.exporter.export_zip(&items, &path) {
                     Ok(p) => {
                         state.status_error = false;
+                        crate::webhooks::dispatch(
+                            &app.config.webhook,
+                            &app.webhook_log,
+                            crate::webhooks::WebhookEvent::ProductExported,
+                            serde_json::json!({ "products": items.len(), "path": p }),
+                        );
                         state.status = Some(format!(
                             "Wrote {} product(s) to ZIP: {}",
                             items.len(),
@@ -375,6 +383,16 @@ fn show_templates(app: &mut DpfApp, ctx: &Context) {
                 Ok(p) => {
                     state.status_error = false;
                     state.status = Some(format!("Exported {}: {}", state.choice.label(), p));
+                    crate::webhooks::dispatch(
+                        &app.config.webhook,
+                        &app.webhook_log,
+                        crate::webhooks::WebhookEvent::ProductExported,
+                        serde_json::json!({
+                            "name": product.name,
+                            "format": format!("{:?}", product.format),
+                            "path": p,
+                        }),
+                    );
                 }
                 Err(e) => {
                     state.status_error = true;
@@ -889,62 +907,130 @@ fn show_asset_library(app: &mut DpfApp, ctx: &Context) {
 fn show_webhooks(app: &mut DpfApp, ctx: &Context) {
     CentralPanel::default().show(ctx, |ui| {
         ui.horizontal(|ui| {
-            ui.heading("🔌 Automation Webhooks");
+            ui.heading("\u{1F50C} Automation Webhooks");
             inline_help::help_button(ui, "webhooks", &mut app.active_help_topic);
         });
         ui.separator();
 
+        ui.label(
+            "DPF sends an event to your own URL when something happens \u{2014} nothing listens on \
+             this machine, so there is no port to open. Point it at Zapier, Make, n8n or any \
+             endpoint you run.",
+        );
+        ui.add_space(6.0);
+
+        // ── destination ─────────────────────────────────────────────────────────────────────
         ui.group(|ui| {
-            ui.heading("Local HTTP Listener");
-            ui.label(
-                RichText::new("⚠ Not implemented in this build")
-                    .strong()
-                    .color(Color32::from_rgb(240, 180, 80)),
-            );
-            ui.label(
-                "These controls do not start a real server — no socket is bound, so nothing can \
-                 connect and the status below is not reporting a live listener. They are kept here \
-                 as the shape of the planned feature. For automation today use Scheduler and \
-                 Publishing, which are implemented.",
-            );
+            ui.heading("Destination");
+            ui.horizontal(|ui| {
+                ui.checkbox(&mut app.config.webhook.enabled, "Send events");
+                ui.label(RichText::new("(off by default)").color(Color32::from_gray(140)));
+            });
             ui.add_space(4.0);
 
-            // Deliberately disabled: previously these buttons reported "listening on localhost"
-            // while binding nothing, which was a false capability claim.
-            ui.add_enabled_ui(false, |ui| {
-                ui.horizontal(|ui| {
-                    ui.label("Port:");
-                    ui.text_edit_singleline(&mut app.webhook_port);
-                    ui.label("Default: 9823");
-                });
-                ui.horizontal(|ui| {
-                    let _ = ui.button("Start Webhook");
-                    let _ = ui.button("Stop");
-                });
+            ui.horizontal(|ui| {
+                ui.label("URL:");
+                ui.add(egui::TextEdit::singleline(&mut app.config.webhook.url)
+                    .desired_width(460.0)
+                    .hint_text("https://hooks.zapier.com/hooks/catch/..."));
             });
 
+            // Validate as the user types, so a mistake is visible before any event is lost.
+            if !app.config.webhook.url.trim().is_empty() {
+                match crate::webhooks::validate_url(&app.config.webhook.url) {
+                    Ok(()) => {
+                        ui.label(RichText::new("\u{2713} URL looks valid").color(Color32::from_rgb(120, 200, 140)));
+                    }
+                    Err(e) => {
+                        ui.label(RichText::new(format!("\u{26A0} {e}")).color(Color32::from_rgb(240, 180, 80)));
+                    }
+                }
+            }
+
+            ui.horizontal(|ui| {
+                ui.label("Signing secret:");
+                ui.add(egui::TextEdit::singleline(&mut app.config.webhook.secret)
+                    .desired_width(300.0)
+                    .password(true)
+                    .hint_text("optional \u{2014} enables the X-DPF-Signature header"));
+            });
             ui.label(
-                RichText::new("Status: 🔴 Not running")
-                    .color(Color32::from_rgb(220, 120, 120)),
+                RichText::new(
+                    "With a secret set, each request carries X-DPF-Signature: sha256=<hmac> over the \
+                     exact body, so your endpoint can prove the event came from this app.",
+                )
+                .color(Color32::from_gray(150))
+                .small(),
             );
         });
 
-        ui.separator();
+        ui.add_space(8.0);
 
+        // ── which events ────────────────────────────────────────────────────────────────────
         ui.group(|ui| {
-            ui.heading("API Documentation");
-            ui.label("POST /generate - Trigger headless generation");
-            ui.label("GET  /status   - Health check");
-            ui.label("GET  /schema   - API reference");
+            ui.heading("Events to send");
+            for ev in crate::webhooks::WebhookEvent::all() {
+                let mut on = app.config.webhook.events.iter().any(|e| e == ev.as_str());
+                if ui.checkbox(&mut on, ev.label()).changed() {
+                    let name = ev.as_str().to_string();
+                    if on {
+                        if !app.config.webhook.events.iter().any(|e| e == &name) {
+                            app.config.webhook.events.push(name);
+                        }
+                    } else {
+                        app.config.webhook.events.retain(|e| e != &name);
+                    }
+                }
+            }
+        });
 
-            ui.separator();
-            ui.label("Request Payload (POST /generate):");
-            let schema = crate::webhook::request_schema();
-            ui.code(serde_json::to_string_pretty(&schema).unwrap_or_default());
+        ui.add_space(8.0);
 
-            ui.separator();
-            ui.label("Endpoint docs auto-served at GET /schema");
-            ui.label("Add `callback_url` field to POST /generate for async result notification.");
+        // ── prove it works ──────────────────────────────────────────────────────────────────
+        ui.horizontal(|ui| {
+            if ui.button("Send a test event").clicked() {
+                let result = crate::webhooks::send_test_now(&app.config.webhook);
+                app.webhook_test_result = result;
+            }
+            if ui.button("Clear history").clicked() {
+                app.webhook_log.clear();
+                app.webhook_test_result.clear();
+            }
+        });
+        if !app.webhook_test_result.is_empty() {
+            ui.label(RichText::new(&app.webhook_test_result).color(Color32::from_rgb(160, 200, 230)));
+        }
+
+        ui.add_space(8.0);
+
+        // ── delivery history: the thing that makes this falsifiable ─────────────────────────
+        ui.group(|ui| {
+            let recent = app.webhook_log.recent();
+            ui.heading(format!("Recent deliveries ({})", recent.len()));
+            ui.label(
+                RichText::new("Newest first. A failed delivery is listed with its reason \u{2014} nothing is dropped silently.")
+                    .color(Color32::from_gray(150))
+                    .small(),
+            );
+            ui.add_space(4.0);
+            egui::ScrollArea::vertical().max_height(240.0).show(ui, |ui| {
+                if recent.is_empty() {
+                    ui.label(RichText::new("No events sent yet.").color(Color32::from_gray(140)));
+                }
+                for d in recent {
+                    ui.horizontal(|ui| {
+                        let (mark, col) = if d.ok {
+                            ("\u{2713}", Color32::from_rgb(120, 200, 140))
+                        } else {
+                            ("\u{2717}", Color32::from_rgb(220, 120, 120))
+                        };
+                        ui.label(RichText::new(mark).color(col).strong());
+                        ui.label(RichText::new(&d.event).monospace());
+                        ui.label(RichText::new(&d.result).color(col));
+                        ui.label(RichText::new(&d.url).color(Color32::from_gray(140)).small());
+                    });
+                }
+            });
         });
     });
 }

@@ -206,6 +206,10 @@ pub struct DpfApp {
     pub compliance_scan_result: Vec<String>,
     pub compliance_show_warning: bool,
     // -- Webhook UI state --------------------------------------------
+    /// Recent outbound-webhook deliveries, newest first. Shown in the UI so a
+    /// silent failure is impossible.
+    pub webhook_log: std::sync::Arc<crate::webhooks::WebhookLog>,
+    pub webhook_test_result: String,
     pub webhook_port: String,
     pub webhook_enabled: bool,
     pub webhook_status_message: String,
@@ -373,6 +377,8 @@ impl DpfApp {
             compliance_scan_result: Vec::new(),
             compliance_show_warning: false,
             // -- Webhook UI state -----------------------------------
+            webhook_log: std::sync::Arc::new(crate::webhooks::WebhookLog::default()),
+            webhook_test_result: String::new(),
             webhook_port: "9823".into(),
             webhook_enabled: false,
             webhook_status_message: String::new(),

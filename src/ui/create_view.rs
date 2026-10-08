@@ -348,6 +348,20 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
                                             product.metadata.tokens_used,
                                             product.metadata.generation_time_ms,
                                         ));
+                                        // Tell the user's own automation that a product exists.
+                                        // Fire-and-forget: a dead endpoint must not block the UI.
+                                        crate::webhooks::dispatch(
+                                            &app.config.webhook,
+                                            &app.webhook_log,
+                                            crate::webhooks::WebhookEvent::ProductGenerated,
+                                            serde_json::json!({
+                                                "name": product.name,
+                                                "template_id": product.template_id,
+                                                "model": product.metadata.model_used,
+                                                "tokens": product.metadata.tokens_used,
+                                                "format": format!("{:?}", product.format),
+                                            }),
+                                        );
                                         app.create_state.last_product = Some(product);
                                     }
                                     Err(e) => {
