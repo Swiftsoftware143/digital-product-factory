@@ -77,6 +77,22 @@ NOT need to uninstall, and you do NOT need to delete anything.
 
 That is the entire update.
 
+ALWAYS EXTRACT TO THE SAME PLACE. This is the bit that stops clutter.
+
+Pick ONE home for the app and extract every new version there. Windows
+will ask to merge and replace, and you keep a single folder that is
+always current. You are not meant to create a new folder per version.
+
+Why it goes wrong if you extract somewhere different each time: the zip
+contains a folder called DigitalProductFactory, so extracting it into
+Downloads creates Downloads\DigitalProductFactory, and the next one
+becomes "DigitalProductFactory (2)", then (3), and so on. That is what
+produces a pile of old app folders.
+
+If you already have several copies: delete the older ones. A program
+folder holds only the program - never your data - so removing it costs
+nothing and cannot lose your work. Keep the newest one.
+
 If you would rather not overwrite: extract the new zip somewhere else and
 copy ONLY the new  dpf.exe  over the old one. Same result.
 
@@ -102,6 +118,10 @@ deleting would take that with it.
 You do not have to. Extracting the new zip over your existing folder
 replaces the program files (answer YES to Replace, or MERGE) and leaves
 your data completely alone.
+
+Old copies are safe to delete at any time: a program folder contains no
+data, only the program. Deleting one cannot lose your work. If you have
+piled up several from past downloads, keep the newest and remove the rest.
 
 If you would rather start with a clean folder, this order is safe:
 

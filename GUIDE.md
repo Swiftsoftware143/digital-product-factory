@@ -81,6 +81,15 @@ old one. Same result.
 **You do not need to:** re-enter your licence key, re-enter your AI key, re-import your products, or
 delete the old folder first.
 
+**Always extract to the same place — this is what stops clutter.** Pick one home for the app and
+extract every new version there; Windows asks to merge and replace, and you keep a single folder that
+is always current. You are not meant to create a folder per version.
+
+If you extract somewhere different each time you *will* accumulate copies, because the zip contains a
+folder called `DigitalProductFactory`: the second extraction becomes `DigitalProductFactory (2)`, then
+`(3)`. **If you already have several, delete the older ones** — a program folder holds only the
+program, never your data, so removing it cannot lose your work. Keep the newest.
+
 **Where the app lives is up to you.** You are not required to move it to Program Files or anywhere
 else — any folder works, and running it from a different folder shows the same data. Extracting a new
 version into a *brand new* folder also works for the same reason; you will simply have two copies of
