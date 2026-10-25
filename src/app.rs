@@ -98,6 +98,14 @@ pub struct CreateState {
     pub is_generating: bool,
     /// most recent successfully generated product
     pub last_product: Option<crate::product_generator::GeneratedProduct>,
+    /// Bulk mode: one product per line of `bulk_lines`.
+    pub bulk_mode: bool,
+    /// One variation per line — a niche, theme or topic.
+    pub bulk_lines: String,
+    /// Which template parameter each line fills (empty = append the line to the prompt).
+    pub bulk_param: String,
+    /// Per-line outcome, kept as a running log so a batch is auditable.
+    pub bulk_log: Vec<String>,
 }
 
 impl Default for CreateState {
@@ -110,9 +118,13 @@ impl Default for CreateState {
             status: None,
             is_generating: false,
             last_product: None,
+            bulk_mode: false,
+            bulk_lines: String::new(),
+            bulk_param: String::new(),
+            bulk_log: Vec::new(),
         }
     }
-}
+    }
 
 pub struct DpfApp {
     pub db: Arc<Database>,

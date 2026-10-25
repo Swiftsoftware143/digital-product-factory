@@ -404,35 +404,56 @@ pub fn show_help_popup(ctx: &Context, topic_id: &str, active_topic: &mut Option<
 }
 
 pub fn show_help_index(ctx: &Context, active_topic: &mut Option<String>) {
-    Window::new("Help Index")
+    Window::new("Guide — every feature explained")
         .id(egui::Id::new("help_index"))
         .collapsible(false)
         .resizable(true)
-        .default_size([450.0, 450.0])
+        .default_size([560.0, 520.0])
         .anchor(Align2::CENTER_CENTER, [0.0, 0.0])
         .show(ctx, |ui| {
-            ui.heading("Digital Product Factory — Help");
+            ui.label(
+                RichText::new("Pick a topic. Every screen also has a small ? button next to its heading.")
+                    .size(11.0)
+                    .color(egui::Color32::GRAY),
+            );
+            ui.add_space(6.0);
             ui.separator();
-            ui.label("Click any topic to learn more.");
-            ui.add_space(8.0);
 
-            ScrollArea::vertical().show(ui, |ui| {
-                for topic in all_topics() {
-                    let tier_tag = match topic.tier {
-                        "team" => " [Team+]",
-                        "pro" => " [Pro+]",
-                        "enterprise" => " [Enterprise]",
-                        _ => "",
-                    };
-                    if ui.button(format!("{} — {}{}", topic.title, topic.body, tier_tag)).clicked() {
-                        *active_topic = Some(topic.id.to_string());
+            ScrollArea::vertical()
+                .auto_shrink([false, false])
+                .max_height(400.0)
+                .show(ui, |ui| {
+                    // Track ids already drawn. The topic list has historically contained
+                    // duplicates (the same screen documented twice), and two buttons sharing an
+                    // id inside one Ui is what produces egui's "Second use of widget ID" storm.
+                    // `topics` is bound to a local so the borrowed ids live long enough.
+                    let topics = all_topics();
+                    let mut seen: std::collections::HashSet<&str> =
+                        std::collections::HashSet::new();
+                    for topic in &topics {
+                        if !seen.insert(topic.id.as_str()) {
+                            continue;
+                        }
+                        // Title only. An earlier version put the whole body in the button label,
+                        // which made the index an unreadable wall of prose and unusable as a menu.
+                        let tier_tag = match topic.tier {
+                            "team" => "  ·  Team+",
+                            "pro" => "  ·  Pro+",
+                            "enterprise" => "  ·  Enterprise",
+                            _ => "",
+                        };
+                        let label = format!("{}{}", topic.title, tier_tag);
+                        ui.push_id(topic.id.as_str(), |ui| {
+                            if ui.button(label).clicked() {
+                                *active_topic = Some(topic.id.to_string());
+                            }
+                        });
                     }
-                }
-            });
+                });
 
             ui.add_space(8.0);
             ui.separator();
-            if ui.button("Close Help").clicked() {
+            if ui.button("Close Guide").clicked() {
                 *active_topic = None;
             }
         });

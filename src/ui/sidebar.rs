@@ -140,42 +140,44 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
                 .rect_filled(rect, Rounding::same(1.0), TEAL.gamma_multiply(0.9));
             ui.add_space(2.0);
 
+            // Order follows the job, not the order the tabs were written in: research and plan,
+            // then create, then brand it, then sell and measure, then the admin of running it.
+            // Every group also holds at least two entries - a section with a single item under it
+            // (the old "Product data: Variants") is just a heading that makes the list longer.
             section(ui, "Start here");
             tab_item(app, ui, Tab::Dashboard, "Dashboard");
             tab_item(app, ui, Tab::Pipeline, "Pipeline");
-            tab_item(app, ui, Tab::Create, "Create");
+
+            section(ui, "Research & plan");
             tab_item(app, ui, Tab::Research, "Research");
             tab_item(app, ui, Tab::Templates, "Templates");
 
-            section(ui, "Create & plan");
-            tab_item(app, ui, Tab::Bundles, "Bundles");
-            tab_item(app, ui, Tab::Scheduler, "Scheduler");
+            section(ui, "Create");
+            tab_item(app, ui, Tab::Create, "Create Product");
             tab_item(app, ui, Tab::Mockup, "Mockups");
+            tab_item(app, ui, Tab::Bundles, "Bundles");
             tab_item(app, ui, Tab::Presets, "Presets");
-            tab_item(app, ui, Tab::Contract, "Contracts");
+            tab_item(app, ui, Tab::Variants, "Variants");
 
-            section(ui, "Sell & measure");
-            tab_item(app, ui, Tab::Analytics, "Analytics");
+            section(ui, "Brand & assets");
+            tab_item(app, ui, Tab::LogoGenerator, "🎨 Logo Generator");
+            tab_item(app, ui, Tab::VectorGenerator, "📐 Vector Generator");
+            tab_item(app, ui, Tab::AssetLibrary, "Asset Library");
+            tab_item(app, ui, Tab::Adverts, "📢 Adverts");
+
+            section(ui, "Sell & track");
             tab_item(app, ui, Tab::Publish, "Publish");
+            tab_item(app, ui, Tab::Contract, "Contracts");
+            tab_item(app, ui, Tab::Analytics, "Analytics");
 
-            section(ui, "Run the business");
+            section(ui, "Quality & customers");
             tab_item(app, ui, Tab::QC, "QC Checklist");
             tab_item(app, ui, Tab::Compliance, "Compliance");
             tab_item(app, ui, Tab::Clients, "👥 Clients");
 
-            section(ui, "Product data");
-            tab_item(app, ui, Tab::Variants, "Variants");
-
-            section(ui, "Assets & marketing");
-            tab_item(app, ui, Tab::Adverts, "📢 Adverts");
-            tab_item(app, ui, Tab::LogoGenerator, "🎨 Logo Generator");
-            tab_item(app, ui, Tab::VectorGenerator, "📐 Vector Generator");
-            tab_item(app, ui, Tab::AssetLibrary, "Asset Library");
-
-            ui.separator();
+            section(ui, "Automation");
+            tab_item(app, ui, Tab::Scheduler, "Scheduler");
             tab_item(app, ui, Tab::Webhooks, "Webhooks");
-
-            ui.separator();
             // The Admin panel is OWNER-ONLY and is not merely locked for everyone else: it is not
             // drawn at all. A customer should never learn that a key-generation screen exists,
             // because the only thing that knowledge buys them is an attempt to reach it. Reaching it
@@ -185,6 +187,13 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
                 ui.separator();
             }
 
+            // A single, always-visible way into the guide. Until this existed the ~40 help topics
+            // were reachable only from a small "?" drawn inside individual views, and the index
+            // (`__index__`) was never triggered by anything at all - so the whole guide was
+            // effectively invisible to a new user.
+            if ui.button("📖 Guide").clicked() {
+                app.active_help_topic = Some("__index__".to_string());
+            }
             if ui.button("🔑 Licence").clicked() {
                 app.show_license_dialog = true;
             }

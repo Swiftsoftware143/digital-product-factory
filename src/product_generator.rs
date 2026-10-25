@@ -53,14 +53,34 @@ impl ProductGenerator {
         template_id: &str,
         params: serde_json::Value,
     ) -> Result<GeneratedProduct, String> {
+        self.generate_blocking_with_prompt(template_id, params, None)
+    }
+
+    /// Generate, optionally using a prompt the USER has edited.
+    ///
+    /// The template prompt was previously built and consumed internally, so the only way to see it
+    /// was a "Preview Prompt" button and it could not be changed - a user who wanted a different
+    /// angle on a Planner had to accept the template's wording or nothing. Passing an override
+    /// lets the Create screen show the prompt, let it be edited, and have that exact text sent.
+    ///
+    /// `None` keeps the old behaviour exactly, so every existing caller is unaffected.
+    pub fn generate_blocking_with_prompt(
+        &self,
+        template_id: &str,
+        params: serde_json::Value,
+        prompt_override: Option<String>,
+    ) -> Result<GeneratedProduct, String> {
         let router = self.llm_router.as_ref()
             .ok_or("API keys not configured")?;
 
         let template = self.template_registry.get(template_id)
             .ok_or(format!("Template '{}' not found", template_id))?;
 
-        // Build prompt from template
-        let prompt = self.build_prompt(template, &params)?;
+        // Build prompt from template, unless the user supplied their own text.
+        let prompt = match prompt_override {
+            Some(p) if !p.trim().is_empty() => p,
+            _ => self.build_prompt(template, &params)?,
+        };
 
         // Auto-select best LLM profile
         let profile = LLMProfile::Creative; // Could auto-select based on template

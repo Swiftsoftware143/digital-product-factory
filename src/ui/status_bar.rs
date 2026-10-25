@@ -61,12 +61,8 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
             });
         });
 
-    // Render help overlay
-    if let Some(topic_id) = &app.active_help_topic.clone() {
-        if topic_id == "__index__" {
-            inline_help::show_help_index(ctx, &mut app.active_help_topic);
-        } else {
-            inline_help::show_help_popup(ctx, topic_id, &mut app.active_help_topic);
-        }
-    }
+    // The help overlay is rendered by `main_content::show`, which runs earlier in the same frame.
+    // It used to be drawn HERE as well, so every help window (and every widget inside it) was
+    // built twice per frame - egui then reports "Second use of widget ID" for each one and paints
+    // its debug boxes over the panel. One owner, one draw.
 }
