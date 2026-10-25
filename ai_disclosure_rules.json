@@ -1,0 +1,34 @@
+[
+  {
+    "platform": "etsy",
+    "requires_disclosure": true,
+    "required_label": "AI Generated",
+    "disclosure_text_template": "This product was created with the assistance of artificial intelligence tools. Final design and quality control performed by [seller_name].",
+    "location": "description",
+    "last_updated": "2026-07-01"
+  },
+  {
+    "platform": "gumroad",
+    "requires_disclosure": true,
+    "required_label": null,
+    "disclosure_text_template": "Created with AI assistance. See license terms for specific usage rights.",
+    "location": "description",
+    "last_updated": "2026-07-01"
+  },
+  {
+    "platform": "shopify",
+    "requires_disclosure": false,
+    "required_label": null,
+    "disclosure_text_template": "This product incorporates AI-generated content.",
+    "location": "description",
+    "last_updated": "2026-07-01"
+  },
+  {
+    "platform": "payhip",
+    "requires_disclosure": false,
+    "required_label": null,
+    "disclosure_text_template": "AI-assisted creation.",
+    "location": "description",
+    "last_updated": "2026-07-01"
+  }
+]

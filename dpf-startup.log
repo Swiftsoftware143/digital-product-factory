@@ -1,0 +1,64 @@
+[epoch+1792887152s] ================================================================
+[epoch+1792887152s] DPF 2.5.3 starting on linux/x86_64
+[epoch+1792887152s] log file (written to all of these):
+[epoch+1792887152s]     /opt/swift/audits/dpf/dpf-merged/target/debug/dpf-startup.log
+[epoch+1792887152s]     /tmp/dpf-startup.log
+[epoch+1792887152s]     /opt/swift/audits/dpf/dpf-merged/dpf-startup.log
+[epoch+1792887152s] exe: Ok("/opt/swift/audits/dpf/dpf-merged/target/debug/dpf")
+[epoch+1792887152s] cwd: Ok("/opt/swift/audits/dpf/dpf-merged")
+[epoch+1792887152s] renderer: Glow (explicit: --renderer glow / DPF_RENDERER)
+[epoch+1792887152s] creating window...
+[epoch+1792887152s] window + egui context created OK — if the window is black from here, the GPU is not presenting
+[epoch+1792887152s] startup: reading config
+[epoch+1792887152s] startup: creating Tokio runtime
+[epoch+1792887152s] startup: opening database
+[epoch+1792887152s] data: imported existing database from the program folder (4096 bytes) into /root/.hermes/profiles/swiftsoftware-ceo/home/.local/share/DigitalProductFactory/dpf_data.db
+[epoch+1792887152s] data: database at /root/.hermes/profiles/swiftsoftware-ceo/home/.local/share/DigitalProductFactory/dpf_data.db
+[epoch+1792887152s] startup: loading pipeline
+[epoch+1792887152s] startup: building generator
+[epoch+1792887152s] startup: licence + registries
+[epoch+1792887152s] frame 1 rendered (0 ideas, 1400x900 px)
+[epoch+1792887152s] frame 2 rendered (0 ideas, 1400x900 px)
+[epoch+1792887152s] frame 3 rendered (0 ideas, 1400x900 px)
+[epoch+1792887214s] ================================================================
+[epoch+1792887214s] DPF 2.5.3 starting on linux/x86_64
+[epoch+1792887214s] log file (written to all of these):
+[epoch+1792887214s]     /opt/swift/audits/dpf/dpf-merged/target/debug/dpf-startup.log
+[epoch+1792887214s]     /tmp/dpf-startup.log
+[epoch+1792887214s]     /opt/swift/audits/dpf/dpf-merged/dpf-startup.log
+[epoch+1792887214s] exe: Ok("/opt/swift/audits/dpf/dpf-merged/target/debug/dpf")
+[epoch+1792887214s] cwd: Ok("/opt/swift/audits/dpf/dpf-merged")
+[epoch+1792887214s] renderer: Glow (explicit: --renderer glow / DPF_RENDERER)
+[epoch+1792887214s] creating window...
+[epoch+1792887214s] window + egui context created OK — if the window is black from here, the GPU is not presenting
+[epoch+1792887214s] startup: reading config
+[epoch+1792887214s] startup: creating Tokio runtime
+[epoch+1792887214s] startup: opening database
+[epoch+1792887214s] data: database at /root/.hermes/profiles/swiftsoftware-ceo/home/.local/share/DigitalProductFactory/dpf_data.db
+[epoch+1792887214s] startup: loading pipeline
+[epoch+1792887214s] startup: building generator
+[epoch+1792887214s] startup: licence + registries
+[epoch+1792887214s] frame 1 rendered (0 ideas, 1400x900 px)
+[epoch+1792887214s] frame 2 rendered (0 ideas, 1400x900 px)
+[epoch+1792887214s] frame 3 rendered (0 ideas, 1400x900 px)
+[epoch+1792887275s] ================================================================
+[epoch+1792887275s] DPF 2.5.3 starting on linux/x86_64
+[epoch+1792887275s] log file (written to all of these):
+[epoch+1792887275s]     /opt/swift/audits/dpf/dpf-merged/target/debug/dpf-startup.log
+[epoch+1792887275s]     /tmp/dpf-startup.log
+[epoch+1792887275s]     /opt/swift/audits/dpf/dpf-merged/dpf-startup.log
+[epoch+1792887275s] exe: Ok("/opt/swift/audits/dpf/dpf-merged/target/debug/dpf")
+[epoch+1792887275s] cwd: Ok("/opt/swift/audits/dpf/dpf-merged")
+[epoch+1792887275s] renderer: Glow (explicit: --renderer glow / DPF_RENDERER)
+[epoch+1792887275s] creating window...
+[epoch+1792887275s] window + egui context created OK — if the window is black from here, the GPU is not presenting
+[epoch+1792887275s] startup: reading config
+[epoch+1792887275s] startup: creating Tokio runtime
+[epoch+1792887275s] startup: opening database
+[epoch+1792887275s] data: database at /root/.hermes/profiles/swiftsoftware-ceo/home/.local/share/DigitalProductFactory/dpf_data.db
+[epoch+1792887275s] startup: loading pipeline
+[epoch+1792887275s] startup: building generator
+[epoch+1792887275s] startup: licence + registries
+[epoch+1792887275s] frame 1 rendered (0 ideas, 1400x900 px)
+[epoch+1792887275s] frame 2 rendered (0 ideas, 1400x900 px)
+[epoch+1792887275s] frame 3 rendered (0 ideas, 1400x900 px)

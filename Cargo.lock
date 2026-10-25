@@ -1188,7 +1188,7 @@ dependencies = [
 
 [[package]]
 name = "digital-product-factory"
-version = "2.5.2"
+version = "2.5.3"
 dependencies = [
  "async-trait",
  "chrono",
