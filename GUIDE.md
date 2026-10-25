@@ -93,6 +93,26 @@ the program, and you can delete the older one when you are happy.
 - **Do not move files out of the folder individually.** `dpf.exe` needs the `.bat` launchers and the
   JSON files that sit beside it.
 
+**Can I delete the old folder?**
+
+**You don't have to** — extracting over it replaces the program files and leaves your data alone. If
+you'd rather start clean, do it in this order:
+
+1. Extract the new zip into a **new** folder.
+2. Run `dpf.exe` from the new folder.
+3. Check your products and licence are there — they will be.
+4. **Only then** delete the old folder.
+
+**Deleting before updating is allowed, with one check first:** look inside the old folder for a file
+called `dpf_data.db`.
+
+- **Not there** → safe to delete. Your data is in your user data folder.
+- **It is there** → that is an older-format database. Run the app once from that folder *before*
+  deleting, so it gets imported into your user data folder. The app never deletes that original, so
+  removing the folder is your decision afterwards.
+
+The only other thing a deleted folder takes is `dpf-startup.log` — the previous run's diagnostic log.
+
 Your data is not in the program folder at all, so replacing the program cannot touch your work — see
 [Where your work is stored](#where-your-work-is-stored).
 

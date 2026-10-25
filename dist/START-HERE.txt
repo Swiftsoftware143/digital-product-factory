@@ -96,7 +96,34 @@ you ever ran an older version that kept its data in the program folder,
 deleting would take that with it.
 
 
-6. IF WINDOWS SHOWS A WARNING
+6. CAN I DELETE THE OLD FOLDER?
+-------------------------------
+
+You do not have to. Extracting the new zip over your existing folder
+replaces the program files (answer YES to Replace, or MERGE) and leaves
+your data completely alone.
+
+If you would rather start with a clean folder, this order is safe:
+
+   1. Extract the new zip into a NEW folder.
+   2. Run dpf.exe from the new folder.
+   3. Check your products and your licence are there. They will be.
+   4. Only then delete the old folder.
+
+Deleting the old folder BEFORE updating is allowed, but check it first:
+look inside it for a file called  dpf_data.db
+
+   - No such file  ->  safe to delete. Your data is in %APPDATA%.
+   - There IS such a file  ->  that is an older-format database. Run the
+     app once from that folder BEFORE deleting, so it is imported into
+     your Windows user data. The app never deletes that original file,
+     so delete the folder yourself only after that import has happened.
+
+The only other thing you lose by deleting a folder is dpf-startup.log,
+which is just the previous run's diagnostic log. Nothing important.
+
+
+7. IF WINDOWS SHOWS A WARNING
 -----------------------------
 
 When you first run it, Windows may say "Windows protected your PC".
@@ -108,7 +135,7 @@ code-signing certificate. It is a warning, not a detection.
 Click "More info", then "Run anyway". It only asks once.
 
 
-7. IF THE WINDOW IS BLACK
+8. IF THE WINDOW IS BLACK
 -------------------------
 
 A small number of graphics drivers draw this app as a blank window on one of
@@ -130,7 +157,7 @@ and whether the first frame ever painted. If you need support, send that
 file - it is the single most useful thing you can provide.
 
 
-8. WHERE TO LEARN THE APP
+9. WHERE TO LEARN THE APP
 -------------------------
 
    GUIDE.md                 the full user guide - setup and every screen
