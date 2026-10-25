@@ -64,14 +64,40 @@ brand colours. Switch any time from **🌙 / ☀️** in the status bar, or from
 
 ### Updating to a new version
 
-There is **no automatic update**. To update:
+There is **no automatic update**. Updating is a download and a copy — you never uninstall, and you
+never delete anything.
 
-1. Download the new release from the same address
-2. Unzip it and replace `dpf.exe` with the new one
+1. Download the new zip from the same address you used before.
+2. Right-click it and choose **Extract All**.
+3. Extract it into the folder you already have (the one containing `dpf.exe`), and say **Yes** when
+   Windows asks to replace the files. Windows may offer **Merge** instead — choose that.
+4. Start `dpf.exe` as usual.
 
-**Do not delete the folder to update** — there is no need, and your data is not in it. You do not
-need to re-enter your licence key or your AI key. If a release ever needs your attention for a
-change, it is called out in the release notes.
+That is the whole update.
+
+**Prefer not to overwrite?** Extract the zip somewhere else and copy only the new `dpf.exe` over the
+old one. Same result.
+
+**You do not need to:** re-enter your licence key, re-enter your AI key, re-import your products, or
+delete the old folder first.
+
+**Where the app lives is up to you.** You are not required to move it to Program Files or anywhere
+else — any folder works, and running it from a different folder shows the same data. Extracting a new
+version into a *brand new* folder also works for the same reason; you will simply have two copies of
+the program, and you can delete the older one when you are happy.
+
+**Two things to avoid:**
+
+- **Do not delete the folder as a way of updating.** It is not needed, and if you ever ran an older
+  version that kept its data beside the program, deleting would take that with it.
+- **Do not move files out of the folder individually.** `dpf.exe` needs the `.bat` launchers and the
+  JSON files that sit beside it.
+
+Your data is not in the program folder at all, so replacing the program cannot touch your work — see
+[Where your work is stored](#where-your-work-is-stored).
+
+If Windows shows *"Windows protected your PC"* on first run, that is SmartScreen reacting to a new,
+unsigned program. Click **More info → Run anyway**; it asks once.
 
 ### Setting up: everything is on the Settings page
 
