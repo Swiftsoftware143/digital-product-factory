@@ -343,17 +343,18 @@ impl MarketResearch {
 
         let products = Self::parse_listings(&html, "Gumroad", &url);
         if products.is_empty() {
-            // Measured 2026-10-25: this page returns HTTP 200 with ~120 KB of HTML, but the
-            // listings arrive from an API call after load — there is no JSON-LD to read. Gumroad's
-            // public API only exposes a seller's OWN products once they supply that seller's
-            // token, so there is no key a buyer could paste to unlock marketplace search. Saying so
-            // is more useful than blaming "JavaScript" in general, because it tells the user this
-            // one is not theirs to fix.
+            // Measured 2026-10-25 with the app's own headers: HTTP 200, ~121 KB, no JSON-LD and no
+            // readable price text — but the listings ARE in the response, as Inertia props inside
+            // the `data-page` attribute (`props.search_results.products`: 36 items with `name`,
+            // `price_cents`, `currency_code`, `url`). So this page is not a JavaScript shell and a
+            // parser could read it; this build does not parse that blob yet. Until it does, the
+            // honest thing is to say no key can help and point at what does work — not to claim the
+            // marketplace is unreadable in principle, which is what the old "JavaScript" wording did.
             return Err(
-                "Gumroad's marketplace search can't be read by any app — their public API only \
-                 returns a seller's own products with that seller's token, so there is no key to \
-                 add. Etsy works if you add an Etsy API key, and the Strategy brief is a good \
-                 substitute for reading Gumroad."
+                "Gumroad has no public search API — its API only returns a seller's own products, \
+                 so there is no key you can add to unlock marketplace search. Etsy works if you \
+                 add an Etsy API key in Settings, and the Strategy brief is a good substitute for \
+                 Gumroad."
                     .to_string(),
             );
         }
