@@ -472,6 +472,12 @@ fn run_research(app: &mut DpfApp) {
         return;
     }
 
+    // Take the Etsy credential from Settings at the moment of the search, so a key pasted into
+    // Settings works immediately instead of needing a restart (the module otherwise only sees the
+    // value it was built with).
+    app.research
+        .set_etsy_api_key(app.config.etsy_api_key.clone());
+
     let mut collected = Vec::new();
     let mut problems: Vec<String> = Vec::new();
     let mut empty_platforms: Vec<&str> = Vec::new();
@@ -509,11 +515,11 @@ fn run_research(app: &mut DpfApp) {
         (
             false,
             format!(
-                "{} returned no readable product data for \"{}\". These marketplaces render their \
-                 listings in JavaScript and publish no machine-readable product data we can read, \
-                 so this is a limitation of the source rather than an error on your side.",
-                empty_platforms.join(" and "),
-                query
+                "No readable listings came back for \"{}\" from {}. Nothing was returned that we \
+                 can read — try different wording, or add an Etsy API key in Settings so Etsy is \
+                 read through its official API.",
+                query,
+                empty_platforms.join(" and ")
             ),
         )
     } else {

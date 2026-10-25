@@ -735,13 +735,32 @@ The prompt is shown on the **Create** tab as soon as you pick a template — no 
 
 ### Searching Platforms
 
-1. Go to **Research** tab
-2. Enter search query (e.g., "digital planner 2026")
-3. Select platforms:
- - Etsy (handmade/creative)
- - Gumroad (digital products)
- - Amazon (broader market)
+1. Go to the **Research** tab
+2. Enter a search query (e.g. "digital planner 2026")
+3. Choose the platforms: **Etsy** (handmade / creative) and **Gumroad** (digital products)
 4. Click **🔍 Search**
+
+**Etsy needs an API key.** Etsy refuses to serve its search pages to another app — the request comes
+back as HTTP 403 — so without a key, Research cannot read Etsy at all. The fix is free:
+
+1. Register an app at [etsy.com/developers/register](https://www.etsy.com/developers/register)
+2. Copy the credential **exactly as `keystring:shared_secret`** — Etsy wants both halves in one
+   value, separated by a colon
+3. Paste it into **Settings → Market Research → Etsy API key**
+
+With a key, Research uses Etsy's **official API** and returns real listings with prices, tags and
+shop ids. If the key is wrong, Research shows Etsy's own error message rather than a vague failure.
+
+**Gumroad cannot be read by any app.** Their public API only returns a seller's own products, and
+only when that seller supplies their own token — so there is no key you could add. Research says this
+plainly instead of pretending it worked.
+
+**Amazon is not connected.** It appears in older documentation, but there is no Amazon integration in
+the app.
+
+If neither marketplace can be read for your niche, use the **Strategy** panel further down this
+chapter: it reasons about the market in a single call on your own key, and its brief can be sent
+straight to **Create** with **→ Apply to Create**.
 
 ### Understanding Results
 
@@ -1790,6 +1809,18 @@ Product Variants are available on all licence tiers — Personal, Team, Pro, and
 *Last Updated: July 2026*
 
 ## Changelog
+
+### v2.7.0
+- **Research can read Etsy again, through Etsy's official API.** Etsy blocks any app reading its
+  search pages (HTTP 403), which is why Research previously found nothing. Add a free Etsy API key in
+  **Settings → Market Research** as `keystring:shared_secret` and Research returns real listings,
+  prices and tags from Etsy's v3 API.
+- **Research now tells the truth when a source fails.** It checks the HTTP status and reports what
+  actually happened — blocked, bad key, or nothing found — each with the next step, instead of the
+  old catch-all "these marketplaces render in JavaScript".
+- **Gumroad is documented as unreadable**: their public API only serves a seller's own products, so
+  there is no key to add. Research says so.
+- **Amazon removed from the Research instructions** — it was never implemented.
 
 ### v2.6.0
 - **📖 Guide in the sidebar** — the help topic list is now one click from anywhere. Fixed a fault

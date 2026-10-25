@@ -208,6 +208,65 @@ fn show_providers(app: &mut DpfApp, ui: &mut Ui) {
             ui.add_space(4.0);
         }
 
+        // ── Market Research ──────────────────────────────────────────────────────────────────
+        // Etsy is not an AI provider, so it gets its own section rather than being mixed into the
+        // key list above. With a key, Research reads Etsy through their official v3 API and gets
+        // real listings. Without one, Etsy refuses the read (HTTP 403) and Research says so.
+        ui.add_space(8.0);
+        ui.separator();
+        ui.label(RichText::new("Market Research").strong().size(13.5));
+        ui.label(
+            RichText::new(
+                "Optional. Etsy blocks apps that read its search pages directly. An Etsy API key \
+                 lets Research use Etsy's official API and return real listings and prices.",
+            )
+            .size(11.0)
+            .color(Color32::from_gray(140)),
+        );
+        ui.add_space(4.0);
+        ui.horizontal(|ui| {
+            let held = !app.config.etsy_api_key.trim().is_empty();
+            ui.label(
+                RichText::new(if held { "✅" } else { "○" })
+                    .size(14.0)
+                    .color(if held {
+                        Color32::from_rgb(110, 200, 130)
+                    } else {
+                        Color32::from_gray(120)
+                    }),
+            );
+            ui.label(RichText::new("Etsy API key").strong().size(13.0));
+            ui.add_sized(
+                [340.0, 22.0],
+                TextEdit::singleline(&mut app.config.etsy_api_key)
+                    .hint_text("keystring:shared_secret")
+                    .password(true),
+            );
+        });
+        ui.horizontal(|ui| {
+            ui.add_space(26.0);
+            ui.label(
+                RichText::new("free - register an app at:")
+                    .size(10.5)
+                    .color(Color32::from_gray(130)),
+            );
+            ui.hyperlink_to(
+                RichText::new("etsy.com/developers/register").size(10.5),
+                "https://www.etsy.com/developers/register",
+            );
+        });
+        ui.horizontal(|ui| {
+            ui.add_space(26.0);
+            ui.label(
+                RichText::new(
+                    "Paste it as keystring:shared_secret - Etsy requires both halves in one value, \
+                     separated by a colon.",
+                )
+                .size(10.5)
+                .color(Color32::from_gray(130)),
+            );
+        });
+
         ui.add_space(4.0);
         ui.label(
             RichText::new(

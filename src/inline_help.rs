@@ -57,7 +57,7 @@ pub fn all_topics() -> Vec<HelpTopic> {
         HelpTopic {
             id: "research",
             title: "Market Research",
-            body: "Search Etsy and Gumroad to validate product ideas. Shows pricing, ratings, competition level, and top keywords. When a search or a Strategy brief has given you something worth acting on, press 'Apply to Create': it opens the Create screen and puts those findings into the prompt for you. Your template's wording is kept and the research is added underneath, and the prompt stays editable, so you can trim it before generating. Nothing is sent until you press Generate.",
+            body: "Search Etsy and Gumroad to validate product ideas. Shows pricing, ratings, competition level, and top keywords. Etsy needs an API key: Etsy blocks apps that read its search pages, so paste a free one (register at etsy.com/developers/register) into Settings under Market Research, written as keystring:shared_secret. With that, Etsy is read through its official API. Gumroad has no public search API, so it cannot be read by any app. When a search or a Strategy brief has given you something worth acting on, press 'Apply to Create': it opens the Create screen and puts those findings into the prompt for you. Your template's wording is kept and the research is added underneath, and the prompt stays editable, so you can trim it before generating. Nothing is sent until you press Generate.",
             tier: "personal",
         },
         HelpTopic {

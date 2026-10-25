@@ -285,7 +285,8 @@ impl DpfApp {
         crate::log_line("startup: licence + registries");
         let license_manager = LicenseManager::new(&db);
         let template_registry = TemplateRegistry::new();
-        let research = MarketResearch::new(runtime.clone());
+        let mut research = MarketResearch::new(runtime.clone());
+        research.set_etsy_api_key(config.etsy_api_key.clone());
         let scheduler = Scheduler::new(&db, runtime.clone());
         let bundler = Bundler::new();
         let exporter = Exporter::new();

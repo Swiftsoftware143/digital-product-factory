@@ -11,6 +11,18 @@ pub struct AppConfig {
     pub deepseek_key: String,
     pub moonshot_key: String,
 
+    /// Etsy Open API v3 credential for Market Research, in the form `keystring:shared_secret`
+    /// (that is literally how Etsy wants the `x-api-key` header built).
+    ///
+    /// Market Research used to scrape etsy.com — which now answers HTTP 403 to any non-browser
+    /// request, so it could never work. Etsy's own v3 API serves the same public listings with an
+    /// API key and no OAuth (OAuth is only for private data and writes), so this is a real BYOK
+    /// path like the AI providers: the user registers an app and pastes the key.
+    ///
+    /// Empty = fall back to scraping, which is allowed to fail and says so honestly.
+    #[serde(default)]
+    pub etsy_api_key: String,
+
     /// Outbound automation webhooks. `serde(default)` so a settings file written before this
     /// field existed still loads instead of failing.
     #[serde(default)]
@@ -56,6 +68,7 @@ impl Default for AppConfig {
             google_key: String::new(),
             deepseek_key: String::new(),
             moonshot_key: String::new(),
+            etsy_api_key: String::new(),
             webhook: crate::webhooks::WebhookConfig::default(),
             auto_save: true,
             dark_mode: true,

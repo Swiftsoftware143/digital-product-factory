@@ -20,6 +20,9 @@ pub struct MarketResearch {
     pub use_gumroad: bool,
     /// Result of the last search, shown to the user. `None` until a search has run.
     pub last_search_note: Option<(bool, String)>,
+    /// Etsy Open API v3 credential (`keystring:shared_secret`). Empty = no key, so Etsy is read by
+    /// scraping, which Etsy refuses with 403. With a key, the official API is used instead.
+    pub etsy_api_key: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -91,7 +94,14 @@ impl MarketResearch {
             use_etsy: true,
             use_gumroad: true,
             last_search_note: None,
+            etsy_api_key: String::new(),
         }
+    }
+
+    /// Keep the Etsy credential in step with Settings. Called wherever config is applied, so a key
+    /// pasted into Settings takes effect without restarting the app.
+    pub fn set_etsy_api_key(&mut self, key: String) {
+        self.etsy_api_key = key.trim().to_string();
     }
 
     pub fn search_etsy(&self, query: &str) -> Result<ResearchResult, String> {
@@ -101,21 +111,99 @@ impl MarketResearch {
     }
 
     async fn search_etsy_async(&self, query: &str) -> Result<ResearchResult, String> {
-        // Note: This is a simplified implementation
-        // Real implementation would use Etsy's API or proper scraping
+        // ── Preferred path: Etsy's own API ────────────────────────────────────────────────────
+        // Public listing search needs only the `x-api-key` header (keystring:shared_secret).
+        // OAuth is required for PRIVATE data and writes, not for this, so a user-supplied key is
+        // sufficient — and it returns real, current listings instead of a scrape.
+        if !self.etsy_api_key.is_empty() {
+            let url = format!(
+                "https://openapi.etsy.com/v3/application/listings/active?keywords={}&limit=24",
+                urlencoding::encode(query)
+            );
+
+            let response = self
+                .client
+                .get(&url)
+                .header("x-api-key", &self.etsy_api_key)
+                .header("Accept", "application/json")
+                .send()
+                .await
+                .map_err(|e| format!("Could not reach the Etsy API: {e}"))?;
+
+            let status = response.status();
+            let body = response.text().await.unwrap_or_default();
+
+            if !status.is_success() {
+                // Etsy explains itself precisely here ("Invalid API key: should be in the format
+                // 'keystring:shared_secret'"), so pass its own words through instead of guessing.
+                let detail = serde_json::from_str::<serde_json::Value>(&body)
+                    .ok()
+                    .and_then(|v| {
+                        v.get("error").and_then(|e| e.as_str()).map(str::to_string)
+                    })
+                    .unwrap_or_else(|| body.chars().take(140).collect());
+                return Err(format!(
+                    "Etsy refused the API key (HTTP {}): {}. Set it in Settings as \
+                     keystring:shared_secret.",
+                    status.as_u16(),
+                    detail.trim()
+                ));
+            }
+
+            let products = Self::parse_etsy_api(&body);
+            if products.is_empty() {
+                return Err(
+                    "Etsy's API found no listed products for that search. Try different wording."
+                        .to_string(),
+                );
+            }
+
+            return Ok(ResearchResult {
+                platform: "Etsy".to_string(),
+                query: query.to_string(),
+                products,
+                analyzed_at: chrono::Utc::now(),
+            });
+        }
+
+        // ── Fallback: scrape the public search page ──────────────────────────────────────────
+        // This normally fails: Etsy answers any non-browser request with 403. It stays because it
+        // costs nothing to try, but the STATUS is checked so the user is told the truth — the old
+        // code parsed the 403 block page, found no JSON-LD, and reported "JavaScript", which was
+        // simply wrong and left the user with nothing to act on.
         let url = format!("https://www.etsy.com/search?q={}", urlencoding::encode(query));
 
-        let response = self.client
+        let response = self
+            .client
             .get(&url)
             .send()
             .await
             .map_err(|e| format!("Failed to fetch Etsy: {}", e))?;
 
-        let html = response.text().await
+        let status = response.status();
+        if status == reqwest::StatusCode::FORBIDDEN || status == reqwest::StatusCode::TOO_MANY_REQUESTS
+        {
+            return Err(format!(
+                "Etsy blocked the request (HTTP {}). Etsy does not allow its search results to be \
+                 read this way. Add an Etsy API key in Settings (free — register an app at \
+                 developers.etsy.com) and Research will use Etsy's official API instead.",
+                status.as_u16()
+            ));
+        }
+
+        let html = response
+            .text()
+            .await
             .map_err(|e| format!("Failed to read response: {}", e))?;
 
-        // Parse HTML (simplified)
         let products = Self::parse_listings(&html, "Etsy", &url);
+        if products.is_empty() {
+            return Err(format!(
+                "Etsy's page came back (HTTP {}) but contained no readable product data. Add an \
+                 Etsy API key in Settings to read Etsy reliably.",
+                status.as_u16()
+            ));
+        }
 
         Ok(ResearchResult {
             platform: "Etsy".to_string(),
@@ -123,6 +211,76 @@ impl MarketResearch {
             products,
             analyzed_at: chrono::Utc::now(),
         })
+    }
+
+    /// Read Etsy's own JSON (`{count, results:[ShopListing]}`) into our listing type.
+    ///
+    /// Field names come from Etsy's published OpenAPI schema: `title`, `url`, `price` as a
+    /// `Money` object (`amount` / `divisor` / `currency_code`), and `num_favorers`.
+    ///
+    /// `reviews` is deliberately left empty: Etsy's listing search does not return review counts,
+    /// and favourites are not reviews. Putting one in the other's field would be a quiet lie in a
+    /// screen the user is making pricing decisions from.
+    fn parse_etsy_api(body: &str) -> Vec<ProductListing> {
+        let Ok(v) = serde_json::from_str::<serde_json::Value>(body) else {
+            return Vec::new();
+        };
+        let Some(items) = v.get("results").and_then(|r| r.as_array()) else {
+            return Vec::new();
+        };
+
+        items
+            .iter()
+            .filter_map(|it| {
+                let title = it.get("title")?.as_str()?.trim().to_string();
+                if title.is_empty() {
+                    return None;
+                }
+
+                let price = it.get("price").and_then(|p| {
+                    let amount = p.get("amount").and_then(|a| a.as_f64())?;
+                    let divisor = p.get("divisor").and_then(|d| d.as_f64()).unwrap_or(100.0);
+                    if divisor == 0.0 {
+                        None
+                    } else {
+                        Some(amount / divisor)
+                    }
+                });
+                let currency = it
+                    .get("price")
+                    .and_then(|p| p.get("currency_code"))
+                    .and_then(|c| c.as_str())
+                    .unwrap_or("USD")
+                    .to_string();
+
+                Some(ProductListing {
+                    title,
+                    price,
+                    currency,
+                    rating: None,
+                    reviews: None,
+                    url: it
+                        .get("url")
+                        .and_then(|u| u.as_str())
+                        .unwrap_or_default()
+                        .to_string(),
+                    image_url: None,
+                    seller: it
+                        .get("shop_id")
+                        .and_then(|s| s.as_i64())
+                        .map(|s| format!("shop {s}")),
+                    tags: it
+                        .get("tags")
+                        .and_then(|t| t.as_array())
+                        .map(|a| {
+                            a.iter()
+                                .filter_map(|x| x.as_str().map(str::to_string))
+                                .collect()
+                        })
+                        .unwrap_or_default(),
+                })
+            })
+            .collect()
     }
 
     /// Extract product listings from a storefront page.
@@ -161,16 +319,44 @@ impl MarketResearch {
     async fn search_gumroad_async(&self, query: &str) -> Result<ResearchResult, String> {
         let url = format!("https://gumroad.com/discover?query={}", urlencoding::encode(query));
 
-        let response = self.client
+        let response = self
+            .client
             .get(&url)
             .send()
             .await
             .map_err(|e| format!("Failed to fetch Gumroad: {}", e))?;
 
-        let html = response.text().await
+        let status = response.status();
+        if status == reqwest::StatusCode::FORBIDDEN || status == reqwest::StatusCode::TOO_MANY_REQUESTS
+        {
+            return Err(format!(
+                "Gumroad blocked the request (HTTP {}). Gumroad has no public search API, so its \
+                 marketplace cannot be read programmatically.",
+                status.as_u16()
+            ));
+        }
+
+        let html = response
+            .text()
+            .await
             .map_err(|e| format!("Failed to read response: {}", e))?;
 
         let products = Self::parse_listings(&html, "Gumroad", &url);
+        if products.is_empty() {
+            // Measured 2026-10-25: this page returns HTTP 200 with ~120 KB of HTML, but the
+            // listings arrive from an API call after load — there is no JSON-LD to read. Gumroad's
+            // public API only exposes a seller's OWN products once they supply that seller's
+            // token, so there is no key a buyer could paste to unlock marketplace search. Saying so
+            // is more useful than blaming "JavaScript" in general, because it tells the user this
+            // one is not theirs to fix.
+            return Err(
+                "Gumroad's marketplace search can't be read by any app — their public API only \
+                 returns a seller's own products with that seller's token, so there is no key to \
+                 add. Etsy works if you add an Etsy API key, and the Strategy brief is a good \
+                 substitute for reading Gumroad."
+                    .to_string(),
+            );
+        }
 
         Ok(ResearchResult {
             platform: "Gumroad".to_string(),
@@ -479,5 +665,44 @@ mod tests {
         assert_eq!(as_price(&serde_json::json!("$12.99")), Some(12.99));
         assert_eq!(as_price(&serde_json::json!("USD 1,234.50")), None); // comma => not parsed
         assert_eq!(as_price(&serde_json::json!(null)), None);
+    }
+
+    /// The Etsy API parser is pinned to Etsy's own published schema: `{count, results:[ShopListing]}`
+    /// where `price` is a Money object. If Etsy renames a field, this test is what notices.
+    #[test]
+    fn etsy_api_response_is_read_correctly() {
+        let body = r#"{
+          "count": 2,
+          "results": [
+            {"listing_id": 1, "title": "Resume Template - Minimal CV",
+             "url": "https://www.etsy.com/listing/1",
+             "price": {"amount": 1299, "divisor": 100, "currency_code": "USD"},
+             "num_favorers": 42, "tags": ["resume", "cv"], "shop_id": 77},
+            {"listing_id": 2, "title": "  ",
+             "url": "https://www.etsy.com/listing/2",
+             "price": {"amount": 500, "divisor": 100, "currency_code": "EUR"}}
+          ]
+        }"#;
+
+        let out = MarketResearch::parse_etsy_api(body);
+        // The blank-title listing is dropped rather than shown as an empty row.
+        assert_eq!(out.len(), 1);
+
+        let p = &out[0];
+        assert_eq!(p.title, "Resume Template - Minimal CV");
+        assert_eq!(p.price, Some(12.99)); // amount / divisor, not raw minor units
+        assert_eq!(p.currency, "USD");
+        assert_eq!(p.url, "https://www.etsy.com/listing/1");
+        assert_eq!(p.tags, vec!["resume".to_string(), "cv".to_string()]);
+        assert_eq!(p.seller.as_deref(), Some("shop 77"));
+        // Favourites are not reviews; the field must stay empty rather than carry a wrong number.
+        assert_eq!(p.reviews, None);
+    }
+
+    #[test]
+    fn etsy_api_errors_and_junk_yield_nothing() {
+        assert!(MarketResearch::parse_etsy_api(r#"{"error":"Invalid API key"}"#).is_empty());
+        assert!(MarketResearch::parse_etsy_api("not json at all").is_empty());
+        assert!(MarketResearch::parse_etsy_api(r#"{"count":0,"results":[]}"#).is_empty());
     }
 }
