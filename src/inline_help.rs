@@ -57,7 +57,7 @@ pub fn all_topics() -> Vec<HelpTopic> {
         HelpTopic {
             id: "research",
             title: "Market Research",
-            body: "Search Etsy and Gumroad to validate product ideas. Shows pricing, ratings, competition level, and top keywords.",
+            body: "Search Etsy and Gumroad to validate product ideas. Shows pricing, ratings, competition level, and top keywords. When a search or a Strategy brief has given you something worth acting on, press 'Apply to Create': it opens the Create screen and puts those findings into the prompt for you. Your template's wording is kept and the research is added underneath, and the prompt stays editable, so you can trim it before generating. Nothing is sent until you press Generate.",
             tier: "personal",
         },
         HelpTopic {

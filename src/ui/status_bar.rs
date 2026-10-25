@@ -1,8 +1,7 @@
 //! Status bar at bottom of window
 
-use egui::*;
 use crate::app::DpfApp;
-use crate::inline_help;
+use egui::*;
 
 pub fn show(app: &mut DpfApp, ctx: &Context) {
     TopBottomPanel::bottom("status_bar")

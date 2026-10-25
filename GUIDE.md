@@ -589,15 +589,65 @@ Each template has customizable parameters:
 
 Generation uses your own provider keys — you need **at least one API key** configured in **⚙ Settings** first (see [Bring Your Own Key (BYOK)](#bring-your-own-key-byok)).
 
+The screen is split in two, with the action bar pinned to the top:
+
+- **Left** — choose a template, then fill in its parameter form. Only the fields that template
+  actually needs are shown.
+- **Right** — the prompt (editable) and, once you generate, the result.
+
+Steps:
+
 1. Pick a category filter or scroll the catalogue, and click **Select** on a template.
-2. Fill in the parameter form. Only the fields that template actually needs are shown.
-3. Optionally click **Preview Prompt** to see the exact prompt that will be sent to the model.
-4. Click **⚡ Generate Product**.
+2. Fill in the parameter form on the left.
+3. Review the prompt on the right — it is filled in for you and you can change any of it.
+4. Click **⚡ Generate Product** in the top bar. It is always visible, so a long parameter form
+   never pushes it out of reach.
 5. Wait for the result (typically 5-30 seconds).
-6. The result shows the **model used** and the generated content. A status line reports any errors.
+6. The result appears on the right with the **model used**, tokens and timing. A status line in the
+   top bar reports any errors.
 7. Export the result, or save it to your pipeline.
 
 If a required parameter is blank, the app tells you before spending a request. If no API key is configured, the Create tab prompts you to add one in Settings.
+
+### The prompt is yours to edit
+
+The prompt shown on the Create screen is the **exact text sent to the model**. It is filled in from
+the template as soon as you pick one, and every word of it is editable.
+
+- Change the wording, add a section, remove something you don't want — the edited text is what gets
+  sent. Editing the prompt does not change the template.
+- **📋 Copy prompt** puts it on your clipboard so you can use it elsewhere.
+- **↺ Reset** restores the template's original wording.
+- Picking a different template seeds a fresh prompt from that template.
+
+This matters most for templates whose shape you like but whose instructions you don't: adjust the
+prompt rather than hunting for a different template.
+
+### Creating products in bulk
+
+Next to **Single** in the top bar there is a **Bulk** mode. It uses the same template and the same
+parameters — it just makes many products instead of one.
+
+1. Choose and configure a template as usual.
+2. Click **Bulk** in the top bar.
+3. Type one item per line in the box — these are the things that vary, for example:
+
+   ```
+   wedding planners
+   fitness trackers
+   budget templates
+   ```
+
+4. Set **Vary** to the parameter each line should fill (for example `theme`). Leave it on
+   **(append to prompt)** and each line is added to the prompt instead — useful when the template
+   has no obvious variation field.
+5. Click **⚡ Generate Batch**.
+
+Each line is one full request on your own API key, so a run is capped at **20 items**. Every item is
+listed in the **Batch log** with its outcome, so you can see exactly which ones succeeded and which
+failed rather than guessing from a single summary line.
+
+If a line fails, the rest still run — one bad item does not cancel the batch.
 
 ### AI Models
 
@@ -622,7 +672,7 @@ Each template includes optimized AI prompts with:
 - **Output specifications**: Format, resolution, use case
 - **Time estimates**: Most products take ~1 day/month to maintain
 
-Click **Preview Prompt** in the Create tab to see the exact prompt a template will send, and copy it if you want to reuse it in another tool.
+The prompt is shown on the **Create** tab as soon as you pick a template — no button needed. You can edit it in place, or use **📋 Copy prompt** to reuse it in another tool.
 
 ---
 
@@ -677,6 +727,27 @@ Quick-access buttons for hot niches:
 - resume template
 
 Click any trend to auto-fill search.
+
+### Sending research to Create
+
+Research is only useful if it reaches the thing that builds the product, so the Research screen can
+hand its findings straight to Create.
+
+Click **→ Apply to Create**, either on the **Results** panel or under a **Strategy brief**, and the
+app:
+
+- jumps to the **Create Product** screen;
+- fills the prompt with what was found — the strategy brief, plus the listings that are already
+  selling (titles, prices and review counts), capped so the prompt stays a sensible size;
+- keeps your chosen template's wording and appends the research as guidance, if you had a template
+  selected;
+- leaves the prompt **editable**, so you can trim or add to it before spending anything.
+
+Nothing is sent at that point — no API call is made. You review the prompt and press **⚡ Generate**
+yourself.
+
+If you have not run a search or built a brief yet, the button tells you so rather than applying an
+empty prompt.
 
 ---
 
@@ -1665,6 +1736,24 @@ Product Variants are available on all licence tiers — Personal, Team, Pro, and
 
 ## Changelog
 
+### v2.6.0
+- **📖 Guide in the sidebar** — the help topic list is now one click from anywhere. Fixed a fault
+  that made it unreadable: the help window was being drawn twice per frame, so it rendered over
+  itself with debug boxes.
+- **Create screen rebuilt** — the action bar (mode, **Generate**, status) is pinned to the top so it
+  can never be scrolled out of reach; the body scrolls; the screen is split into configure (left)
+  and prompt/result (right), collapsing to one column in a narrow window.
+- **The prompt is editable** — shown as soon as a template is chosen, editable, copyable and
+  resettable, and the edited text is exactly what is sent. The old read-only **Preview Prompt**
+  button is gone.
+- **Bulk creation** — **Single / Bulk** toggle on the Create screen; one product per line, each line
+  filling a chosen parameter (or appended to the prompt), capped at 20 per run with a per-item batch
+  log.
+- **Apply to Create** — hand a market search or a Strategy brief straight to the Create screen and
+  seed the prompt with it. No API call is made until you press Generate.
+- **Menu reorganised around the job** — Start here · Research & plan · Create · Brand & assets ·
+  Sell & track · Quality & customers · Automation.
+
 ### v1.4.2
 - Added **Adverts & Campaign Suite** — Multi-format ad generation with AI copy frameworks (PAS, AIDA, BAB, Social Proof, Benefit-Driven), 3 aspect ratios (Square 1080×1080, Story 1080×1920, Landscape 1200×628), per-ratio layout specs, conversion scoring with reasoning, brand identity extraction, visual concept generation, campaign management, JSON export
 - Added **DeepSeek** provider — Logic and Reasoning profiles using deepseek-chat
@@ -1835,12 +1924,16 @@ Marketplace Publishing requires a **Team** or higher license.
 
 ## Inline Help System
 
-Throughout the app, look for **❓ Help** in the status bar and **?** buttons next to feature headers.
+There are three ways in:
 
-- **Status bar help button** — Opens the full Help Index with all topics
-- **Per-feature help buttons** — Click **?** next to any section header for contextual help
-- **Help Index** — Browseable list of all help topics, grouped by feature area
-- **Tier badges** — Help topics show which license tier a feature requires
+- **📖 Guide** in the left sidebar — opens the full topic list from anywhere. This is the main entry
+  point and it is always visible.
+- **❓ Help** in the status bar — opens the same topic list.
+- **?** next to a feature header — opens the help for the screen you are on.
+
+The topic list shows one line per topic with a tier badge (**Team+**, **Pro+**, **Enterprise**) so
+you can see at a glance whether a feature needs a higher plan. Click any topic to read it; close it
+and you are back where you were.
 
 The inline help system is available on all license tiers — no license required to access help content.
 

@@ -767,3 +767,99 @@ fn validate_required(app: &DpfApp, templates: &[Template], id: &str) -> Result<(
     }
     Ok(())
 }
+
+/// Assemble what the Research tab has learned into a compact block a model can act on.
+///
+/// Research used to be a dead end: you could search the market and build a strategy brief, then
+/// had to retype the conclusions by hand on the Create screen. This produces the text that carries
+/// them across, and it is deliberately small — the brief plus the highest-signal listings, not
+/// every row, because the prompt is paid for on the user's own key.
+pub fn research_context(app: &DpfApp) -> Option<String> {
+    let mut parts: Vec<String> = Vec::new();
+
+    if let Some(brief) = &app.strategy_state.last_brief {
+        let trimmed = brief.content.trim();
+        if !trimmed.is_empty() {
+            parts.push(format!("MARKET STRATEGY BRIEF\n{trimmed}"));
+        }
+    }
+
+    // Group listings under the query they came from, capped so the prompt stays proportionate.
+    let mut listing_lines: Vec<String> = Vec::new();
+    for result in &app.research.search_results {
+        for p in result.products.iter().take(8) {
+            listing_lines.push(format!(
+                "- [{}] {} — {} {:?}{}",
+                result.platform,
+                p.title,
+                p.currency,
+                p.price,
+                p.reviews
+                    .map(|r| format!(", {r} reviews"))
+                    .unwrap_or_default()
+            ));
+            if listing_lines.len() >= 16 {
+                break;
+            }
+        }
+        if listing_lines.len() >= 16 {
+            break;
+        }
+    }
+    if !listing_lines.is_empty() {
+        parts.push(format!(
+            "WHAT IS ALREADY SELLING (from market search)\n{}",
+            listing_lines.join("\n")
+        ));
+    }
+
+    if parts.is_empty() {
+        None
+    } else {
+        Some(parts.join("\n\n"))
+    }
+}
+
+/// Carry the research into Create: jump to the screen and seed the editable prompt with it.
+///
+/// If a template is already chosen its wording is kept and the research is appended as guidance, so
+/// the user does not lose the structure they picked. With no template chosen the research becomes
+/// the prompt itself, and the status line says to pick one.
+pub fn apply_research(app: &mut DpfApp) {
+    let Some(context) = research_context(app) else {
+        app.create_state.status = Some(
+            "❌ Nothing to apply yet — run a market search or build a Strategy brief first."
+                .to_string(),
+        );
+        app.current_tab = crate::app::Tab::Create;
+        return;
+    };
+
+    // Prefer whatever prompt is on screen; otherwise rebuild it from the selected template.
+    let base = app.create_state.prompt_preview.clone().or_else(|| {
+        app.create_state.selected_template.clone().and_then(|id| {
+            let params = collect_params(app);
+            app.generator.preview_template(&id, &params).ok()
+        })
+    });
+
+    let had_template = app.create_state.selected_template.is_some();
+
+    let combined = match base {
+        Some(b) if !b.trim().is_empty() => format!(
+            "{b}\n\n---\nUse this market research to inform the product:\n{context}"
+        ),
+        _ => format!(
+            "{context}\n\n---\nBased on the research above, create one digital product that \
+             best fits this market. Choose the format that sells best here."
+        ),
+    };
+
+    app.create_state.prompt_preview = Some(combined);
+    app.create_state.status = Some(if had_template {
+        "✅ Research applied — review the prompt, then Generate.".to_string()
+    } else {
+        "✅ Research applied to the prompt. Now choose a template so a format is set.".to_string()
+    });
+    app.current_tab = crate::app::Tab::Create;
+}

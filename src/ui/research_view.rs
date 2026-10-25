@@ -71,7 +71,19 @@ pub fn show(app: &mut DpfApp, ctx: &Context) {
         // Results
         let results = app.research.search_results.clone();
         ui.group(|ui| {
-            ui.heading("Results");
+            ui.horizontal(|ui| {
+                ui.heading("Results");
+                // Research used to be a dead end. This carries what was found straight into the
+                // Create screen, where the prompt is editable before anything is spent.
+                if !results.is_empty()
+                    && ui
+                        .button("→ Apply to Create")
+                        .on_hover_text("Carry these findings into the Create screen as the prompt")
+                        .clicked()
+                {
+                    crate::ui::create_view::apply_research(app);
+                }
+            });
 
             if let Some((is_err, note)) = &app.research.last_search_note {
                 let colour = if *is_err {
@@ -366,6 +378,9 @@ fn strategy_panel(app: &mut DpfApp, ui: &mut Ui) {
         ui.colored_label(Color32::from_rgb(220, 90, 90), format!("⚠ {err}"));
     }
 
+    // Captured before the borrow below so the hand-off button can be drawn after it ends.
+    let has_brief = app.strategy_state.last_brief.is_some();
+
     if let Some(brief) = &app.strategy_state.last_brief {
         ui.add_space(8.0);
         ui.label(
@@ -379,6 +394,19 @@ fn strategy_panel(app: &mut DpfApp, ui: &mut Ui) {
         ScrollArea::vertical().max_height(420.0).show(ui, |ui| {
             ui.label(markdown_ish(&brief.content));
         });
+    }
+
+    // The whole point of the brief is to decide WHAT to build, so it must be able to leave this
+    // screen. Applying it seeds the editable prompt on Create with the brief attached.
+    if has_brief {
+        ui.add_space(6.0);
+        if ui
+            .button("→ Apply to Create")
+            .on_hover_text("Carry this brief into the Create screen as the prompt")
+            .clicked()
+        {
+            crate::ui::create_view::apply_research(app);
+        }
     }
 }
 
