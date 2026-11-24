@@ -145,6 +145,20 @@ pub fn run(
     model: Option<&str>,
     req: &StrategyRequest,
 ) -> Result<StrategyBrief, String> {
+    runtime.block_on(run_async(router, preferred, model, req))
+}
+
+/// The same brief, as a future.
+///
+/// Split out of [`run`] so the headless MCP door — which already runs inside a Tokio runtime —
+/// can await it instead of calling `block_on` from inside a runtime (a panic). Both entry points
+/// share this body, so the brief an agent gets is byte-for-byte the brief the UI gets.
+pub async fn run_async(
+    router: &LLMRouter,
+    preferred: Option<Provider>,
+    model: Option<&str>,
+    req: &StrategyRequest,
+) -> Result<StrategyBrief, String> {
     let niche = req.niche.trim();
     if niche.is_empty() {
         return Err("Enter a niche or market to research first.".to_string());
@@ -157,13 +171,15 @@ pub fn run(
 
     // One call. No retry loop: a repeated failure here is a real error the user should see,
     // not something to spin on and spend their money twice.
-    let response = runtime.block_on(router.generate_strategy(
-        Some(provider),
-        Some(&model_id),
-        STRATEGY_SYSTEM_PROMPT.to_string(),
-        build_prompt(req),
-        4000,
-    ))?;
+    let response = router
+        .generate_strategy(
+            Some(provider),
+            Some(&model_id),
+            STRATEGY_SYSTEM_PROMPT.to_string(),
+            build_prompt(req),
+            4000,
+        )
+        .await?;
 
     Ok(StrategyBrief {
         content: response.content,

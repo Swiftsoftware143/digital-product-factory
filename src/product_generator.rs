@@ -56,15 +56,26 @@ impl ProductGenerator {
         self.generate_blocking_with_prompt(template_id, params, None)
     }
 
-    /// Generate, optionally using a prompt the USER has edited.
-    ///
-    /// The template prompt was previously built and consumed internally, so the only way to see it
-    /// was a "Preview Prompt" button and it could not be changed - a user who wanted a different
-    /// angle on a Planner had to accept the template's wording or nothing. Passing an override
-    /// lets the Create screen show the prompt, let it be edited, and have that exact text sent.
+    /// Generate, obeying a prompt the USER may have edited (blocking form, used by the UI).
     ///
     /// `None` keeps the old behaviour exactly, so every existing caller is unaffected.
     pub fn generate_blocking_with_prompt(
+        &self,
+        template_id: &str,
+        params: serde_json::Value,
+        prompt_override: Option<String>,
+    ) -> Result<GeneratedProduct, String> {
+        self.runtime
+            .block_on(self.generate(template_id, params, prompt_override))
+    }
+
+    /// The same generation, as a future.
+    ///
+    /// Split out of `generate_blocking_with_prompt` so a caller that already runs inside a Tokio
+    /// runtime (the headless MCP door) can await it. Calling `Runtime::block_on` from inside a
+    /// runtime panics — the door must not re-implement generation to avoid that, so the body lives
+    /// here and BOTH entry points use it. One implementation, two adapters.
+    pub async fn generate(
         &self,
         template_id: &str,
         params: serde_json::Value,
@@ -95,10 +106,7 @@ impl ProductGenerator {
 
         let start = std::time::Instant::now();
 
-        // Run async generation in blocking context
-        let response = self.runtime.block_on(async {
-            router.generate(request).await
-        })?;
+        let response = router.generate(request).await?;
 
         let generation_time = start.elapsed().as_millis() as u64;
 

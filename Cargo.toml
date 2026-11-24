@@ -67,6 +67,15 @@ rfd = "0.14"
 rust_xlsxwriter = "0.99.1"
 docx-rs = "0.4.22"
 
+# ── Headless MCP door (`dpf mcp` / `dpf serve`) ──────────────────────────────────────────
+# The transport, credential contract, tool registry and audit live in ONE shared crate so this
+# app's door cannot drift from the rest of the fleet. Pinned by rev: a desktop product must build
+# the same door the tests proved.
+axum = "0.8"
+mcp-door = { git = "https://github.com/Swiftsoftware143/mcp-door", rev = "ff4a9c818afa1460ef726bf47d4fef48b12cd3b6" }
+# eframe already persists the app's settings as RON; reading them back needs the same format.
+ron = "0.8"
+
 [features]
 default = ["notifications"]
 notifications = ["notify-rust"]

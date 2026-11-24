@@ -19,6 +19,7 @@
 16. [Adverts & Campaign Suite](#adverts--campaign-suite)
 17. [Licence & Activation](#licence--activation)
 18. [Workflow Examples](#workflow-examples)
+19. [Driving DPF from an agent](#driving-dpf-from-an-agent)
 
 ---
 
@@ -1524,6 +1525,59 @@ of DPF and was not altered in transit.
 **If nothing arrives**, the **Recent deliveries** list tells you why: it records every attempt
 with the HTTP status, or the reason it failed (could not connect, no response in 5 seconds).
 A failure is never silent, and a slow endpoint never freezes the app.
+
+## Driving DPF from an agent
+
+New in this version: the app can be driven by an AI agent (an "MCP client" such as Claude Desktop,
+Hermes, or Claude Code) instead of by clicking. Nothing is visible on screen — the app works in the
+background and the agent does the clicking for you.
+
+**Why you would want this.** You can say "make me three planner products in the ADHD niche and put
+them in Review", and the agent will use your own AI key, your own templates and your own database
+to do it. The products appear in your Pipeline exactly as if you had made them.
+
+**What the agent can do**
+
+- See your products (the Pipeline projects) and read any one of them in full.
+- Create a product.
+- List the built-in templates.
+- Generate product content with **your** key.
+- Produce the strategy brief for a niche (the same one-call brief as the Strategy panel).
+
+**What it cannot do — on purpose**
+
+It cannot publish or list anything, deliver a paid product, charge a customer, record a sale, or
+activate/revoke a licence. Those actions are not offered to the agent at all until the payment work
+is switched back on. A tool that does not exist cannot be used by mistake or by a clever prompt.
+
+**Turning it on**
+
+1. Open the app once and enter your AI key in **Settings** (as usual). The agent re-uses that key;
+   you do not have to enter it twice.
+2. Either let your agent start the app in headless mode (the client configuration is one line:
+   run `dpf` with the argument `mcp`), or run the app's local web door yourself:
+
+   ```bash
+   openssl rand -hex 24 > ~/.dpf-mcp-key
+   chmod 600 ~/.dpf-mcp-key
+   dpf serve --bind 127.0.0.1:8765 --key-file ~/.dpf-mcp-key
+   ```
+
+3. The web door only answers on **your own machine** (127.0.0.1). It refuses to start on any other
+   address, and it refuses to start without a key file whose token is at least 24 characters.
+
+**Your data is safe by default.** The agent uses the app's own database. If you would rather it
+practice on a copy, give it `--db` pointing at a copy of the file. Every action the agent takes is
+written to an audit log (`mcp-audit.log`, next to the database) where you can see what was asked and
+what happened.
+
+**Costs.** Generation and the strategy brief use your key, so they cost what they would cost if you
+clicked Generate yourself. A good client asks you before calling them.
+
+**Windows note.** The same commands work with `dpf.exe`. The agent starts it with the `mcp` argument;
+no console window appears.
+
+---
 
 ## Troubleshooting
 

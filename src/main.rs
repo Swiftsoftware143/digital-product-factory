@@ -55,6 +55,7 @@ mod vector_renderer;
 mod vector_export;
 mod theme;
 mod webhooks;
+mod mcp;
 use eframe::NativeOptions;
 use std::io::Write;
 
@@ -306,8 +307,68 @@ fn first_frame_rendered() -> bool {
     })
 }
 
+/// Run a headless subcommand and turn its error into a nonzero exit.
+///
+/// The message goes to BOTH stderr (so the MCP client sees it) and the startup log (a Windows
+/// GUI-subsystem binary has no console, so stderr alone can vanish).
+fn headless(result: Result<(), String>) -> eframe::Result<()> {
+    match result {
+        Ok(()) => Ok(()),
+        Err(e) => {
+            log(&format!("headless mode failed: {e}"));
+            eprintln!("dpf: {e}");
+            std::process::exit(1);
+        }
+    }
+}
+
+fn print_usage() {
+    println!(
+        "Digital Product Factory {version}
+
+USAGE
+  dpf                      open the app (this is what a double-click runs)
+  dpf mcp [options]        speak MCP over stdio — for an agent on this machine
+  dpf serve [options]      serve the same MCP door over HTTP on loopback
+
+HEADLESS OPTIONS
+  --db PATH                database to use (default: the app's own)
+  --settings PATH          eframe app.ron, or a RON/JSON AppConfig, holding your AI keys
+  --key-file PATH          bearer token for `serve` (required there); optional for `mcp`
+  --audit PATH             where the audit log is written (default: beside the database)
+  --bind ADDR              `serve` only; must be loopback (default 127.0.0.1:8765)
+
+GUI OPTIONS
+  --renderer glow|wgpu     pick the back end (or set DPF_RENDERER)
+
+The door exposes products, templates, BYOK generation and the strategy brief. It has NO tool that
+publishes, delivers a paid product, charges money or touches the licence.",
+        version = env!("CARGO_PKG_VERSION")
+    );
+}
+
 fn main() -> eframe::Result<()> {
     install_panic_logger();
+
+    // ── Headless modes ───────────────────────────────────────────────────────────────
+    // `dpf mcp` and `dpf serve` are handled BEFORE any windowing code runs: they are how an
+    // agent drives the app, and they must work on a machine with no display (and on the
+    // Windows box, where a console-less GUI binary is what the customer sees).
+    let argv: Vec<String> = std::env::args().skip(1).collect();
+    match argv.first().map(|s| s.as_str()) {
+        Some("mcp") => return headless(mcp::run_stdio(&argv[1..])),
+        Some("serve") => return headless(mcp::run_serve(&argv[1..])),
+        Some("help") | Some("--help") | Some("-h") => {
+            print_usage();
+            return Ok(());
+        }
+        Some("--version") | Some("-V") => {
+            println!("dpf {}", env!("CARGO_PKG_VERSION"));
+            return Ok(());
+        }
+        _ => {}
+    }
+
     let (renderer, why) = chosen_renderer();
 
     log("================================================================");

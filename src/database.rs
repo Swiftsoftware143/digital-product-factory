@@ -113,8 +113,22 @@ impl Database {
         let path = Self::data_file_path();
         Self::migrate_legacy_cwd_database(&path);
         crate::log_line(&format!("data: database at {}", path.display()));
+        Self::open_at(&path)
+    }
 
-        let conn = Connection::open(&path)?;
+    /// Open (and create if needed) the database at an explicit path.
+    ///
+    /// `new()` is exactly this, at the per-user data path. The headless modes (`dpf mcp`,
+    /// `dpf serve`) take `--db PATH` so an agent can be pointed at a scratch database without
+    /// touching the user's real data. Same pragmas and same schema bootstrap, so there is still
+    /// one database layer — not a second one for headless use.
+    pub fn open_at(path: &std::path::Path) -> SqlResult<Self> {
+        if let Some(dir) = path.parent() {
+            if !dir.as_os_str().is_empty() {
+                let _ = std::fs::create_dir_all(dir);
+            }
+        }
+        let conn = Connection::open(path)?;
         
         // Enable WAL mode for better concurrency.
         // NOTE: "PRAGMA journal_mode=..." always returns the resulting mode
@@ -493,6 +507,18 @@ impl Database {
         Ok(())
     }
     
+    /// The next free pipeline id.
+    ///
+    /// `save_idea` is `INSERT OR REPLACE`, so writing an idea whose id is already taken silently
+    /// replaces that row. The Create screen passes `ideas.len()` and the scheduled generator
+    /// passes 0, both of which collide. The headless door asks the database for a free id so an
+    /// agent-created product can never overwrite a user's product.
+    pub fn next_idea_id(&self) -> SqlResult<usize> {
+        let conn = self.conn.lock().unwrap();
+        let max: Option<i64> = conn.query_row("SELECT MAX(id) FROM ideas", [], |row| row.get(0))?;
+        Ok(max.unwrap_or(-1).saturating_add(1) as usize)
+    }
+
     pub fn delete_idea(&self, id: usize) -> SqlResult<()> {
         let conn = self.conn.lock().unwrap();
         conn.execute("DELETE FROM ideas WHERE id = ?1", params![id])?;
